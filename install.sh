@@ -162,8 +162,74 @@ install_visual_studio_code() {
     download_and_install "Visual Studio Code" "https://update.code.visualstudio.com/1.46.1/darwin/stable" "/tmp/vsc-1.46.1.zip" "5b2a72fb5301fbb60ac8777177540aee35e87138"
 }
 
-configure_xcode() {
-    write_to_defaults_if_needed com.apple.dt.Xcode XCFontAndColorCurrentTheme -string "Dra cula.xccolortheme"
+configure_defaults() {
+    # The following has been largely inspired by: https://github.com/mathiasbynens/dotfiles/blob/main/.macos
+
+    # Close any open System Preferences panes, to prevent them from overriding settings being changed
+    osascript -e 'tell application "System Preferences" to quit'
+
+    # Enable dark mode, the following is set during Mac Buddy, we need to overwrite the value instead
+    defaults write NSGlobalDomain AppleInterfaceStyle Dark
+
+    # Expand save panel by default
+    write_to_defaults_if_needed NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+    write_to_defaults_if_needed NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
+
+    # Save to disk (not to iCloud) by default
+    write_to_defaults_if_needed NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+
+    # Expand print panel by default
+    write_to_defaults_if_needed NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
+    write_to_defaults_if_needed NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
+
+    # Automatically quit printer app once the print jobs complete
+    write_to_defaults_if_needed com.apple.print.PrintingPrefs "Quit When Finished" -bool true
+
+    # Disable the “Are you sure you want to open this application?” dialog
+    write_to_defaults_if_needed com.apple.LaunchServices LSQuarantine -bool false
+
+    # Trackpad, mouse, keyboard, Bluetooth accessories, and input
+    # The following settings are seeded by the operating system, so we need to overwrite the values instead
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 0
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad DragLock 0
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Dragging 0
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick 0
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFiveFingerPinchGesture 2
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerHorizSwipeGesture 2
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerPinchGesture 2
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerVertSwipeGesture 2
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadHandResting 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadHorizScroll 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadMomentumScroll 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadPinch 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRotate 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadScroll 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag 0
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerHorizSwipeGesture 2
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerTapGesture 2
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerVertSwipeGesture 2
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadTwoFingerDoubleTapGesture 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadTwoFingerFromRightEdgeSwipeGesture 3
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad USBMouseStopsTrackpad 0
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad UserPreferences 1
+
+    # Use list view in all Finder windows by default
+    write_to_defaults_if_needed com.apple.finder FXPreferredViewStyle -string "Nlsv"
+
+    # Enable AirDrop over Ethernet and on unsupported Macs running Lion
+    write_to_defaults_if_needed com.apple.NetworkBrowser BrowseAllInterfaces -bool true
+
+    # Show the ~/Library folder
+    chflags nohidden ~/Library && xattr -d com.apple.FinderInfo ~/Library
+
+    # Show the /Volumes folder
+    sudo chflags nohidden /Volumes
+
+    # Update Xcode to use custom theme
+    if [[ -f "$HOME/Library/Developer/Xcode/UserData/FontAndColorThemes/Dracula.xccolortheme" ]]; then
+        write_to_defaults_if_needed com.apple.dt.Xcode XCFontAndColorCurrentTheme -string "Dracula.xccolortheme"
+    fi
 }
 
 ask_for_sudo_while_script_runs
@@ -173,4 +239,4 @@ install_fish
 install_jq
 install_iterm
 install_visual_studio_code
-configure_xcode
+configure_defaults
