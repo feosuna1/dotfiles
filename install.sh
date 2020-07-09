@@ -2,7 +2,7 @@
 #==================
 set -ex
 
-kill_sudo() {
+kill_sudo_on_exit() {
     trap - EXIT
 
     # Invalidate cached credentials if we're the ones that cached it
@@ -14,7 +14,7 @@ kill_sudo() {
     kill -9 $(jobs -rp) 2> /dev/null
     wait $(jobs -rp) 2>/dev/null
 }
-trap kill_sudo EXIT
+trap kill_sudo_on_exit EXIT
 
 ask_for_sudo_while_script_runs() {
     sudo -nv 2> /dev/null || rv=$?
