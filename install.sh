@@ -34,6 +34,16 @@ ask_for_sudo_while_script_runs() {
     SUDO_PID="$!"
 }
 
+write_to_defaults_if_needed() {
+    local domain=$1
+    local key=$2
+    local current_value=$(defaults read "$domain" "$key" 2> /dev/null || echo "")
+    if [[ -z "$current_value" ]]; then
+        shift 2
+        defaults write "$domain" "$key" "$@"
+    fi
+}
+
 make_and_install_roots() {
     TARGET_ROOT_DIR=`mktemp -d`
     SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/roots"
@@ -153,13 +163,7 @@ install_visual_studio_code() {
 }
 
 configure_xcode() {
-    current_theme=$(defaults read com.apple.dt.Xcode XCFontAndColorCurrentTheme 2> /dev/null || echo "")
-    if [[ -f "$HOME/Library/Developer/Xcode/UserData/FontAndColorThemes/Dracula.xccolortheme" && -z "$current_theme" ]]; then
-        echo "Configuring Xcode Theme..."
-        defaults write com.apple.dt.Xcode XCFontAndColorCurrentTheme -string "Dracula.xccolortheme"
-    else
-        echo "Skipping Xcode configuration, already configured."
-    fi
+    write_to_defaults_if_needed com.apple.dt.Xcode XCFontAndColorCurrentTheme -string "Dra cula.xccolortheme"
 }
 
 ask_for_sudo_while_script_runs
