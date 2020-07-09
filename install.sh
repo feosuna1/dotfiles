@@ -124,23 +124,23 @@ install_jq() {
 }
 
 download_and_install() {
-    local APP="$1"
-    if [[ ! -d "/Applications/$APP.app/" ]]; then
-        local URL="$2"
-        local FILENAME="$3"
-        local SHA="$4"
+    local app="$1"
+    if [[ ! -d "/Applications/$app.app/" ]]; then
+        local url="$2"
+        local filename="$3"
+        local sha="$4"
 
-        echo "Download $APP..."
-        curl -L "$URL" > "$FILENAME"
-        echo "$SHA *$FILENAME" | shasum -c
+        echo "Download $app..."
+        curl -L "$url" > "$filename"
+        echo "$sha *$filename" | shasum -c
         if [ $? == 0 ]; then
-            unzip $FILENAME -d /Applications
+            unzip $filename -d /Applications
         else
-            echo "Downloaded $APP doesn't match the expected SHA"
+            echo "Downloaded $app doesn't match the expected sha"
         fi
-        rm $FILENAME
+        rm $filename
     else
-        echo "Skipping $APP, already installed."
+        echo "Skipping $app, already installed."
     fi
 }
 
