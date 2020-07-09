@@ -1,0 +1,29 @@
+[alias]
+	st = status
+	ci = commit
+	co = checkout
+	amend = commit --amend --no-edit
+	fetch-all = fetch --all --prune
+[apply]
+	whitespace = fix
+[core]
+	excludesfile = ~/.dotfiles/files/config/git/ignore
+[diff]
+	renames = copy
+	renameLimit = 0
+	tool = Kaleidoscope
+	guitool = Kaleidoscope
+[difftool "Kaleidoscope"]
+	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
+[init]
+	templatedir = ~/.dotfiles/files/config/git/template
+[merge]
+	conflictstyle = diff3
+	tool = "Sublime Merge"
+[mergetool "Kaleidoscope"]
+	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
+	trustExitCode = true
+[mergetool "Sublime Merge"]
+	cmd = smerge mergetool \"$BASE\" \"$REMOTE\" \"$LOCAL\" -o \"$MERGED\"
+[pager]
+	branch = cat

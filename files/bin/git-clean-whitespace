@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+# If a whitespace error is found, it notifies the user that whitespace error was found and fixes the errors
+# This script will only run if the git config variable `apply.whitespace` is set to fix. This can be done
+# globally:
+#    $ git config --global apply.whitespace fix
+#
+# Or done on a by repository basis:
+#    $ git config apply.whitespace fix
+#
+# You can configure this script to be a part of your pre-commit hooks. You can create an executable pre-commit
+# file that references 'git-clean-whitespace':
+#    #!/usr/bin
+#    git-clean-whitespace
+#
+# Or you can create a symbolic link:
+#    ln -s ~/bin/git-clean-whitespace .git/hooks/pre-commit
+#
+# Additionally, you can establish this in your git template directory so that the script is automagically included
+# with each instantiation of git.
+
+begin
+  # Search for the git binary
+  git = `which git`.chomp
+  raise "Unable to find the '#{git}' binary." if git.nil? || git.length == 0
+
+  # Exit quietly if we're in the middle of a merge
+  merge_head = `'#{git}' rev-parse -q --verify MERGE_HEAD`.chomp
+  exit unless merge_head.empty?
+
+  # Exit quietly if we are not configured to fix whitespaces
+  whitespace_style = `'#{git}' config apply.whitespace`.chomp
+  exit 0 if whitespace_style.nil? || whitespace_style == 'nowarn'
+
+  # Check to see if we are working within a git repository -- it's kind of hard to fix a whitespace in git if we are not in a git repo.
+  raise 'You must operate inside of a working git repository.' unless `'#{git}' rev-parse --is-inside-work-tree 2> /dev/null`.chomp == 'true'
+
+  exec("'#{git}' diff --cached --check") if whitespace_style != 'fix'
+
+  # Figure out the root of the git repository and the SHA of the HEAD that we are going to commit against
+  root_dir = File.dirname(`'#{git}' rev-parse --git-dir`.chomp)
+
+  # Figure out which files have whitespace errors and strip them
+  `'#{git}' diff --cached --check | sed '/^\+/d ; s/:.*//' | uniq`.split("\n").each do |file|
+    file = File.join(root_dir, file.chomp)
+    puts "WARNING: Trailing whitespaces are being removed for #{file}."
+
+    # Get the diff of what is currently staged
+    diff = `'#{git}' diff --cached -- \"#{file}\"`
+
+    # Unstage the diff so when we reapply it will fix the whitespaces for us
+    IO.popen 'git apply --cached -R', 'w' do |io|
+      io.write diff
+    end
+
+    # Add the diff back on, this time using the 'apply' command and it will fix the whitespace errors
+    IO.popen 'git apply --whitespace=fix --cached', 'w' do |io|
+      io.write diff
+    end
+  end
+
+  # Exit without errors
+  exit 0
+rescue
+  puts "ERROR: #{$!}"
+  exit 1
+end

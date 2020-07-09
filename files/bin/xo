@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+XCODE_APP=$(xcode-select -p)
+XCODE_APP="${XCODE_APP%%.app*}.app"
+
+if [[ -z "${XCODE_APP// }" ]]; then
+    echo "Unable to find path for Xcode installation. Install Xcode."
+    exit 1
+fi
+
+echo "Opening Xcode..."
+open -a "${XCODE_APP}" "${@:-.}"

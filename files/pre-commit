@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+~/.dotfiles/files/bin/git-clean-whitespace
