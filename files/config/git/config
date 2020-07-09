@@ -1,29 +1,61 @@
 [alias]
+	# My hold overs from svn days
 	st = status
 	ci = commit
 	co = checkout
-	amend = commit --amend --no-edit
+
+	# Retrieve everything from all remotes, pruning local branches
 	fetch-all = fetch --all --prune
+
+	# List aliases.
+	aliases = !git config --get-regexp alias | sort
+
+	# Amend the currently staged files to the latest commit.
+	amend = commit --amend --no-edit
+
+	# Show the user email for the current repository.
+	whoami = config user.email
+
 [apply]
+	# Detect whitespace errors when applying a patch.
 	whitespace = fix
+
 [core]
+	# Use custom `.gitignore`
 	excludesfile = ~/.dotfiles/files/config/git/ignore
+
+	# Treat spaces before tabs and all kinds of trailing whitespace as an error.
+	# [default] trailing-space: looks for spaces at the end of a line
+	# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
+	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+
+	# Make `git rebase` safer on macOS.
+	# More info: http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/
+	trustctime = false
+
+	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
+	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+	precomposeunicode = false
+
 [diff]
+	# Detect copies as well as renames.
 	renames = copy
-	renameLimit = 0
-	tool = Kaleidoscope
-	guitool = Kaleidoscope
-[difftool "Kaleidoscope"]
-	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
+
+[diff "bin"]
+	# Use `hexdump` to diff binary files.
+	textconv = hexdump -v -C
+
 [init]
 	templatedir = ~/.dotfiles/files/config/git/template
+
 [merge]
+	# Shows old, new, and ancestor when highlighting a conflict
 	conflictstyle = diff3
 	tool = "Sublime Merge"
-[mergetool "Kaleidoscope"]
-	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
-	trustExitCode = true
+
 [mergetool "Sublime Merge"]
 	cmd = smerge mergetool \"$BASE\" \"$REMOTE\" \"$LOCAL\" -o \"$MERGED\"
-[pager]
-	branch = cat
+
+[user]
+	name = Enrique Osuna
+	email = enrique.osuna@gmail.com
