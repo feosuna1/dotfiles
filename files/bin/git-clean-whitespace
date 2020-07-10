@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bash
 # If a whitespace error is found, it notifies the user that whitespace error was found and fixes the errors
 # This script will only run if the git config variable `apply.whitespace` is set to fix. This can be done
 # globally:
@@ -16,51 +16,92 @@
 #    ln -s ~/bin/git-clean-whitespace .git/hooks/pre-commit
 #
 # Additionally, you can establish this in your git template directory so that the script is automagically included
-# with each instantiation of git.
+# with each git repo instance.
+set -e
 
-begin
-  # Search for the git binary
-  git = `which git`.chomp
-  raise "Unable to find the '#{git}' binary." if git.nil? || git.length == 0
+function _error() {
+  >&2 echo "_error: $@"
+}
 
-  # Exit quietly if we're in the middle of a merge
-  merge_head = `'#{git}' rev-parse -q --verify MERGE_HEAD`.chomp
-  exit unless merge_head.empty?
+function assert_git() {
+  local git=`which git`
+  if [[ -z "$git" ]]; then
+    _error 'unable to find the `git`'
+    exit 1
+  fi
+}
 
-  # Exit quietly if we are not configured to fix whitespaces
-  whitespace_style = `'#{git}' config apply.whitespace`.chomp
-  exit 0 if whitespace_style.nil? || whitespace_style == 'nowarn'
+function assert_in_git_repository() {
+  # Check to see if we are working within a git repository -- it's kind of hard to fix a whitespace in git if we are not
+  # in a git repo.
+  if [[ $? -ne 0 ]]; then
+    _error 'you must invoke from a working git repository.'
+    exit 2
+  fi
+}
 
-  # Check to see if we are working within a git repository -- it's kind of hard to fix a whitespace in git if we are not in a git repo.
-  raise 'You must operate inside of a working git repository.' unless `'#{git}' rev-parse --is-inside-work-tree 2> /dev/null`.chomp == 'true'
+function exit_quietly_if_in_middle_of_merge() {
+  local merge_head=`git rev-parse -q --verify MERGE_HEAD`
+  if [[ -n "$merge_head" ]]; then
+    exit 0
+  fi
+}
 
-  exec("'#{git}' diff --cached --check") if whitespace_style != 'fix'
+function exit_quietly_if_whitespace_not_configured_to_fix() {
+  local apply_whitespace="$@"
+  if [[ -z "$apply_whitespace" || "$apply_whitespace" == 'nowarn' ]]; then
+    exit 0
+  fi
+}
 
-  # Figure out the root of the git repository and the SHA of the HEAD that we are going to commit against
-  root_dir = File.dirname(`'#{git}' rev-parse --git-dir`.chomp)
+function check_for_whitespace() {
+  git diff --cached --check "$@" | sed '/^\+/d ; s/:.*//' | uniq
+}
 
-  # Figure out which files have whitespace errors and strip them
-  `'#{git}' diff --cached --check | sed '/^\+/d ; s/:.*//' | uniq`.split("\n").each do |file|
-    file = File.join(root_dir, file.chomp)
-    puts "WARNING: Trailing whitespaces are being removed for #{file}."
-
+function _fix_whitespace_for_file() {
     # Get the diff of what is currently staged
-    diff = `'#{git}' diff --cached -- \"#{file}\"`
+  local file="$@"
+  local diff=`git diff --cached -- "$file"`
 
-    # Unstage the diff so when we reapply it will fix the whitespaces for us
-    IO.popen 'git apply --cached -R', 'w' do |io|
-      io.write diff
-    end
+  # Unstage the diff so when we reapply it will fix the whitespaces for us
+  echo "$diff" | git apply --cached -R - > /dev/null 2>&1
 
-    # Add the diff back on, this time using the 'apply' command and it will fix the whitespace errors
-    IO.popen 'git apply --whitespace=fix --cached', 'w' do |io|
-      io.write diff
-    end
-  end
+  # Add the diff back on, this time using the 'apply' command and it will fix the whitespace errors
+  echo "$diff" | git apply --cached --whitespace=fix - > /dev/null 2>&1
+}
 
-  # Exit without errors
-  exit 0
-rescue
-  puts "ERROR: #{$!}"
-  exit 1
-end
+function fix_whitespaces() {
+  # Figure out which files have whitespace errors and strip them
+  local files_with_errors=`check_for_whitespace`
+  if [[ -z "$files_with_errors" ]]; then
+    return
+  fi
+
+  local SAVEIFS=$IFS
+  IFS=$'\n'
+  files_with_errors=($files_with_errors)
+  IFS=$SAVEIFS
+
+  local git_toplevel_dir=`git rev-parse --show-toplevel`
+  for file in ${files_with_errors[@]}; do
+    local file="$git_toplevel_dir/$file"
+    echo "warning: removing whitespaces for $file"
+
+    _fix_whitespace_for_file "$file"
+    if [[ -n `check_for_whitespace -- $file` ]]; then
+      _fix_whitespace_for_file "$file"
+    fi
+  done
+}
+
+assert_git
+assert_in_git_repository
+exit_quietly_if_in_middle_of_merge
+
+apply_whitespace=`git config apply.whitespace`
+exit_quietly_if_whitespace_not_configured_to_fix $apply_whitespace
+if [[ "$apply_whitespace" != 'fix' ]]; then
+  exec check_for_whitespace
+else
+  fix_whitespaces
+fi
