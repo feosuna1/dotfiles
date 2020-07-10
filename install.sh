@@ -105,61 +105,48 @@ install_homebrew() {
     fi
 }
 
-install_fish() {
-    fish=$(which fish) || true
-    if [[ -z "$fish" ]]; then
-        echo "Installing fish..."
-        brew install fish
-        fish=$(which fish)
+_install_brew_if_needed() {
+    # if the package is installed, skip it
+    if brew list "$@" &>/dev/null; then
+        echo "Skipping $@"
     else
-        echo "Skipping fish, already installed."
+        echo "Installing $@"
+        brew install "$@"
     fi
+}
 
+_install_cask_if_needed() {
+    # if the package is installed, skip it
+    if brew cask list "$@" &>/dev/null; then
+        echo "Skipping $@"
+    else
+        echo "Installing $@"
+        brew cask install --appdir="/Applications" "$@"
+    fi
+}
+
+install_homebrew_packages() {
+    local brews=(fish jq wget)
+    local casks=(iterm2 visual-studio-code)
+    for brew in ${brews[@]}; do
+        _install_brew_if_needed "$brew"
+    done
+
+    for cask in ${casks[@]}; do
+        _install_cask_if_needed "$cask"
+    done
+
+    brew upgrade
+}
+
+configure_fish() {
+    local fish=$(which fish)
     if [[ "$SHELL" != "$fish" ]]; then
         echo "Configuring Fish Shell..."
         sudo chsh -s "$fish" "$USER"
     else
         echo "Shell already set to fish."
     fi
-}
-
-install_jq() {
-    jq=$(which jq) || true
-    if [[ -z "$fish" ]]; then
-        echo "Installing jq..."
-        brew install jq
-    else
-        echo "Skipping jq, already installed."
-    fi
-}
-
-download_and_install() {
-    local app="$1"
-    if [[ ! -d "/Applications/$app.app/" ]]; then
-        local url="$2"
-        local filename="$3"
-        local sha="$4"
-
-        echo "Download $app..."
-        curl -L "$url" > "$filename"
-        echo "$sha *$filename" | shasum -c
-        if [ $? == 0 ]; then
-            unzip $filename -d /Applications
-        else
-            echo "Downloaded $app doesn't match the expected sha"
-        fi
-        rm $filename
-    else
-        echo "Skipping $app, already installed."
-    fi
-}
-
-install_iterm() {
-    download_and_install "iTerm" "https://iterm2.com/downloads/stable/iTerm2-3_3_12.zip" "/tmp/iTerm2-3_3_12.zip" "7280aa13a8f08c2c9809f8e973064988e559dd3b"
-}
-
-install_visual_studio_code() {
-    download_and_install "Visual Studio Code" "https://update.code.visualstudio.com/1.46.1/darwin/stable" "/tmp/vsc-1.46.1.zip" "5b2a72fb5301fbb60ac8777177540aee35e87138"
 }
 
 configure_defaults() {
@@ -216,6 +203,7 @@ configure_defaults() {
 
     # Use list view in all Finder windows by default
     write_to_defaults_if_needed com.apple.finder FXPreferredViewStyle -string "Nlsv"
+    write_to_defaults_if_needed com.apple.finder FXDefaultSearchScope -string "SCcf"
 
     # Enable AirDrop over Ethernet and on unsupported Macs running Lion
     write_to_defaults_if_needed com.apple.NetworkBrowser BrowseAllInterfaces -bool true
@@ -235,8 +223,6 @@ configure_defaults() {
 ask_for_sudo_while_script_runs
 make_and_install_roots
 install_homebrew
-install_fish
-install_jq
-install_iterm
-install_visual_studio_code
+install_homebrew_packages
+configure_fish
 configure_defaults
