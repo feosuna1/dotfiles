@@ -16,6 +16,10 @@
 	# Show the user email for the current repository.
 	whoami = config user.email
 
+	# Constant rebasing causes a bunch of unreachable commit. This removes
+	# those commits: <https://stackoverflow.com/questions/3765234/listing-and-deleting-git-commits-that-are-under-no-branch-dangling/37335660#37335660>
+	remove-unreachable-commits = !git reflog expire --expire-unreachable=now --all --updateref --rewrite --stale-fix && git gc --aggressive --prune=now
+
 [apply]
 	# Detect whitespace errors when applying a patch.
 	whitespace = fix
