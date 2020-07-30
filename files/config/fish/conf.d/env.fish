@@ -7,8 +7,7 @@ set -x GREP_COLOR '1;32'
 set -x LS_COLORS 'di=36:ln=01;31:ex=35'
 set -x HOMEBREW_NO_ANALYTICS '1'
 
-set -l is_ssh (who am i | grep -E '\([0-9.]+\)$')
-if [ $is_ssh ]
+if [ (who am i | grep -E '\([0-9.]+\)$') ]
     set -x EDITOR 'vi'
 else
     set -x EDITOR 'code -w'
@@ -23,8 +22,7 @@ end
 # Setup ruby gems
 set -x GEM_HOME $HOME/.gem/
 if type -q gem
-    set -l gempaths (string split : (gem environment gempath))
-    for path in $gempaths
+    for path in (string split : (gem environment gempath))
         set path "$path/bin"
         test -d $path; and set -x PATH $PATH $path
     end
