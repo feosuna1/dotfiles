@@ -55,7 +55,7 @@ function fish_right_prompt
         set -l error_color (set_color -o $fish_color_error)
         set -l cwd_color (set_color -o $fish_color_cwd)
 
-        if [ "$repo_is_dirty" = '1' ]
+        if [ "$repo_is_dirty" != '0' ]
             echo -n -s $error_color '✗' $normal_color ' '
         end
 
@@ -96,12 +96,19 @@ function __freak_prompt_git_branch_name
 end
 
 function __freak_prompt_git_is_dirty
-    if not git diff-files --no-ext-diff --quiet
-        echo 1
-    else if not git diff-index --no-ext-diff --quiet --cached HEAD
-        echo 2
-    else if [ (git ls-files --other --exclude-standard 2> /dev/null) ]
-        echo 3
+    set -l hide_is_dirty (git config --type bool --get prompt.hide-is-dirty 2> /dev/null)
+    if [ "$hide_is_dirty" = 'true' ]
+        echo 0
+    else
+        if not git diff-files --no-ext-diff --quiet
+            echo 1
+        else if not git diff-index --no-ext-diff --quiet --cached HEAD
+            echo 2
+        else if [ (git ls-files --other --exclude-standard 2> /dev/null) ]
+            echo 3
+        else
+            echo 0
+        end
     end
 end
 
@@ -110,9 +117,14 @@ function __freak_prompt_hg_branch_name
 end
 
 function __freak_prompt_hg_is_dirty
-    if [ (hg status 2> /dev/null) ]
-        echo 1
-    else
+    set -l hide_is_dirty (hg config prompt.hide-is-dirty)
+    if [ "$hide_is_dirty" = 'true' ]
         echo 0
+    else
+        if [ (hg status 2> /dev/null) ]
+            echo 1
+        else
+            echo 0
+        end
     end
 end
