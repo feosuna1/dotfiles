@@ -16,7 +16,7 @@ end
 # Setup paths only if they exist
 set -l paths $HOME/bin $HOME/.dotfiles/files/bin $HOME/.brew/bin
 for path in $paths
-    test -d $path; and set -x PATH $path $PATH
+    test -d $path; and set --prepend PATH $path
 end
 
 # Setup ruby gems
@@ -24,6 +24,6 @@ set -x GEM_HOME $HOME/.gem/
 if type -q gem
     for path in (string split : (gem environment gempath))
         set path "$path/bin"
-        test -d $path; and set -x PATH $PATH $path
+        test -d $path; and set --append PATH $path
     end
 end
