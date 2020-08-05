@@ -31,3 +31,9 @@ if type -q gem
         end
     end
 end
+
+for path in $HOME/.config/fish/conf.local.d/*
+    if test -f "$path"
+        source "$path"
+    end
+end
