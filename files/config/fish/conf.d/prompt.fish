@@ -121,7 +121,8 @@ function __freak_prompt_hg_is_dirty
     if [ "$hide_is_dirty" = 'true' ]
         echo 0
     else
-        if [ (hg status 2> /dev/null) ]
+        set -l hg_status (hg status 2> /dev/null)
+        if [ $hg_status ]
             echo 1
         else
             echo 0
