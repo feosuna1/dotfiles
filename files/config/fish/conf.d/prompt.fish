@@ -25,6 +25,34 @@ function fish_prompt
     set_color normal
 end
 
+function fish_right_prompt
+    set -l repo_dir (__freak_prompt_find_repo_dir)
+    if [ $repo_dir ]
+        set -l scm_info (__freak_prompt_scm_info "$repo_dir")
+        set -l repo_type $scm_info[1]
+        set -l repo_is_dirty $scm_info[2]
+        set -l repo_branch $scm_info[3]
+
+        if [ "$repo_type" != "none" ]
+            set -l normal_color (set_color -o normal)
+            set -l error_color (set_color -o $fish_color_error)
+            set -l cwd_color (set_color -o $fish_color_cwd)
+
+            if [ "$repo_is_dirty" != '0' ]
+                echo -n -s $error_color '✗' $normal_color ' '
+            end
+
+            echo -n -s $normal_color '[' $cwd_color $repo_type ': '
+            if [ $repo_branch ]
+                echo -n -s $repo_branch
+            else
+                echo -n -s $error_color 'none'
+            end
+            echo -n -s $normal_color ']'
+        end
+    end
+end
+
 function __freak_prompt_find_repo_dir
     set -l dir $PWD
     while [ "$dir" != '/' ]; and [ "$dir" != '' ]
@@ -39,46 +67,31 @@ function __freak_prompt_find_repo_dir
             end
         end
 
-        set dir (realpath (string join -- / (string split -- / "$dir")[1..-2]) 2> /dev/null)
+        set dir (string split -r --max 1 -- / "$dir")[1]
     end
 end
 
-function fish_right_prompt
-    set -l repo_dir (__freak_prompt_find_repo_dir)
-    if [ $repo_dir ]
-        set -l scm_info (__freak_prompt_scm_info "$repo_dir")
-        set -l repo_type $scm_info[1]
-        set -l repo_is_dirty $scm_info[2]
-        set -l repo_branch $scm_info[3]
-
-        set -l normal_color (set_color -o normal)
-        set -l error_color (set_color -o $fish_color_error)
-        set -l cwd_color (set_color -o $fish_color_cwd)
-
-        if [ "$repo_is_dirty" != '0' ]
-            echo -n -s $error_color '✗' $normal_color ' '
-        end
-
-        echo -n -s $normal_color '[' $cwd_color $repo_type ': '
-        if [ $repo_branch ]
-            echo -n -s $repo_branch
-        else
-            echo -n -s $error_color 'none'
-        end
-        echo -n -s $normal_color ']'
+function __freak_prompt_repo_type
+    switch (string split --max 1 --right -- / $argv)[2]
+    case .git
+        echo 'git'
+    case .hg
+        echo 'hg'
+    case '*'
+        echo 'none'
     end
 end
 
 function __freak_prompt_scm_info
-    switch (string split -- / "$argv[1]")[-1]
+    switch (string split --max 1 --right -- / "$argv")[2]
         case .git
             echo 'git'
             __freak_prompt_git_is_dirty $argv
             __freak_prompt_git_branch_name $argv
-        case .hg
-            echo 'hg'
-            __freak_prompt_hg_is_dirty $argv
-            __freak_prompt_hg_branch_name $argv
+        # case .hg
+        #     echo 'hg'
+        #     __freak_prompt_hg_is_dirty $argv
+        #     __freak_prompt_hg_branch_name $argv
         case '*'
             echo 'none'
             echo 'unknown'
@@ -122,7 +135,7 @@ function __freak_prompt_hg_is_dirty
         echo 0
     else
         set -l hg_status (hg status 2> /dev/null)
-        if [ $hg_status ]
+        if [ "$hg_status" ]
             echo 1
         else
             echo 0
