@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #==================
-set -ex
+set -e
 
 kill_sudo_on_exit() {
     trap - EXIT
 
-    # Invalidate cached credentials if we're the ones that cached it
+    # Invalidate the cached credentials, if we're the ones that cached it
     if [[ "$SUDO_CREDENTIALS_CACHED_IN_SCRIPT" -ne "0" ]]; then
         sudo -k
     fi
@@ -17,24 +17,24 @@ kill_sudo_on_exit() {
 trap kill_sudo_on_exit EXIT
 
 ask_for_sudo_while_script_runs() {
+    # Check to see the credentials were already cached before we got here.
+    # When we exit, we want to make sure we only invalidate the credentials
+    # if we were the ones that caused it to be cached.
     sudo -nv 2> /dev/null || rv=$?
     SUDO_CREDENTIALS_CACHED_IN_SCRIPT="$rv"
 
     sudo -v -p "Enter your password to install: "
 
-    # Stash away the current PID so that the sub-shell can exit if it ran
-    # away from it's parent. This can happen when set -e is enabled
-    # and bash decided to exit immeidately by-passing the signal handlers
+    # This will create a background subprocess that will extends
+    # sudo timeout every 5 seconds.
     (
-        set +ex
         while sudo -nv 2> /dev/null; do
             sleep 5
         done
     )&
-    SUDO_PID="$!"
 }
 
-write_to_defaults_if_needed() {
+set_defaults_if_missing() {
     local domain=$1
     local key=$2
     local current_value=$(defaults read "$domain" "$key" 2> /dev/null || echo "")
@@ -45,48 +45,36 @@ write_to_defaults_if_needed() {
 }
 
 make_and_install_roots() {
-    TARGET_ROOT_DIR=`mktemp -d`
+    TARGET_ROOT_DIR="$HOME"
     SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/roots"
     COPY_DIR="$SOURCE_DIR/copy/User"
     SYMLINK_DIR="$SOURCE_DIR/symlinks/User"
 
-    echo "Assembling the root..."
-    mkdir -p "$TARGET_ROOT_DIR"
-    cp -R "$COPY_DIR/" "$TARGET_ROOT_DIR/User/"
-
     find "$SYMLINK_DIR/" -type f \( ! -name ".DS_Store" \) | while read -d $'\n' symlink; do
         symlink=${symlink#*//}
         if [[ "$symlink" == *".symlink" ]]; then
+            # A symlink file contains a single line representing the target to symlink to
             src=$(cat "$SYMLINK_DIR/$symlink")
-            src="${src/#\~/$HOME}"
-            dest="$TARGET_ROOT_DIR/User/${symlink%.symlink}"
+            src="${src/#\~\/.dotfiles/$SOURCE_DIR}"
+            dest="$TARGET_ROOT_DIR/${symlink%.symlink}"
         else
             src="$SYMLINK_DIR/$symlink"
-            dest="$TARGET_ROOT_DIR/User/$symlink"
+            dest="$TARGET_ROOT_DIR/$symlink"
         fi
 
-        mkdir -p "$(dirname "$dest")"
-        ln -s "$src" "$dest"
+        # Only create the symlink if the source file or directory exists
+        if [[ -f "$src" || -d "$src" ]] && [[ ! -f "$dest" ]]; then
+            mkdir -p "$(dirname "$dest")"
+            ln -s "$src" "$dest"
+        fi
     done
 
-    echo "Archiving the root..."
-    ARCHIVE="$TARGET_ROOT_DIR/user-dotfiles.tar.gz"
-    tar -czvf "$ARCHIVE" -C "$TARGET_ROOT_DIR/User/" . 2> /dev/null
-
-    echo "Attempting to upgrade existing root..."
-    rv=0
-    sudo darwinup -df -p "$HOME" upgrade "$ARCHIVE" > /dev/null || rv=$?
-    if [ $rv -eq 5 ]; then
-        echo "Upgrade failed. Installing root instead..."
-        sudo darwinup -df -p "$HOME" install "$ARCHIVE"
-    fi
-
-    rm -fr "$TARGET_ROOT_DIR"
+    rsync -razI --ignore-existing --progress "$COPY_DIR/" "$HOME"
 }
 
 install_homebrew() {
     if [[ ! $(cat ~/.profile | grep .brew/bin) ]]; then
-        # So we use all of the packages we are about to install
+        # Make sure we use all of the packages we are about to install
         echo "export PATH=\"\$HOME/.brew/bin:\$PATH\"" >> ~/.profile
     fi
 
@@ -127,7 +115,7 @@ _install_cask_if_needed() {
 
 install_homebrew_packages() {
     local brews=(fish jq wget)
-    local casks=(iterm2 visual-studio-code)
+    # local casks=(iterm2 visual-studio-code)
     for brew in ${brews[@]}; do
         _install_brew_if_needed "$brew"
     done
@@ -159,21 +147,21 @@ configure_defaults() {
     defaults write NSGlobalDomain AppleInterfaceStyle Dark
 
     # Expand save panel by default
-    write_to_defaults_if_needed NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
-    write_to_defaults_if_needed NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
+    set_defaults_if_missing NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+    set_defaults_if_missing NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
 
     # Save to disk (not to iCloud) by default
-    write_to_defaults_if_needed NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+    set_defaults_if_missing NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 
     # Expand print panel by default
-    write_to_defaults_if_needed NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
-    write_to_defaults_if_needed NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
+    set_defaults_if_missing NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
+    set_defaults_if_missing NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
 
     # Automatically quit printer app once the print jobs complete
-    write_to_defaults_if_needed com.apple.print.PrintingPrefs "Quit When Finished" -bool true
+    set_defaults_if_missing com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 
     # Disable the “Are you sure you want to open this application?” dialog
-    write_to_defaults_if_needed com.apple.LaunchServices LSQuarantine -bool false
+    set_defaults_if_missing com.apple.LaunchServices LSQuarantine -bool false
 
     # Trackpad, mouse, keyboard, Bluetooth accessories, and input
     # The following settings are seeded by the operating system, so we need to overwrite the values instead
@@ -202,11 +190,11 @@ configure_defaults() {
     defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad UserPreferences 1
 
     # Use list view in all Finder windows by default
-    write_to_defaults_if_needed com.apple.finder FXPreferredViewStyle -string "Nlsv"
-    write_to_defaults_if_needed com.apple.finder FXDefaultSearchScope -string "SCcf"
+    set_defaults_if_missing com.apple.finder FXPreferredViewStyle -string "Nlsv"
+    set_defaults_if_missing com.apple.finder FXDefaultSearchScope -string "SCcf"
 
     # Enable AirDrop over Ethernet and on unsupported Macs running Lion
-    write_to_defaults_if_needed com.apple.NetworkBrowser BrowseAllInterfaces -bool true
+    set_defaults_if_missing com.apple.NetworkBrowser BrowseAllInterfaces -bool true
 
     # Show the ~/Library folder
     chflags nohidden ~/Library && xattr -d com.apple.FinderInfo ~/Library
@@ -216,7 +204,7 @@ configure_defaults() {
 
     # Update Xcode to use custom theme
     if [[ -f "$HOME/Library/Developer/Xcode/UserData/FontAndColorThemes/Dracula.xccolortheme" ]]; then
-        write_to_defaults_if_needed com.apple.dt.Xcode XCFontAndColorCurrentTheme -string "Dracula.xccolortheme"
+        set_defaults_if_missing com.apple.dt.Xcode XCFontAndColorCurrentTheme -string "Dracula.xccolortheme"
     fi
 }
 
