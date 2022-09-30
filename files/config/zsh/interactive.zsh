@@ -21,3 +21,7 @@ if ! which code || [[ -n $(who am i | grep -E '\([0-9.]+\)$') ]]; then
 else
     export EDITOR='code -w'
 fi
+
+zstyle ':completion:*:*:git:*' script ~/.dotfiles/files/config/zsh/
+fpath=(~/.dotfiles/files/config/zsh $fpath)
+autoload -Uz compinit && compinit
