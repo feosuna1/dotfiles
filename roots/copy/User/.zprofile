@@ -1,0 +1,1 @@
+source ~/.dotfiles/files/config/zsh/login.zsh

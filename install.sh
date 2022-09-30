@@ -70,22 +70,17 @@ make_and_install_roots() {
     done
 
     rsync -razI --ignore-existing --progress "$COPY_DIR/" "$HOME"
+    [[ -f ~/.zshenv ]] && source ~/.zshenv
+    [[ -f ~/.zprofile ]] && source ~/.zprofile
+    [[ -f ~/.zshrc ]] && source ~/.zshrc
 }
 
 install_homebrew() {
-    if [[ ! $(cat ~/.profile | grep .brew/bin) ]]; then
-        # Make sure we use all of the packages we are about to install
-        echo "export PATH=\"\$HOME/.brew/bin:\$PATH\"" >> ~/.profile
-    fi
-
-    if [[ $PATH != *".brew/bin"* ]]; then
-        export PATH=$HOME/.brew/bin:$PATH
-    fi
-
     brew=$(which brew) || true
     if [[ -z "$brew" ]]; then
         echo "Installing homebrew and packages..."
         git clone https://github.com/Homebrew/brew.git "$HOME/.brew/"
+        export PATH=$HOME/.brew/bin:$PATH
         brew analytics off
         brew update
     else
@@ -114,7 +109,7 @@ _install_cask_if_needed() {
 }
 
 install_homebrew_packages() {
-    local brews=(fish jq wget)
+    local brews=(jq wget)
     # local casks=(iterm2 visual-studio-code)
     for brew in ${brews[@]}; do
         _install_brew_if_needed "$brew"
@@ -125,16 +120,6 @@ install_homebrew_packages() {
     done
 
     brew upgrade
-}
-
-configure_fish() {
-    local fish=$(which fish)
-    if [[ "$SHELL" != "$fish" ]]; then
-        echo "Configuring Fish Shell..."
-        sudo chsh -s "$fish" "$USER"
-    else
-        echo "Shell already set to fish."
-    fi
 }
 
 configure_defaults() {
@@ -212,5 +197,4 @@ ask_for_sudo_while_script_runs
 make_and_install_roots
 install_homebrew
 install_homebrew_packages
-configure_fish
 configure_defaults
