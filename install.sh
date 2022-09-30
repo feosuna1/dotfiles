@@ -55,7 +55,7 @@ make_and_install_roots() {
         if [[ "$symlink" == *".symlink" ]]; then
             # A symlink file contains a single line representing the target to symlink to
             src=$(cat "$SYMLINK_DIR/$symlink")
-            src="${src/#\~\/.dotfiles/$SOURCE_DIR}"
+            src="${src/#\~\/.dotfiles/$HOME}"
             dest="$TARGET_ROOT_DIR/${symlink%.symlink}"
         else
             src="$SYMLINK_DIR/$symlink"
@@ -65,7 +65,7 @@ make_and_install_roots() {
         # Only create the symlink if the source file or directory exists
         if [[ -f "$src" || -d "$src" ]] && [[ ! -f "$dest" ]]; then
             mkdir -p "$(dirname "$dest")"
-            ln -s "$src" "$dest"
+            ln -sf "$src" "$dest"
         fi
     done
 
