@@ -1,7 +1,10 @@
 {
     "recommendations": [
-        "bmalehorn.vscode-fish",
-        "dacula-theme.theme-dracula",
+        "alefragnani.Bookmarks",
+        "esbenp.prettier-vscode",
+        "kaleidoscope-app.vscode-ksdiff",
         "stkb.rewrap",
+        "Tyriar.sort-lines",
+        "wmaurer.change-case",
     ]
 }
