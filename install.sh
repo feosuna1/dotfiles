@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 #==================
-set -e
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # If any command in a pipeline fails, the whole pipeline should fail.
+    # This option isn't define by POSIX `sh` but is available if we're running
+    # as `bash`.
+    # Disable warning for using non-portable option (SC2039 for shellcheck <=
+    # 0.7.1, SC3040 for >= 0.7.2).
+    # shellcheck disable=SC2039,SC3040
+    set -o pipefail
+fi
 
 kill_sudo_on_exit() {
     trap - EXIT
@@ -75,51 +86,21 @@ make_and_install_roots() {
     [[ -f ~/.zshrc ]] && source ~/.zshrc
 }
 
+# -- Bootstrapping -------------------------------------------------------------
+
 install_homebrew() {
-    brew=$(which brew) || true
-    if [[ -z "$brew" ]]; then
-        echo "Installing homebrew and packages..."
-        git clone https://github.com/Homebrew/brew.git "$HOME/.brew/"
-        export PATH=$HOME/.brew/bin:$PATH
-        brew analytics off
-        brew update
-    else
+    if command -v brew >/dev/null; then
+        # Homebrew already installed.
         echo "Skipping homebrew, already installed."
+        return
     fi
-}
 
-_install_brew_if_needed() {
-    # if the package is installed, skip it
-    if brew list "$@" &>/dev/null; then
-        echo "Skipping $@"
-    else
-        echo "Installing $@"
-        brew install "$@"
-    fi
-}
-
-_install_cask_if_needed() {
-    # if the package is installed, skip it
-    if brew cask list "$@" &>/dev/null; then
-        echo "Skipping $@"
-    else
-        echo "Installing $@"
-        brew cask install --appdir="/Applications" "$@"
-    fi
-}
-
-install_homebrew_packages() {
-    local brews=(jq wget)
-    # local casks=(iterm2 visual-studio-code)
-    for brew in ${brews[@]}; do
-        _install_brew_if_needed "$brew"
-    done
-
-    for cask in ${casks[@]}; do
-        _install_cask_if_needed "$cask"
-    done
-
-    brew upgrade
+    echo "Installing homebrew and packages..."
+    git clone https://github.com/Homebrew/brew.git "$HOME/.brew/"
+    export PATH=$HOME/.brew/bin:$PATH
+    brew analytics off || true
+    brew update
+    brew bundle install
 }
 
 configure_defaults() {
@@ -130,6 +111,9 @@ configure_defaults() {
 
     # Enable dark mode, the following is set during Mac Buddy, we need to overwrite the value instead
     defaults write NSGlobalDomain AppleInterfaceStyle Dark
+
+    # Show file extensions by default
+    defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
     # Expand save panel by default
     set_defaults_if_missing NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
@@ -186,15 +170,9 @@ configure_defaults() {
 
     # Show the /Volumes folder
     sudo chflags nohidden /Volumes
-
-    # Update Xcode to use custom theme
-    if [[ -f "$HOME/Library/Developer/Xcode/UserData/FontAndColorThemes/Dracula.xccolortheme" ]]; then
-        set_defaults_if_missing com.apple.dt.Xcode XCFontAndColorCurrentTheme -string "Dracula.xccolortheme"
-    fi
 }
 
 ask_for_sudo_while_script_runs
 make_and_install_roots
 install_homebrew
-install_homebrew_packages
 configure_defaults
