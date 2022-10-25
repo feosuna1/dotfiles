@@ -3,7 +3,6 @@
     "editor.find.cursorMoveOnType": false,
     "editor.insertSpaces": true,
     "editor.minimap.enabled": false,
-    "editor.renderIndentGuides": true,
     "editor.renderWhitespace": "boundary",
     "editor.rulers": [
         100,
@@ -43,4 +42,5 @@
     "[sql]": {
         "editor.tabSize": 2
     },
+    "editor.guides.indentation": true,
 }

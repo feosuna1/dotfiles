@@ -30,5 +30,13 @@
     {
         "key": "shift+cmd+x",
         "command": "-workbench.view.extensions"
+    },
+    {
+        "key": "cmd+k",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+          "text": "\u0002\u000B"
+        },
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
     }
 ]
