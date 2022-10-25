@@ -44,10 +44,18 @@
 [diff]
 	# Detect copies as well as renames.
 	renames = copy
+	tool = Kaleidoscope
 
 [diff "bin"]
 	# Use `hexdump` to diff binary files.
 	textconv = hexdump -v -C
+
+[difftool "Kaleidoscope"]
+	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
+
+[difftool]
+	prompt = false
+	trustExitCode = true
 
 [init]
 	templatedir = ~/.dotfiles/files/config/git/template
@@ -55,10 +63,17 @@
 [merge]
 	# Shows old, new, and ancestor when highlighting a conflict
 	conflictstyle = diff3
-	tool = "Sublime Merge"
+	tool = Kaleidoscope
+
+[mergetool]
+	prompt = false
 
 [mergetool "Sublime Merge"]
 	cmd = smerge mergetool \"$BASE\" \"$REMOTE\" \"$LOCAL\" -o \"$MERGED\"
+
+[mergetool "Kaleidoscope"]
+	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
+	trustExitCode = true
 
 [user]
 	name = Enrique Osuna
