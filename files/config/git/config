@@ -41,6 +41,10 @@
 	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
 	precomposeunicode = false
 
+	# `git branch` is difficult to use with less (see https://stackoverflow.com/a/49862151).
+	# This makes interactions that require paging a bit more reasonable.
+	pager = less -FRX
+
 [diff]
 	# Detect copies as well as renames.
 	renames = copy
