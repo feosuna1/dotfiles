@@ -7,33 +7,23 @@ set -x GREP_COLOR '1;32'
 set -x LS_COLORS 'di=36:ln=01;31:ex=35'
 set -x HOMEBREW_NO_ANALYTICS '1'
 
-if [ (who am i | grep -E '\([0-9.]+\)$') ]
-    set -x EDITOR 'vi'
-else
-    set -x EDITOR 'code -w'
-end
-
 # Setup bin paths only if they exist
-set -l paths $HOME/bin $HOME/.dotfiles/files/bin $HOME/.brew/bin
-for path in $paths
-    if test -d $path; and not contains $path $PATH
-        set --prepend PATH $path
-    end
-end
-
-# Setup ruby gems
-set -x GEM_HOME $HOME/.gem/
-if type -q gem
-    for path in (string split : (gem environment gempath))
-        set path "$path/bin"
-        if test -d $path; and not contains $path $PATH
-            test -d $path; and set --append PATH $path
-        end
-    end
-end
+fish_add_path -p "$HOME/bin" "$HOME/.dotfiles/files/bin" "$HOME/.brew/bin"
 
 for path in $HOME/.config/fish/conf.local.d/*
     if test -f "$path"
         source "$path"
+    end
+end
+
+if status --is-interactive
+    if command -v code > /dev/null; and test -z (who am i | grep -E '\([0-9.]+\)$')
+        set -x EDITOR 'code -w'
+    else
+        set -x EDITOR 'vi'
+    end
+
+    if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; and  [ "\$__CFBundleIdentifier" != "com.apple.Terminal" ]; and command -v oh-my-posh > /dev/null
+        oh-my-posh init fish | source
     end
 end
