@@ -1,4 +1,6 @@
 # shellcheck shell=bash
+source ~/.dotfiles/files/config/zsh/login.zsh
+
 export PAGER='less'
 export LESS='-R'
 export LSCOLORS='gxBxhxDxfxhxhxhxhxcxcx'
@@ -7,15 +9,6 @@ export GREP_OPTIONS='--color=auto'
 export GREP_COLOR='1;32'
 export LS_COLORS='di=36:ln=01;31:ex=35'
 export HOMEBREW_NO_ANALYTICS='1'
-
-# Check that the specified directory exists – and is in the PATH.
-# Setup bin paths only if they exist
-paths=("$HOME/bin" "$HOME/.dotfiles/files/bin" "$HOME/.brew/bin")
-for p in "${paths[@]}"; do
-    if [[ -d $p && ":$PATH:" != *:"$p":* ]]; then
-        export PATH="$p:$PATH"
-    fi
-done
 
 if command -v code > /dev/null; then
     export EDITOR='code -w'
@@ -37,3 +30,12 @@ zstyle ':completion:*:*:git:*' script "$HOME/.dotfiles/files/config/zsh/git-comp
 # shellcheck disable=SC2206
 fpath=("$HOME/.dotfiles/files/config/zsh" ${fpath[@]}) 
 autoload -Uz compinit && compinit
+
+# Custom key bindings that match up with tmux.conf
+clear-screen-and-backbuffer(){
+    clear
+    printf "\ec\e[3J"
+    zle reset-prompt
+}
+zle -N clear-screen-and-backbuffer{,}
+bindkey '^L' 'clear-screen-and-backbuffer'
