@@ -24,6 +24,9 @@
 	# Detect whitespace errors when applying a patch.
 	whitespace = fix
 
+[branch]
+	autosetuprebase = always
+
 [core]
 	# Use custom `.gitignore`
 	excludesfile = ~/.dotfiles/files/config/git/ignore
@@ -78,6 +81,12 @@
 [mergetool "Kaleidoscope"]
 	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
 	trustExitCode = true
+
+[rebase]
+	autosquash = true
+
+[rerere]
+	enabled = true
 
 [user]
 	name = Enrique Osuna
