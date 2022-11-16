@@ -96,8 +96,7 @@ install_homebrew() {
     fi
 
     echo "Installing homebrew and packages..."
-    git clone https://github.com/Homebrew/brew.git "$HOME/.brew/"
-    export PATH=$HOME/.brew/bin:$PATH
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     brew analytics off || true
     brew update
     brew bundle install
