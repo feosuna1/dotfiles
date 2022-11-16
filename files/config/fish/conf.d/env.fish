@@ -7,8 +7,15 @@ set -x GREP_COLOR '1;32'
 set -x LS_COLORS 'di=36:ln=01;31:ex=35'
 set -x HOMEBREW_NO_ANALYTICS '1'
 
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 # Setup bin paths only if they exist
-fish_add_path -p "$HOME/bin" "$HOME/.dotfiles/files/bin" "$HOME/.brew/bin"
+set -l paths "$HOME/bin" "$HOME/.dotfiles/files/bin" 
+for path in $paths
+    if test -d $path; and not contains $path $fish_user_paths
+        set --prepend fish_user_paths $path
+    end
+end
 
 for path in $HOME/.config/fish/conf.local.d/*
     if test -f "$path"
@@ -24,6 +31,6 @@ if status --is-interactive
     end
 
     if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; and  [ "\$__CFBundleIdentifier" != "com.apple.Terminal" ]; and command -v oh-my-posh > /dev/null
-        oh-my-posh init fish | source
+        oh-my-posh init fish --config "$HOME/.dotfiles/files/config/oh-my-posh/default-theme.omp.json" | source
     end
 end
