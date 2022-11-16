@@ -35,7 +35,7 @@
         "key": "cmd+k",
         "command": "workbench.action.terminal.sendSequence",
         "args": {
-          "text": "\u0002\u000B"
+          "text": "\u000C"
         },
         "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
     }

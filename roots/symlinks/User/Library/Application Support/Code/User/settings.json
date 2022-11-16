@@ -19,13 +19,17 @@
     },
 
     // Terminals
-    "terminal.integrated.defaultProfile.osx": "tmux",
+    "terminal.integrated.defaultProfile.osx": "fish",
     "terminal.integrated.fontFamily": "MesloLGM Nerd Font, Menlo, Monaco, 'Courier New', monospace",
     "terminal.integrated.profiles.osx": {
         "tmux": {
             "path": "bash",
             "args": ["-c", "tmux new -ADs ${PWD##*/}"],
             "icon": "terminal-tmux",
+        },
+        "fish": {
+            "path": "/opt/homebrew/bin/fish",
+            "icon": "terminal-bash",
         },
     },
 
@@ -43,4 +47,16 @@
         "editor.tabSize": 2
     },
     "editor.guides.indentation": true,
+    "svelte.enable-ts-plugin": true,
+    "svelte.plugin.svelte.note-new-transformation": false,
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "lldb.library": "/Applications/Xcode-14.0.1.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
+    "editor.multiCursorModifier": "ctrlCmd",
+    "terminal.external.osxExec": "iTerm.app",
+    "grammarly.files.include": [
+        "**/readme.md",
+        "**/README.md",
+        "**/*.txt",
+        "**/COMMIT_EDITMSG"
+    ],
 }
