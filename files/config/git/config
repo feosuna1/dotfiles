@@ -91,3 +91,6 @@
 [user]
 	name = Enrique Osuna
 	email = 12620+feosuna1@users.noreply.github.com
+
+[branchless "revsets.alias"]
+	this = stack()
