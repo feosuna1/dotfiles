@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+GIT_DIR=$(git rev-parse --git-dir) || exit 1
+if [ -f "${GIT_DIR}/MERGE_MSG" ]; then
+    exec git -c core.editor=true rebase --continue
+elif [ -f "${GIT_DIR}/CHERRY_PICK_HEAD" ]; then
+    exec git -c core.editor=true cherry-pick --continue
+elif [ -f "${GIT_DIR}/REVERT_HEAD" ]; then
+    exec git -c core.editor=true revert --continue
+fi
+
+echo "Ignoring, nothing to continue."
