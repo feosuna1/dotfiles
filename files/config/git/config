@@ -57,6 +57,11 @@
 	# This makes interactions that require paging a bit more reasonable.
 	pager = less -FRX
 
+	# Improve Git monorepo performance with a file system monitor 
+	# (https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
+	fsmonitor = true
+	untrackedcache = true
+	
 [diff]
 	# Detect copies as well as renames.
 	renames = copy
