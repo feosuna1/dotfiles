@@ -1,6 +1,6 @@
 [alias]
 	# My hold overs from svn days
-	st = status
+	st = status -s
 	ci = commit
 	co = checkout
 
@@ -17,8 +17,17 @@
 	whoami = config user.email
 
 	# Constant rebasing causes a bunch of unreachable commit. This removes
-	# those commits: <https://stackoverflow.com/questions/3765234/listing-and-deleting-git-commits-that-are-under-no-branch-dangling/37335660#37335660>
+	# those commits (https://stackoverflow.com/a/37335660)
 	remove-unreachable-commits = !git reflog expire --expire-unreachable=now --all --updateref --rewrite --stale-fix && git gc --aggressive --prune=now
+
+	# Edit my configs!
+	editconfig = !$EDITOR ~/.dotfiles/files/config/git/config &
+
+	# Pretty print my log
+	lg = log --graph --decorate --all --oneline
+
+	# Push, only if we're not overwriting what's already there.
+	safe-force-push = push --force-with-lease
 
 [apply]
 	# Detect whitespace errors when applying a patch.
