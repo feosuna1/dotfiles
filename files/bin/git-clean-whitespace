@@ -91,7 +91,7 @@ function fix_whitespaces_errors() {
         echo "warning: removing whitespaces for $file"
 
         _fix_whitespace_errors_for_file "$file"
-        if [[ -n `get_files_with_whitespace_errors -- $file` ]]; then
+        if [[ -n `get_files_with_whitespace_errors -- "$file"` ]]; then
             # For some reason, EOF newline errors don't get fixed on the first pass,
             # but they get fixed on the second one.
             _fix_whitespace_errors_for_file "$file"
