@@ -41,6 +41,7 @@ function assert_git() {
 function assert_in_git_repository() {
     # Check to see if we are working within a git repository -- it's kind of hard to fix a whitespace in git if we are not
     # in a git repo.
+    git rev-parse --is-inside-work-tree > /dev/null
     if [[ $? -ne 0 ]]; then
         _error 'you must invoke from a working git repository.'
         exit 2
