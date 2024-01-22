@@ -7,6 +7,25 @@ set -x GREP_COLOR '1;32'
 set -x LS_COLORS 'di=36:ln=01;31:ex=35'
 set -x HOMEBREW_NO_ANALYTICS '1'
 
+# Remove the Homebrew paths from `PATH` because `brew shellenv` will prepend duplicates, this will
+# happen if subshells are created and the homebrew paths are not in the beginning of the search path
+if set -q HOMEBREW_PREFIX
+    set -l homebrew_paths "$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin"
+    set -l paths $PATH
+
+    for homebrew_path in $homebrew_paths
+        set -l index $(contains -i $homebrew_path $paths)
+        if test -n "$index"
+            set -e paths[$index]
+        end
+    end
+
+    set -x PATH $paths
+
+    set -e homebrew_paths
+    set -e paths
+end
+
 # Make sure homebrew environment shell variables are configured correctly.
 eval "$(/opt/homebrew/bin/brew shellenv fish)"
 
