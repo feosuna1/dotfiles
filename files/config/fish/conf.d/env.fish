@@ -7,9 +7,10 @@ set -x GREP_COLOR '1;32'
 set -x LS_COLORS 'di=36:ln=01;31:ex=35'
 set -x HOMEBREW_NO_ANALYTICS '1'
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Make sure homebrew environment shell variables are configured correctly.
+eval "$(/opt/homebrew/bin/brew shellenv fish)"
 
-# Setup bin paths only if they exist
+# Setup our custom bin paths, only if they exist
 set -l paths "$HOME/bin" "$HOME/.dotfiles/files/bin" 
 for path in $paths
     if test -d $path; and not contains $path $fish_user_paths
@@ -18,6 +19,8 @@ for path in $paths
 end
 set -e paths
 
+# Source all of our local configs, these configs are not stored in git repo and are local to
+# the machine. This is a good spot to put secrets.
 for path in $HOME/.config/fish/conf.local.d/*
     if test -f "$path"
         source "$path"
