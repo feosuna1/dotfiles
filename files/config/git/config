@@ -29,11 +29,18 @@
 	# Push, only if we're not overwriting what's already there.
 	safe-force-push = push --force-with-lease
 
+	# Rebase with autosquash, without editing the todo file, ex. autosquash <from-head>
+	autosquash = -c core.editor=true rebase -i --autosquash
+
+	# Clean repo ignoring xcworkspace
+	xcclean = clean -e "*.xcworkspace/"
+
 [apply]
 	# Detect whitespace errors when applying a patch.
 	whitespace = fix
 
 [branch]
+	# controls whether new branches should be set up to be rebased upon git pull
 	autosetuprebase = always
 
 [core]
