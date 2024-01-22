@@ -16,6 +16,7 @@ for path in $paths
         set --prepend fish_user_paths $path
     end
 end
+set -e paths
 
 for path in $HOME/.config/fish/conf.local.d/*
     if test -f "$path"
