@@ -7,27 +7,41 @@ set -x GREP_COLOR '1;32'
 set -x LS_COLORS 'di=36:ln=01;31:ex=35'
 set -x HOMEBREW_NO_ANALYTICS '1'
 
-# Remove the Homebrew paths from `PATH` because `brew shellenv` will prepend duplicates, this will
-# happen if subshells are created and the homebrew paths are not in the beginning of the search path
-if set -q HOMEBREW_PREFIX
-    set -l homebrew_paths "$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin"
-    set -l paths $PATH
+# Remove brew and asdf paths from `PATH` because `brew shellenv` will prepend duplicates and `asdf.fish` will not
+# not guaruntee that the asdf shim paths are prepended. This is most apparent in subshells (e.g., tmux sessions).
+set -l _remove_paths
+if test -n "$HOMEBREW_PREFIX"
+    # Add the brew paths
+    set -a _remove_paths "$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin"
+end
 
-    for homebrew_path in $homebrew_paths
-        set -l index $(contains -i $homebrew_path $paths)
+if test -n "$ASDF_DIR"
+    # Add the asdf paths
+    set -a _remove_paths "$ASDF_DIR/bin"
+    if test -z $ASDF_DATA_DIR
+        set -a _remove_paths "$HOME/.asdf/shims"
+    else
+        set -a _remove_paths "$ASDF_DATA_DIR/shims"
+    end
+end
+
+if test -n "$_remove_paths"
+    set -l paths $PATH
+    for _remove_path in $_remove_paths
+        set -l index $(contains -i $_remove_path $paths)
         if test -n "$index"
             set -e paths[$index]
         end
     end
-
     set -x PATH $paths
-
-    set -e homebrew_paths
     set -e paths
 end
+set -e _remove_paths
 
 # Make sure homebrew environment shell variables are configured correctly.
-eval "$(/opt/homebrew/bin/brew shellenv fish)"
+if test -f "/opt/homebrew/bin/brew"
+    eval "$(/opt/homebrew/bin/brew shellenv fish)"
+end
 
 # Setup our custom bin paths, only if they exist
 set -l paths "$HOME/bin" "$HOME/.dotfiles/files/bin" 
@@ -44,6 +58,10 @@ for path in $HOME/.config/fish/conf.local.d/*
     if test -f "$path"
         source "$path"
     end
+end
+
+if test -f "/opt/homebrew/opt/asdf/libexec/asdf.fish"
+    source /opt/homebrew/opt/asdf/libexec/asdf.fish
 end
 
 if status --is-interactive
