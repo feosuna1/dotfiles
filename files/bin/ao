@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+ANDROID_STUDIO_APP="/Applications/Android Studio.app"
+
+if [[ -z "${ANDROID_STUDIO_APP// }" ]]; then
+    echo "Unable to find path for Android Studio installation. Install Android Studio."
+    exit 1
+fi
+
+echo "Opening Android Studio..."
+open -a "${ANDROID_STUDIO_APP}" "${@:-.}"
