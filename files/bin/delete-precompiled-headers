@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+if ! command -v fd 2>&1 >/dev/null
+then
+    exec find ~/Library/Developer/Xcode/DerivedData -type d -name 'PrecompiledHeaders' -execdir rm -rf {} \;
+else 
+    exec fd -td -F 'PrecompiledHeaders' ~/Library/Developer/Xcode/DerivedData -x rm -fr
+fi

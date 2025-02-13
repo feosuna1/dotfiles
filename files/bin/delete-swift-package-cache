@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+rm -fr ~/Library/Caches/org.swift.swiftpm/ ~/Library/org.swift.swiftpm
