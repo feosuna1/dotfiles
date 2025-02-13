@@ -33,7 +33,22 @@
 	autosquash = -c core.editor=true rebase -i --autosquash
 
 	# Clean repo ignoring xcworkspace
-	xcclean = clean -e "*.xcworkspace/"
+	xcclean = clean -e "*.xcworkspace/" -e "LocalConfig"
+ 
+	# Get current commit sha
+	sha = rev-parse HEAD
+
+	# Mirror to a backup repo
+	bak = "!f(){ \
+		git config remote.bak.url > /dev/null && git push --mirror bak || \
+		echo \"ERROR: 'bak' is missing. Run:\n\n    git config-bak <PATH>\n\"; \
+	};f"
+
+	# Configure a backup repo
+	config-bak = remote add --mirror=push bak
+
+	# Cherry pick for release
+	release-pick = cherry-pick -m1
 
 [apply]
 	# Detect whitespace errors when applying a patch.
