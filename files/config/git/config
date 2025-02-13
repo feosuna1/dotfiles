@@ -60,19 +60,32 @@
 	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
 	precomposeunicode = false
 
-	# `git branch` is difficult to use with less (see https://stackoverflow.com/a/49862151).
-	# This makes interactions that require paging a bit more reasonable.
-	pager = less -FRX
+	## `git branch` is difficult to use with less (see https://stackoverflow.com/a/49862151).
+	## This makes interactions that require paging a bit more reasonable.
+	## pager = less -FRX
+	## pager = "diff-so-fancy | less --tabs=4 -RFX" # nicer diffs
+	pager = delta
 
 	# Improve Git monorepo performance with a file system monitor 
 	# (https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
 	fsmonitor = true
 	untrackedcache = true
 	
+	# Replaces CRLF to LF if they get introduced
+	autocrlf = input 
+
+[delta]
+    navigate = true  # use n and N to move between diff sections
+    dark = true      # or light = true, or omit for auto-detection
+    side-by-side = true
+	line-numbers = true
+
 [diff]
 	# Detect copies as well as renames.
 	renames = copy
-	tool = Kaleidoscope
+
+	# Better diffing algorithm for tracking better / more context.
+	algorithm = histogram
 
 [diff "bin"]
 	# Use `hexdump` to diff binary files.
@@ -87,6 +100,14 @@
 
 [init]
 	templatedir = ~/.dotfiles/files/config/git/template
+	defaultBranch = develop
+
+[interactive]
+	diffFilter = delta --color-only
+
+[log]
+	# Display dates as 2023-05-25 13:54:51 instead of Thu May 25 13:54:51 2023
+	date = iso
 
 [merge]
 	# Shows old, new, and ancestor when highlighting a conflict
