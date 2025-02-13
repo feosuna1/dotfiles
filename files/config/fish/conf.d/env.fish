@@ -1,11 +1,11 @@
-set -x PAGER 'less'
-set -x LESS '-R'
-set -x LSCOLORS 'gxBxhxDxfxhxhxhxhxcxcx'
-set -x CLICOLOR '1'
-set -x GREP_OPTIONS '--color=auto'
-set -x GREP_COLOR '1;32'
-set -x LS_COLORS 'di=36:ln=01;31:ex=35'
-set -x HOMEBREW_NO_ANALYTICS '1'
+set -gx PAGER 'less'
+set -gx LESS '-R'
+set -gx LSCOLORS 'gxBxhxDxfxhxhxhxhxcxcx'
+set -gx CLICOLOR '1'
+set -gx GREP_OPTIONS '--color=auto'
+set -gx GREP_COLOR '1;32'
+set -gx LS_COLORS 'di=36:ln=01;31:ex=35'
+set -gx HOMEBREW_NO_ANALYTICS '1'
 
 # Source all of our local configs, these configs are not stored in git repo and are local to
 # the machine. This is a good spot to put secrets.
@@ -45,9 +45,9 @@ set -e paths
 
 if status --is-interactive
     if command -v code > /dev/null; and test -z (who am i | grep -E '\([0-9.]+\)$')
-        set -x EDITOR 'code -w'
+        set -gx EDITOR 'code -w'
     else
-        set -x EDITOR 'vi'
+        set -gx EDITOR 'vi'
     end
 
     if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; and  [ "\$__CFBundleIdentifier" != "com.apple.Terminal" ]; and command -v oh-my-posh > /dev/null
