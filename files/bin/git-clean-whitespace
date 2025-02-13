@@ -106,7 +106,7 @@ exit_quietly_if_in_middle_of_merge
 apply_whitespace=`git config apply.whitespace`
 exit_quietly_if_whitespace_not_configured_to_fix $apply_whitespace
 if [[ "$apply_whitespace" != 'fix' ]]; then
-    exec get_files_with_whitespace_errors
+    get_files_with_whitespace_errors
 else
     fix_whitespaces_errors
 fi
