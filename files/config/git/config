@@ -58,6 +58,12 @@
 	# controls whether new branches should be set up to be rebased upon git pull
 	autosetuprebase = always
 
+	# Sorts branches by committer date (see https://blog.gitbutler.com/git-tips-2-new-stuff-in-git/)
+	sort = -committerdate
+
+[branchless "revsets.alias"]
+	this = stack()
+
 [core]
 	# Use custom `.gitignore`
 	excludesfile = ~/.dotfiles/files/config/git/ignore
@@ -85,7 +91,7 @@
 	# (https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
 	fsmonitor = true
 	untrackedcache = true
-	
+
 	# Replaces CRLF to LF if they get introduced
 	autocrlf = input 
 
@@ -106,9 +112,6 @@
 	# Use `hexdump` to diff binary files.
 	textconv = hexdump -v -C
 
-[difftool "Kaleidoscope"]
-	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
-
 [difftool]
 	prompt = false
 	trustExitCode = true
@@ -126,28 +129,29 @@
 
 [merge]
 	# Shows old, new, and ancestor when highlighting a conflict
-	conflictstyle = diff3
-	tool = Kaleidoscope
+	conflictstyle = zdiff3
 
 [mergetool]
 	prompt = false
 
-[mergetool "Sublime Merge"]
-	cmd = smerge mergetool \"$BASE\" \"$REMOTE\" \"$LOCAL\" -o \"$MERGED\"
+[push]
+	# Pushes the current branch to the remote, even if it is not tracked.
+	default = current
 
-[mergetool "Kaleidoscope"]
-	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
-	trustExitCode = true
+[pull]
+	# Only allow fastforward merges https://docs.gitlab.com/ee/user/project/merge_requests/methods/#fast-forward-merge
+	ff = only
 
 [rebase]
+	# Squashes `--fixup` when rebasing.
 	autosquash = true
 
-[rerere]
-	enabled = true
+	# Automatically stashes changes before running a rebase.
+	autostash = true
 
 [user]
 	name = Enrique Osuna
 	email = 12620+feosuna1@users.noreply.github.com
 
-[branchless "revsets.alias"]
-	this = stack()
+[url "git@github.com:"]
+	pushInsteadOf = "https://github.com/"
