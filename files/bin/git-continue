@@ -4,12 +4,18 @@ set -o nounset
 set -o pipefail
 
 GIT_DIR=$(git rev-parse --git-dir) || exit 1
-if [ -f "${GIT_DIR}/CHERRY_PICK_HEAD" ]; then
+if git rev-parse -q --verify MERGE_HEAD > /dev/null; then 
+    # Merge in progress
+    exec git -c core.editor=true commit
+elif git rev-parse -q --verify CHERRY_PICK_HEAD > /dev/null; then
+    # Cherry-pick in process
     exec git -c core.editor=true cherry-pick --continue
-elif [ -f "${GIT_DIR}/MERGE_MSG" ]; then
-    exec git -c core.editor=true rebase --continue
-elif [ -f "${GIT_DIR}/REVERT_HEAD" ]; then
+elif git rev-parse -q --verify REVERT_HEAD > /dev/null; then
+    # Revert in progress
     exec git -c core.editor=true revert --continue
+elif [ -d "${GIT_DIR}/rebase-apply" ] || [ -d "${GIT_DIR}/rebase-merge" ] || [ -f "${GIT_DIR}/REBASE_HEAD" ]; then
+    # Rebase in progress
+    exec git -c core.editor=true rebase --continue
 fi
 
 echo "Ignoring, nothing to continue."
