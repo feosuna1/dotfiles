@@ -1,42 +1,42 @@
 [
-    {
-        "key": "ctrl+-",
-        "command": "workbench.action.navigateBack"
+  {
+    "key": "ctrl+-",
+    "command": "workbench.action.navigateBack"
+  },
+  {
+    "key": "ctrl+=",
+    "command": "workbench.action.navigateForward"
+  },
+  {
+    "key": "cmd+l",
+    "command": "workbench.action.gotoLine"
+  },
+  {
+    "key": "shift+cmd+t",
+    "command": "workbench.action.tasks.test"
+  },
+  {
+    "key": "shift+cmd+r",
+    "command": "workbench.action.tasks.runTask"
+  },
+  {
+    "key": "ctrl+cmd+left",
+    "command": "workbench.action.navigateBack"
+  },
+  {
+    "key": "ctrl+cmd+right",
+    "command": "workbench.action.navigateForward"
+  },
+  {
+    "key": "shift+cmd+x",
+    "command": "-workbench.view.extensions"
+  },
+  {
+    "key": "cmd+k",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\u000C"
     },
-    {
-        "key": "ctrl+=",
-        "command": "workbench.action.navigateForward"
-    },
-    {
-        "key": "cmd+l",
-        "command" : "workbench.action.gotoLine"
-    },
-    {
-        "key": "shift+cmd+t",
-        "command": "workbench.action.tasks.test"
-    },
-    {
-        "key": "shift+cmd+r",
-        "command": "workbench.action.tasks.runTask"
-    },
-    {
-        "key": "ctrl+cmd+left",
-        "command": "workbench.action.navigateBack"
-    },
-    {
-        "key": "ctrl+cmd+right",
-        "command": "workbench.action.navigateForward"
-    },
-    {
-        "key": "shift+cmd+x",
-        "command": "-workbench.view.extensions"
-    },
-    {
-        "key": "cmd+k",
-        "command": "workbench.action.terminal.sendSequence",
-        "args": {
-          "text": "\u000C"
-        },
-        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
-    }
+    "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+  }
 ]

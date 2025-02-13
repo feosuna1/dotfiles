@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 GIT_DIR=$(git rev-parse --git-dir) || exit 1
-if git rev-parse -q --verify MERGE_HEAD > /dev/null; then 
+if git rev-parse -q --verify MERGE_HEAD > /dev/null; then
     # Merge in progress
     exec git -c core.editor=true commit
 elif git rev-parse -q --verify CHERRY_PICK_HEAD > /dev/null; then

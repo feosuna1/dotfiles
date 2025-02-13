@@ -34,7 +34,7 @@
 
 	# Clean repo ignoring xcworkspace
 	xcclean = clean -e "*.xcworkspace/" -e "LocalConfig"
- 
+
 	# Get current commit sha
 	sha = rev-parse HEAD
 
@@ -87,13 +87,13 @@
 	## pager = "diff-so-fancy | less --tabs=4 -RFX" # nicer diffs
 	pager = delta
 
-	# Improve Git monorepo performance with a file system monitor 
+	# Improve Git monorepo performance with a file system monitor
 	# (https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
 	fsmonitor = true
 	untrackedcache = true
 
 	# Replaces CRLF to LF if they get introduced
-	autocrlf = input 
+	autocrlf = input
 
 [delta]
     navigate = true  # use n and N to move between diff sections

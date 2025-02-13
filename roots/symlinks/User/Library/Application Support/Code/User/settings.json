@@ -1,62 +1,142 @@
 // Place your settings in this file to overwrite the default settings
 {
-    "editor.find.cursorMoveOnType": false,
-    "editor.insertSpaces": true,
-    "editor.minimap.enabled": false,
-    "editor.renderWhitespace": "boundary",
-    "editor.rulers": [
-        100,
-        120
-    ],
+  // Editors
+  "editor.find.cursorMoveOnType": false,
+  "editor.insertSpaces": true,
+  "editor.minimap.enabled": false,
+  "editor.renderWhitespace": "boundary",
+  "editor.rulers": [100, 120],
+  "editor.tabSize": 4,
+  "editor.guides.indentation": true,
+  "editor.multiCursorModifier": "ctrlCmd",
+  "editor.fontFamily": "CommitMono, Menlo, Monaco, 'Courier New', monospace",
+
+  // VS Code should ask me if I really want to quit, if I try closing it with the keyboard.
+  "window.confirmBeforeClose": "keyboardOnly",
+
+  // Configure glob patterns for excluding files and folders.
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.DS_Store": true
+  },
+
+  // Terminals
+  "terminal.external.osxExec": "iTerm.app",
+  "terminal.integrated.defaultProfile.osx": "fish",
+  "terminal.integrated.fontFamily": "MesloLGM Nerd Font, Menlo, Monaco, 'Courier New', monospace",
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "terminal.integrated.profiles.osx": {
+    "tmux": {
+      "path": "bash",
+      "args": ["-c", "tmux new -ADs ${PWD##*/}"],
+      "icon": "terminal-tmux"
+    },
+    "fish": {
+      "path": "/opt/homebrew/bin/fish",
+      "icon": "terminal-bash"
+    }
+  },
+
+  "telemetry.telemetryLevel": "crash",
+
+  // File Specifics
+  "files.associations": {
+    "*.commit.hg.txt": "hg-commit"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[plist]": {
     "editor.tabSize": 4,
+    "editor.insertSpaces": false
+  },
+  "[sql]": {
+    "editor.tabSize": 2
+  },
+  "[git-commit]": {
+    "editor.rulers": [72, 50],
+    "editor.wordWrap": "off"
+  },
+  "[hg-commit]": {
+    "editor.rulers": [72, 50],
+    "editor.wordWrap": "off"
+  },
 
-    // Configure glob patterns for excluding files and folders.
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/.DS_Store": true
-    },
+  // Grammarly
+  "grammarly.files.include": [
+    "**/readme.md",
+    "**/README.md",
+    "**/*.txt",
+    "**/COMMIT_EDITMSG",
+    "**/*.md"
+  ],
 
-    // Terminals
-    "terminal.integrated.defaultProfile.osx": "fish",
-    "terminal.integrated.fontFamily": "MesloLGM Nerd Font, Menlo, Monaco, 'Courier New', monospace",
-    "terminal.integrated.profiles.osx": {
-        "tmux": {
-            "path": "bash",
-            "args": ["-c", "tmux new -ADs ${PWD##*/}"],
-            "icon": "terminal-tmux",
+  // Highlight
+  "highlight.regexes": {
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *TODO(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+      "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+      "decorations": [
+        {
+          "overviewRulerColor": "#ffcc00",
+          "backgroundColor": "#ffcc00",
+          "color": "#1f1f1f",
+          "fontWeight": "bold"
         },
-        "fish": {
-            "path": "/opt/homebrew/bin/fish",
-            "icon": "terminal-bash",
+        {
+          "backgroundColor": "#ffcc00",
+          "color": "#1f1f1f"
+        }
+      ]
+    },
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:FIXME|FIX|BUG|UGLY|DEBUG|HACK)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+      "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+      "decorations": [
+        {
+          "overviewRulerColor": "#cc0000",
+          "backgroundColor": "#cc0000",
+          "color": "#1f1f1f",
+          "fontWeight": "bold"
         },
+        {
+          "backgroundColor": "#cc0000",
+          "color": "#1f1f1f"
+        }
+      ]
     },
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:REVIEW|OPTIMIZE|TSC)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+      "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+      "decorations": [
+        {
+          "overviewRulerColor": "#00ccff",
+          "backgroundColor": "#00ccff",
+          "color": "#1f1f1f",
+          "fontWeight": "bold"
+        },
+        {
+          "backgroundColor": "#00ccff",
+          "color": "#1f1f1f"
+        }
+      ]
+    },
+    "((?:<!-- *)?(?:#|// @|//|./\\*+|<!--|--|\\* @|{!|{{!--|{{!) *(?:IDEA)(?:\\s*\\([^)]+\\))?:?)((?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|{!|{{!--|{{!))|(?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|{!|{{!--|{{!))|(?: +[^@\\n]+)?))": {
+      "filterFileRegex": ".*(?<!CHANGELOG.md)$",
+      "decorations": [
+        {
+          "overviewRulerColor": "#cc00cc",
+          "backgroundColor": "#cc00cc",
+          "color": "#1f1f1f",
+          "fontWeight": "bold"
+        },
+        {
+          "backgroundColor": "#cc00cc",
+          "color": "#1f1f1f"
+        }
+      ]
+    }
+  },
 
-    "telemetry.telemetryLevel": "crash",
-
-    // File Specifics
-    "[json]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[plist]": {
-        "editor.tabSize": 4,
-        "editor.insertSpaces": false,
-    },
-    "[sql]": {
-        "editor.tabSize": 2
-    },
-    "editor.guides.indentation": true,
-    "svelte.enable-ts-plugin": true,
-    "svelte.plugin.svelte.note-new-transformation": false,
-    "terminal.integrated.enableMultiLinePasteWarning": false,
-    "lldb.library": "/Applications/Xcode-14.0.1.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
-    "editor.multiCursorModifier": "ctrlCmd",
-    "terminal.external.osxExec": "iTerm.app",
-    "grammarly.files.include": [
-        "**/readme.md",
-        "**/README.md",
-        "**/*.txt",
-        "**/COMMIT_EDITMSG"
-    ],
+  // Gitlens
+  "gitlens.rebaseEditor.ordering": "asc"
 }
