@@ -37,8 +37,8 @@ end
 # Setup our custom bin paths, only if they exist
 set -l paths "$HOME/bin" "$HOME/.dotfiles/files/bin"
 for path in $paths
-    if test -d $path; and not contains $path $fish_user_paths
-        set --prepend fish_user_paths $path
+    if test -d $path; and not contains $path $PATH
+        set -gx --prepend PATH $path
     end
 end
 set -e paths
