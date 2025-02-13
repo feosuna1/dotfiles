@@ -7,6 +7,14 @@ set -x GREP_COLOR '1;32'
 set -x LS_COLORS 'di=36:ln=01;31:ex=35'
 set -x HOMEBREW_NO_ANALYTICS '1'
 
+# Source all of our local configs, these configs are not stored in git repo and are local to
+# the machine. This is a good spot to put secrets.
+for path in $HOME/.config/fish/conf.local.d/*
+    if test -f "$path"
+        source "$path"
+    end
+end
+
 # ASDF configuration code
 if test -z $ASDF_DATA_DIR
     set _asdf_shims "$HOME/.asdf/shims"
@@ -34,14 +42,6 @@ for path in $paths
     end
 end
 set -e paths
-
-# Source all of our local configs, these configs are not stored in git repo and are local to
-# the machine. This is a good spot to put secrets.
-for path in $HOME/.config/fish/conf.local.d/*
-    if test -f "$path"
-        source "$path"
-    end
-end
 
 if status --is-interactive
     if command -v code > /dev/null; and test -z (who am i | grep -E '\([0-9.]+\)$')
