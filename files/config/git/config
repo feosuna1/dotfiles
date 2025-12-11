@@ -3,6 +3,7 @@
 	st = status -s
 	ci = commit
 	co = checkout
+	checkpoint = !git commit -m \"Checkpoint-$(date +'%Y-%m-%d %H:%M:%S')\" --no-verify
 
 	# Retrieve everything from all remotes, pruning local branches
 	fetch-all = fetch --all --prune
@@ -30,13 +31,16 @@
 	safe-force-push = push --force-with-lease
 
 	# Rebase with autosquash, without editing the todo file, ex. autosquash <from-head>
-	autosquash = -c core.editor=true rebase -i --autosquash
+	autosquash = -c core.editor=true rebase -i --autosquash --autostash
 
 	# Clean repo ignoring xcworkspace
 	xcclean = clean -e "*.xcworkspace/" -e "LocalConfig"
 
-	# Get current commit sha
-	sha = rev-parse HEAD
+	# Get the sha of the symbolic reference, or the current HEAD if no ref is given.
+	#
+	# The `&& :` part tells the shell to run the `:` (no-op) command after your main command
+	# succeeds, which consumes any remaining arguments that git would otherwise append.
+	sha = !git rev-parse ${1:-HEAD} | tr -d '\n' && :
 
 	# Mirror to a backup repo
 	bak = "!f(){ \
