@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2059
 #==============================================================================#
 # Remove whitespace errors from text files.
 #
@@ -13,7 +14,8 @@
 # You can configure this script to be a part of your pre-commit hooks. You can
 # create an executable pre-commit file that references `git-clean-whitespace`:
 # ```
-# #!/usr/bin git-clean-whitespace
+# #!/bin/sh
+# git-clean-whitespace
 # ```
 #
 # Or you can create a symbolic link:
@@ -27,36 +29,37 @@
 set -e
 
 function _error() {
-    >&2 echo "_error: $@"
+    >&2 echo "_error: $*"
 }
 
 function assert_git() {
-    local git=`which git`
+    local git
+    git=$(command -v git)
     if [[ -z "$git" ]]; then
-        _error 'unable to find the `git`'
+        _error "unable to find the 'git' command"
         exit 1
     fi
 }
 
 function assert_in_git_repository() {
-    # Check to see if we are working within a git repository -- it's kind of hard to fix a whitespace in git if we are not
-    # in a git repo.
-    git rev-parse --is-inside-work-tree > /dev/null
-    if [[ $? -ne 0 ]]; then
+    # Check to see if we are working within a git repository.
+    # We need to be in a git repo to fix whitespace errors in git-tracked files.
+    if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
         _error 'you must invoke from a working git repository.'
         exit 2
     fi
 }
 
 function exit_quietly_if_in_middle_of_merge() {
-    local merge_head=`git rev-parse -q --verify MERGE_HEAD`
-    if [[ -n "$merge_head" ]]; then
+    # If we're in the middle of a merge, don't run this script
+    # as it might interfere with the merge process
+    if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
         exit 0
     fi
 }
 
 function exit_quietly_if_whitespace_not_configured_to_fix() {
-    local apply_whitespace="$@"
+    local apply_whitespace="$1"
     if [[ -z "$apply_whitespace" || "$apply_whitespace" == 'nowarn' ]]; then
         exit 0
     fi
@@ -68,8 +71,9 @@ function get_files_with_whitespace_errors() {
 
 function _fix_whitespace_errors_for_file() {
     # Get the diff of what is currently staged
-    local file="$@"
-    local diff=`git diff --cached -- "$file"`
+    local file="$1"
+    local diff
+    diff=$(git diff --cached -- "$file")
 
     # Unstage the diff so when we reapply it will fix the whitespaces for us
     echo "$diff" | git apply --cached -R - > /dev/null 2>&1
@@ -78,35 +82,54 @@ function _fix_whitespace_errors_for_file() {
     echo "$diff" | git apply --cached --whitespace=fix - > /dev/null 2>&1
 }
 
-function fix_whitespaces_errors() {
-    # Figure out which files have whitespace errors and strip them
-    local files_with_whitespace_errors=`get_files_with_whitespace_errors`
+function fix_whitespace_errors() {
+    # Find files with whitespace errors and fix them
+    local files_with_whitespace_errors
+    files_with_whitespace_errors=$(get_files_with_whitespace_errors)
     if [[ -z "$files_with_whitespace_errors" ]]; then
-        return
+        echo "No whitespace errors found."
+        return 0
     fi
 
-    local git_toplevel_dir=`git rev-parse --show-toplevel`
+    local git_toplevel_dir
+    git_toplevel_dir=$(git rev-parse --show-toplevel)
+    
+    local count=0
+    local total
+    total=$(echo "$files_with_whitespace_errors" | wc -l | tr -d ' ')
+    
+    echo "Found $total file(s) with whitespace errors."
+    
     while IFS= read -r file; do
-        local file="$git_toplevel_dir/$file"
-        echo "warning: removing whitespaces for $file"
+        local file_path="$git_toplevel_dir/$file"
+        ((count++))
+        echo "Fixing whitespace errors in $file_path ($count/$total)"
 
-        _fix_whitespace_errors_for_file "$file"
-        if [[ -n `get_files_with_whitespace_errors -- "$file"` ]]; then
+        _fix_whitespace_errors_for_file "$file_path"
+        
+        # Check if there are still errors after the first fix
+        local remaining
+        remaining=$(get_files_with_whitespace_errors -- "$file_path")
+        if [[ -n "$remaining" ]]; then
             # For some reason, EOF newline errors don't get fixed on the first pass,
             # but they get fixed on the second one.
-            _fix_whitespace_errors_for_file "$file"
+            echo "  - Running second pass to fix remaining errors"
+            _fix_whitespace_errors_for_file "$file_path"
         fi
     done <<< "$files_with_whitespace_errors"
+    
+    echo "Successfully fixed whitespace errors in $total file(s)."
+    return 0
 }
 
 assert_git
 assert_in_git_repository
 exit_quietly_if_in_middle_of_merge
 
-apply_whitespace=`git config apply.whitespace`
-exit_quietly_if_whitespace_not_configured_to_fix $apply_whitespace
+apply_whitespace=$(git config apply.whitespace)
+exit_quietly_if_whitespace_not_configured_to_fix "$apply_whitespace"
 if [[ "$apply_whitespace" != 'fix' ]]; then
     get_files_with_whitespace_errors
 else
-    fix_whitespaces_errors
+    fix_whitespace_errors
 fi
