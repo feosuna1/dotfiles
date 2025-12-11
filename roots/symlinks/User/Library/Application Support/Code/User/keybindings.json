@@ -32,11 +32,11 @@
     "command": "-workbench.view.extensions"
   },
   {
-    "key": "cmd+k",
+    "key": "shift+enter",
     "command": "workbench.action.terminal.sendSequence",
-    "args": {
-      "text": "\u000C"
-    },
-    "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    "args": { 
+      "text": "\u001b\n" // ESC (0x1b) followed by CTRL-J (0x0a)
+    }, 
+    "when": "terminalFocus"
   }
 ]

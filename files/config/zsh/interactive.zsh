@@ -23,7 +23,7 @@ fi
 
 zstyle ':completion:*:*:git:*' script "$HOME/.dotfiles/files/config/zsh/git-completion.bash"
 # shellcheck disable=SC2206
-fpath=("$HOME/.dotfiles/files/config/zsh" ${fpath[@]}) 
+fpath=("$HOME/.dotfiles/files/config/zsh" ${fpath[@]})
 autoload -Uz compinit && compinit
 
 # Custom key bindings that match up with tmux.conf
