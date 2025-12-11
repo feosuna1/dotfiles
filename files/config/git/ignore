@@ -14,6 +14,10 @@
 # Finder metadata
 .DS_Store
 
+# Claude Memory (https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview#determine-memory-type)
+CLAUDE.local.md
+**/.claude/settings.local.json
+
 #==============================================================================#
 # Directories to ignore (do not add trailing '/'s, they skip symlinks).
 #==============================================================================#
