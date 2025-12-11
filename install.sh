@@ -171,7 +171,23 @@ configure_defaults() {
     sudo chflags nohidden /Volumes
 }
 
+configure_dns_server() {
+    cloudflare_dns="1.1.1.1 1.0.0.1"
+    cloudflare_search_domains="2606:4700:4700::1111 2606:4700:4700::1001"
+
+    #  The following was inspired by https://superuser.com/questions/86184/change-dns-server-from-terminal-or-script-on-mac-os-x
+    services=$(networksetup -listallnetworkservices | grep 'Wi-Fi\|Ethernet\|USB')
+    for service in $services; do
+        networksetup -setdnsservers "$service" empty
+        networksetup -setdnsservers "$service" $cloudflare_dns
+
+        networksetup -setsearchdomains "$service" empty
+        networksetup -setsearchdomains "$service" $cloudflare_search_domains
+    done
+}
+
 ask_for_sudo_while_script_runs
 make_and_install_roots
 install_homebrew
 configure_defaults
+configure_dns_server
