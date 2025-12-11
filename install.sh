@@ -92,11 +92,11 @@ install_homebrew() {
     if command -v brew >/dev/null; then
         # Homebrew already installed.
         echo "Skipping homebrew, already installed."
-        return
+    else
+        echo "Installing homebrew and packages..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
 
-    echo "Installing homebrew and packages..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     brew analytics off || true
     brew update
     brew bundle install
