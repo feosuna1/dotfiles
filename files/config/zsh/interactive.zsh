@@ -21,11 +21,6 @@ if [ -f ~/.fzf.zsh ]; then
     source "$HOME/.fzf.zsh"
 fi
 
-# shellcheck disable=SC2154
-if [ "$TERM_PROGRAM" != "Apple_Terminal" ] && [ "$__CFBundleIdentifier" != "com.apple.Terminal" ] && type oh-my-posh > /dev/null; then
-	eval "$(oh-my-posh init zsh)"
-fi
-
 zstyle ':completion:*:*:git:*' script "$HOME/.dotfiles/files/config/zsh/git-completion.bash"
 # shellcheck disable=SC2206
 fpath=("$HOME/.dotfiles/files/config/zsh" ${fpath[@]}) 

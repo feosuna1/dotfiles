@@ -49,8 +49,4 @@ if status --is-interactive
     else
         set -gx EDITOR 'vi'
     end
-
-    if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; and  [ "\$__CFBundleIdentifier" != "com.apple.Terminal" ]; and command -v oh-my-posh > /dev/null
-        oh-my-posh init fish --config "$HOME/.dotfiles/files/config/oh-my-posh/default-theme.omp.json" | source
-    end
 end
