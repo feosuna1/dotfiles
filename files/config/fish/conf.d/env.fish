@@ -7,6 +7,19 @@ set -gx GREP_COLOR '1;32'
 set -gx LS_COLORS 'di=36:ln=01;31:ex=35'
 set -gx HOMEBREW_NO_ANALYTICS '1'
 
+# Do not use fish_add_path because it potentially changes the order of items in PATH
+function __prepend_path
+    set -l path $argv[1]
+    set -l index (contains -i -- $path $PATH)
+    if set -q index[1]
+        set -e PATH[$index]
+    end
+
+    if test -d $path
+        set -gx --prepend PATH $path
+    end
+end
+
 # Source all of our local configs, these configs are not stored in git repo and are local to
 # the machine. This is a good spot to put secrets.
 for path in $HOME/.config/fish/conf.local.d/*
@@ -17,17 +30,10 @@ end
 
 # ASDF configuration code
 if test -z $ASDF_DATA_DIR
-    set _asdf_shims "$HOME/.asdf/shims"
+    __prepend_path "$HOME/.asdf/shims"
 else
-    set _asdf_shims "$ASDF_DATA_DIR/shims"
+    __prepend_path "$ASDF_DATA_DIR/shims"
 end
-
-# Do not use fish_add_path (added in Fish 3.2) because it
-# potentially changes the order of items in PATH
-if not contains $_asdf_shims $PATH
-    set -gx --prepend PATH $_asdf_shims
-end
-set --erase _asdf_shims
 
 # Make sure homebrew environment shell variables are configured correctly.
 if test -f "/opt/homebrew/bin/brew"
@@ -35,13 +41,9 @@ if test -f "/opt/homebrew/bin/brew"
 end
 
 # Setup our custom bin paths, only if they exist
-set -l paths "$HOME/bin" "$HOME/.dotfiles/files/bin"
-for path in $paths
-    if test -d $path; and not contains $path $PATH
-        set -gx --prepend PATH $path
-    end
+for path in "$HOME/bin" "$HOME/.dotfiles/files/bin"
+    __prepend_path $path
 end
-set -e paths
 
 if status --is-interactive
     if command -v code > /dev/null; and test -z (who am i | grep -E '\([0-9.]+\)$')
