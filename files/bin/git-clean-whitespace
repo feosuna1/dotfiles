@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# shellcheck disable=SC2059
+#!/bin/bash
 #==============================================================================#
 # Remove whitespace errors from text files.
 #
@@ -14,7 +13,7 @@
 # You can configure this script to be a part of your pre-commit hooks. You can
 # create an executable pre-commit file that references `git-clean-whitespace`:
 # ```
-# #!/bin/sh
+# #!/bin/bash
 # git-clean-whitespace
 # ```
 #
@@ -26,7 +25,13 @@
 # Alternatively, you can add this to your git template directory so that
 # the script is automagically included with each git repo instance.
 #==============================================================================#
-set -e
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
 
 function _error() {
     >&2 echo "_error: $*"
@@ -93,20 +98,20 @@ function fix_whitespace_errors() {
 
     local git_toplevel_dir
     git_toplevel_dir=$(git rev-parse --show-toplevel)
-    
+
     local count=0
     local total
     total=$(echo "$files_with_whitespace_errors" | wc -l | tr -d ' ')
-    
+
     echo "Found $total file(s) with whitespace errors."
-    
+
     while IFS= read -r file; do
         local file_path="$git_toplevel_dir/$file"
         ((count++))
         echo "Fixing whitespace errors in $file_path ($count/$total)"
 
         _fix_whitespace_errors_for_file "$file_path"
-        
+
         # Check if there are still errors after the first fix
         local remaining
         remaining=$(get_files_with_whitespace_errors -- "$file_path")
@@ -117,7 +122,7 @@ function fix_whitespace_errors() {
             _fix_whitespace_errors_for_file "$file_path"
         fi
     done <<< "$files_with_whitespace_errors"
-    
+
     echo "Successfully fixed whitespace errors in $total file(s)."
     return 0
 }
