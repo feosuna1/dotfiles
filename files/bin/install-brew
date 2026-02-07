@@ -1,0 +1,20 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+if command -v brew >/dev/null; then
+    # Homebrew already installed.
+    echo "Skipping homebrew, already installed."
+else
+    echo "Installing homebrew and packages..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+brew analytics off || true
+brew update
+brew bundle install

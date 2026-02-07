@@ -1,0 +1,30 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+# The following was inspired by https://superuser.com/questions/86184/change-dns-server-from-terminal-or-script-on-mac-os-x
+IFS=$'\n' read -r -d '' -a services < <(networksetup -listallnetworkservices | sed '/An asterisk ([*]) denotes that a network service is disabled./d; s/^[*]//' && printf '\0')
+if [ "${#services[@]}" -eq "0" ]; then
+    echo "No network services found. Exiting."
+    exit
+fi
+
+cloudflare_dns="1.1.1.1 1.0.0.1"
+cloudflare_search_domains="2606:4700:4700::1111 2606:4700:4700::1001"
+
+echo "Configuring DNS servers for the following network services:"
+
+# shellcheck disable=SC2086
+for service in "${services[@]}"; do
+    echo "- $service"
+    networksetup -setdnsservers "$service" empty
+    networksetup -setdnsservers "$service" $cloudflare_dns
+
+    networksetup -setsearchdomains "$service" empty
+    networksetup -setsearchdomains "$service" $cloudflare_search_domains
+done

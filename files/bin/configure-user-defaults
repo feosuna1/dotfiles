@@ -1,0 +1,90 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+# shellcheck source=../sudo-support
+source "$HOME/.dotfiles/files/sudo-support"
+
+set_defaults_if_missing() {
+    local domain=$1
+    local key=$2
+
+    # shellcheck disable=SC2155
+    local current_value=$(defaults read "$domain" "$key" 2> /dev/null || echo "")
+    if [[ -z "$current_value" ]]; then
+        shift 2
+        defaults write "$domain" "$key" "$@"
+    fi
+}
+
+# The following has been largely inspired by: https://github.com/mathiasbynens/dotfiles/blob/main/.macos
+
+# Close any open System Preferences panes, to prevent them from overriding settings being changed
+osascript -e 'tell application "System Preferences" to quit'
+
+# Enable dark mode, the following is set during Mac Buddy, we need to overwrite the value instead
+defaults write NSGlobalDomain AppleInterfaceStyle Dark
+
+# Show file extensions by default
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+
+# Expand save panel by default
+set_defaults_if_missing NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+set_defaults_if_missing NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
+
+# Save to disk (not to iCloud) by default
+set_defaults_if_missing NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+
+# Expand print panel by default
+set_defaults_if_missing NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
+set_defaults_if_missing NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
+
+# Automatically quit printer app once the print jobs complete
+set_defaults_if_missing com.apple.print.PrintingPrefs "Quit When Finished" -bool true
+
+# Disable the “Are you sure you want to open this application?” dialog
+set_defaults_if_missing com.apple.LaunchServices LSQuarantine -bool false
+
+# Trackpad, mouse, keyboard, Bluetooth accessories, and input
+# The following settings are seeded by the operating system, so we need to overwrite the values instead
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking 0
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad DragLock 0
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Dragging 0
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick 0
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFiveFingerPinchGesture 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerHorizSwipeGesture 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerPinchGesture 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerVertSwipeGesture 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadHandResting 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadHorizScroll 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadMomentumScroll 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadPinch 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRotate 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadScroll 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag 0
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerHorizSwipeGesture 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerTapGesture 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerVertSwipeGesture 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadTwoFingerDoubleTapGesture 1
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadTwoFingerFromRightEdgeSwipeGesture 3
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad USBMouseStopsTrackpad 0
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad UserPreferences 1
+
+# Use list view in all Finder windows by default
+set_defaults_if_missing com.apple.finder FXPreferredViewStyle -string "Nlsv"
+set_defaults_if_missing com.apple.finder FXDefaultSearchScope -string "SCcf"
+
+# Enable AirDrop over Ethernet and on unsupported Macs running Lion
+set_defaults_if_missing com.apple.NetworkBrowser BrowseAllInterfaces -bool true
+
+# Show the ~/Library folder
+chflags nohidden ~/Library && xattr -d com.apple.FinderInfo ~/Library
+
+# Show the /Volumes folder
+sudo chflags nohidden /Volumes
