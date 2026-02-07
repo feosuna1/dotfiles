@@ -1,0 +1,11 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+# Rebase with autosquash, without editing the todo file, ex. autosquash <from-head>
+exec git -c core.editor=true rebase -i --autosquash --autostash "$@"

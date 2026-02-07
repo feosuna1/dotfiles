@@ -3,56 +3,6 @@
 	st = status -s
 	ci = commit
 	co = checkout
-	checkpoint = !git commit -m \"Checkpoint-$(date +'%Y-%m-%d %H:%M:%S')\" --no-verify
-
-	# Retrieve everything from all remotes, pruning local branches
-	fetch-all = fetch --all --prune
-
-	# List aliases.
-	aliases = !git config --get-regexp alias | sort
-
-	# Amend the currently staged files to the latest commit.
-	amend = commit --amend --no-edit
-
-	# Show the user email for the current repository.
-	whoami = config user.email
-
-	# Constant rebasing causes a bunch of unreachable commit. This removes
-	# those commits (https://stackoverflow.com/a/37335660)
-	remove-unreachable-commits = !git reflog expire --expire-unreachable=now --all --updateref --rewrite --stale-fix && git gc --aggressive --prune=now
-
-	# Edit my configs!
-	editconfig = !$EDITOR ~/.dotfiles/files/config/git/config &
-
-	# Pretty print my log
-	lg = log --graph --decorate --all --oneline
-
-	# Push, only if we're not overwriting what's already there.
-	safe-force-push = push --force-with-lease
-
-	# Rebase with autosquash, without editing the todo file, ex. autosquash <from-head>
-	autosquash = -c core.editor=true rebase -i --autosquash --autostash
-
-	# Clean repo ignoring xcworkspace
-	xcclean = clean -e "*.xcworkspace/" -e "LocalConfig"
-
-	# Get the sha of the symbolic reference, or the current HEAD if no ref is given.
-	#
-	# The `&& :` part tells the shell to run the `:` (no-op) command after your main command
-	# succeeds, which consumes any remaining arguments that git would otherwise append.
-	sha = !git rev-parse ${1:-HEAD} | tr -d '\n' && :
-
-	# Mirror to a backup repo
-	bak = "!f(){ \
-		git config remote.bak.url > /dev/null && git push --mirror bak || \
-		echo \"ERROR: 'bak' is missing. Run:\n\n    git config-bak <PATH>\n\"; \
-	};f"
-
-	# Configure a backup repo
-	config-bak = remote add --mirror=push bak
-
-	# Cherry pick for release
-	release-pick = cherry-pick -m1
 
 [apply]
 	# Detect whitespace errors when applying a patch.
