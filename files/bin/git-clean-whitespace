@@ -92,7 +92,6 @@ function fix_whitespace_errors() {
     local files_with_whitespace_errors
     files_with_whitespace_errors=$(get_files_with_whitespace_errors)
     if [[ -z "$files_with_whitespace_errors" ]]; then
-        echo "No whitespace errors found."
         return 0
     fi
 
@@ -106,20 +105,19 @@ function fix_whitespace_errors() {
     echo "Found $total file(s) with whitespace errors."
 
     while IFS= read -r file; do
-        local file_path="$git_toplevel_dir/$file"
         ((count++))
-        echo "Fixing whitespace errors in $file_path ($count/$total)"
+        echo "Fixing whitespace errors in $git_toplevel_dir/$file ($count/$total)"
 
-        _fix_whitespace_errors_for_file "$file_path"
+        _fix_whitespace_errors_for_file "$file"
 
         # Check if there are still errors after the first fix
         local remaining
-        remaining=$(get_files_with_whitespace_errors -- "$file_path")
+        remaining=$(get_files_with_whitespace_errors -- "$file")
         if [[ -n "$remaining" ]]; then
             # For some reason, EOF newline errors don't get fixed on the first pass,
             # but they get fixed on the second one.
             echo "  - Running second pass to fix remaining errors"
-            _fix_whitespace_errors_for_file "$file_path"
+            _fix_whitespace_errors_for_file "$file"
         fi
     done <<< "$files_with_whitespace_errors"
 
@@ -131,7 +129,7 @@ assert_git
 assert_in_git_repository
 exit_quietly_if_in_middle_of_merge
 
-apply_whitespace=$(git config apply.whitespace)
+apply_whitespace=$(git config apply.whitespace 2> /dev/null || echo '')
 exit_quietly_if_whitespace_not_configured_to_fix "$apply_whitespace"
 if [[ "$apply_whitespace" != 'fix' ]]; then
     get_files_with_whitespace_errors
