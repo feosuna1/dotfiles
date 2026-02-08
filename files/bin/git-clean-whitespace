@@ -34,7 +34,7 @@ if [ -n "${BASH_VERSION:-}" ]; then
 fi
 
 function _error() {
-    >&2 echo "_error: $*"
+    >&2 echo "error: $*"
 }
 
 function assert_git() {
@@ -71,7 +71,7 @@ function exit_quietly_if_whitespace_not_configured_to_fix() {
 }
 
 function get_files_with_whitespace_errors() {
-    git diff --cached --check "$@" | sed '/^\+/d ; s/:.*//' | uniq
+    (git diff --cached --check "$@" || true) | sed '/^\+/d ; s/:.*//' | uniq
 }
 
 function _fix_whitespace_errors_for_file() {
