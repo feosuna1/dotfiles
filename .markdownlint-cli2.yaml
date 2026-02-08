@@ -1,0 +1,6 @@
+# Default state for all rules
+default: true
+
+# Disable some built-in rules
+config:
+  line-length: false
