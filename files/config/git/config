@@ -31,9 +31,9 @@
 	# More info: http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/
 	trustctime = false
 
-	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
-	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
-	precomposeunicode = false
+	# Normalize Unicode filenames on macOS so composed/decomposed forms are treated as the same file.
+	# Without this, filenames with accented characters can appear as untracked after checkout.
+	precomposeunicode = true
 
 	## `git branch` is difficult to use with less (see https://stackoverflow.com/a/49862151).
 	## This makes interactions that require paging a bit more reasonable.
@@ -61,6 +61,9 @@
 	# Better diffing algorithm for tracking better / more context.
 	algorithm = histogram
 
+	# Highlight moved code in a distinct color from added/deleted lines, making refactors easier to review.
+	colorMoved = default
+
 [diff "bin"]
 	# Use `hexdump` to diff binary files.
 	textconv = hexdump -v -C
@@ -68,6 +71,17 @@
 [difftool]
 	prompt = false
 	trustExitCode = true
+
+[fetch]
+	# Automatically remove local refs to remote branches that have been deleted on the remote.
+	prune = true
+
+	# Automatically remove local refs to remote tags that no longer exist on the remote.
+	pruneTags = true
+
+[help]
+	# Prompt before auto-correcting a mistyped git command, instead of running it immediately.
+	autocorrect = prompt
 
 [init]
 	templatedir = ~/.dotfiles/files/config/git/template
@@ -80,6 +94,9 @@
 	# Display dates as 2023-05-25 13:54:51 instead of Thu May 25 13:54:51 2023
 	date = iso
 
+	# Show abbreviated commit hashes in log output.
+	abbrevCommit = true
+
 [merge]
 	# Shows old, new, and ancestor when highlighting a conflict
 	conflictstyle = zdiff3
@@ -90,6 +107,9 @@
 [push]
 	# Pushes the current branch to the remote, even if it is not tracked.
 	default = current
+
+	# Automatically set the upstream tracking branch on first push, eliminating the need for -u origin HEAD.
+	autoSetupRemote = true
 
 [pull]
 	# Only allow fastforward merges https://docs.gitlab.com/ee/user/project/merge_requests/methods/#fast-forward-merge
@@ -102,6 +122,9 @@
 	# Automatically stashes changes before running a rebase.
 	autostash = true
 
+	# When rebasing, automatically update any local branches that point to commits being rebased (useful for stacked PRs).
+	updateRefs = true
+
 [rerere]
 	enabled = true
 
@@ -109,10 +132,13 @@
 	name = Enrique Osuna
 	email = 12620+feosuna1@users.noreply.github.com
 
+[tag]
+	# Sort tags by version number in descending order, so the latest release appears first.
+	sort = -version:refname
+
+[column]
+	# Display output from commands like `git branch` and `git tag` in columns when the terminal is wide enough.
+	ui = auto
+
 [url "git@github.com:"]
 	pushInsteadOf = "https://github.com/"
-
-[bash]
-	showInformativeStatus = true
-	showDirtyState = true
-	showUntrackedFiles = true
