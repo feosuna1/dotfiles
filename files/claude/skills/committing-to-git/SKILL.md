@@ -1,5 +1,5 @@
 ---
-name: git-commit
+name: committing-to-git
 description: Use when drafting commit messages or creating commits. Triggers include preparing to commit changes, writing commit messages, or any git commit operation requiring message formatting.
 ---
 
@@ -62,16 +62,16 @@ Note: Subject line, blank line, then body explaining business impact (not "Added
 
 ### Common Rationalizations
 
-| Excuse | Reality |
-| ------ | ------- |
-| "Need to be complete/thorough" | Subject is summary. Details in body. |
-| "Past tense feels natural" | Git uses imperative. Be consistent. |
-| "These are trivial" | Future you needs specificity. |
-| "Some implementation context helps" | Body is ONLY business WHY. Diff shows how. |
-| "Proud of elegant solution" | Body is ONLY business WHY. Zero technical details. |
-| "Claude helped, give credit" | User's work. Tools don't get credit. |
-| "All small, one commit fine" | Different purposes = separate commits. |
-| "They're in same file" | Purpose determines commits, not location. |
+| Excuse                              | Reality                                            |
+| ----------------------------------- | -------------------------------------------------- |
+| "Need to be complete/thorough"      | Subject is summary. Details in body.               |
+| "Past tense feels natural"          | Git uses imperative. Be consistent.                |
+| "These are trivial"                 | Future you needs specificity.                      |
+| "Some implementation context helps" | Body is ONLY business WHY. Diff shows how.         |
+| "Proud of elegant solution"         | Body is ONLY business WHY. Zero technical details. |
+| "Claude helped, give credit"        | User's work. Tools don't get credit.               |
+| "All small, one commit fine"        | Different purposes = separate commits.             |
+| "They're in same file"              | Purpose determines commits, not location.          |
 
 ### Examples
 

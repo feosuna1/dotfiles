@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: reviewing-code
 description: Use when work is complete (tests pass, feature works) and ready to commit or deploy - conduct systematic code review as Senior Staff Engineer
 ---
 
@@ -271,28 +271,28 @@ git diff main..feature/auth --name-only
 ### Critical Issues
 
 1. **auth-service.ts:47** - Password logged in plaintext
-   - **Why:** Exposes user credentials in application logs, security violation
-   - **Fix:** Remove `password` from log statement: `logger.info('Login attempt', { username })`
+    - **Why:** Exposes user credentials in application logs, security violation
+    - **Fix:** Remove `password` from log statement: `logger.info('Login attempt', { username })`
 
 2. **auth-service.ts:89** - No rate limiting on login endpoint
-   - **Why:** Allows brute force attacks on user accounts
-   - **Fix:** Add rate limiting middleware: `app.use('/login', rateLimiter({ max: 5, window: '15m' }))`
+    - **Why:** Allows brute force attacks on user accounts
+    - **Fix:** Add rate limiting middleware: `app.use('/login', rateLimiter({ max: 5, window: '15m' }))`
 
 ### Important Issues
 
 1. **session-manager.ts:23** - Session table query has no index
-   - **Why:** Every auth request scans entire sessions table, slow at scale
-   - **Fix:** Add migration: `CREATE INDEX idx_sessions_user_id ON sessions(user_id)`
+    - **Why:** Every auth request scans entire sessions table, slow at scale
+    - **Fix:** Add migration: `CREATE INDEX idx_sessions_user_id ON sessions(user_id)`
 
 2. **middleware.ts:34** - Auth and logging concerns mixed in same file
-   - **Why:** Violates separation of concerns, harder to test and maintain
-   - **Fix:** Split into `auth-middleware.ts` and `logging-middleware.ts`
+    - **Why:** Violates separation of concerns, harder to test and maintain
+    - **Fix:** Split into `auth-middleware.ts` and `logging-middleware.ts`
 
 ### Minor Issues
 
 1. **types.ts:12** - SessionData interface missing JSDoc
-   - **Why:** Future developers won't know what fields are optional
-   - **Fix:** Add JSDoc comment describing each field
+    - **Why:** Future developers won't know what fields are optional
+    - **Fix:** Add JSDoc comment describing each field
 
 ### Summary
 
