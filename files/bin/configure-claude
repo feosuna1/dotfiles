@@ -7,5 +7,6 @@ if [ -n "${BASH_VERSION:-}" ]; then
     set -o pipefail # Exit if any command in a pipeline fails and isn't handled
 fi
 
-claude plugin marketplace add obra/superpowers-marketplace
-claude plugin install superpowers@superpowers-marketplace
+# This script is used to configure Claude, for example:
+# claude plugin marketplace add anthropics/claude-plugins-official
+# claude plugin install superpowers@claude-plugins-official
