@@ -1,4 +1,7 @@
 {
+  "env": {
+    "ENABLE_TOOL_SEARCH": "true"
+  },
   "statusLine": {
     "type": "command",
     "command": "fish ~/.dotfiles/files/claude/statusline-command.fish"
