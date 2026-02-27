@@ -1,4 +1,8 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "fish ~/.dotfiles/files/claude/statusline-command.fish"
+  },
   "enabledPlugins": {
     "superpowers@superpowers-marketplace": true
   }
