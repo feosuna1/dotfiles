@@ -1,0 +1,59 @@
+#:schema https://docs.jj-vcs.dev/latest/config-schema.json
+
+[aliases]
+stack = ["log", "-r", "stack"]
+
+[user]
+name = "Enrique Osuna"
+email = "12620+feosuna1@users.noreply.github.com"
+
+# Configure `delta` formatter
+[merge-tools.delta]
+diff-args=[
+    "--side-by-side",   # Show diffs in a side-by-side format
+    "--line-numbers",   # Show line numbers in the diff output
+    "--navigate",       # Use n and N to move between diff sections
+    "--width=$width",   # Propagate terminal width to delta so it can wrap lines correctly
+    "$left", "$right"
+]
+diff-expected-exit-codes = [0, 1]
+
+[templates]
+draft_commit_description = '''
+concat(
+  builtin_draft_commit_description,
+  "\nJJ: ignore-rest\n",
+  diff.git(),
+)
+'''
+
+[ui]
+# Uses Git's "diff3" conflict markers to support tools that depend on it
+conflict-marker-style = "git"
+
+# The default command to run when `jj` is invoked without arguments.
+default-command = ["log", "-r", "stack"]
+
+# Use `delta` as the default diff formatter for all commands that show diffs
+diff-formatter = "delta"
+
+[revsets]
+# When advancing a bookmark, jump to the closest pushable commit.
+bookmark-advance-to = 'closest_pushable(@)'
+
+[revset-aliases]
+# Range of commits that are on the current branch.
+stack = "trunk()..heads(@::)"
+
+# The last commit of the current branch, returns nothing if the current branch splits
+tip = "exactly(heads(@-::~@), 1)"
+
+# The closest revision, that is not empty, that can be pushed to the remote.
+'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
+
+# The closest revision, that is not empty, that can be pushed to the remote.
+latest_commit = 'heads(::@ & mutable() & (~description(exact:"") | ~empty()))'
+
+# The last commit with un-described changes. Commits with descriptions are considered to be ready to be pushed.
+# While commits without descriptions are considered to be in progress.
+staged = 'heads(::@ & mutable() & (description(exact:"") & ~empty()))'
