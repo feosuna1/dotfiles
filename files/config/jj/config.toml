@@ -10,6 +10,11 @@ stack = ["log", "-r", "stack"]
 name = "Enrique Osuna"
 email = "12620+feosuna1@users.noreply.github.com"
 
+# Configure Kaleidoscope diff and merge tools
+[merge-tools.ksdiff]
+diff-invocation-mode = "file-by-file"
+diff-args = ["--partial-changeset", "$left", "$right"]
+merge-args = ["--merge", "--output", "$output", "--base", "$base", "$left", "$right"]
 
 [templates]
 draft_commit_description = '''
@@ -29,6 +34,9 @@ default-command = ["log", "-r", "stack"]
 
 # Render diffs the same as git does.
 diff-formatter = ":git"
+
+# Use Kaleidoscope for  merges when invoking `jj merge`
+merge-editor = "ksdiff"
 
 [revsets]
 # When advancing a bookmark, jump to the closest pushable commit.

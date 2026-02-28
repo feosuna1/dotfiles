@@ -57,6 +57,9 @@
 	# Highlight moved code in a distinct color from added/deleted lines, making refactors easier to review.
 	colorMoved = default
 
+	# Use Kaleidoscope for diffs when invoking `git difftool`
+	tool = ksdiff
+
 [diff "bin"]
 	# Use `hexdump` to diff binary files.
 	textconv = hexdump -v -C
@@ -64,6 +67,9 @@
 [difftool]
 	prompt = false
 	trustExitCode = true
+
+[difftool "ksdiff"]
+	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
 
 [fetch]
 	# Automatically remove local refs to remote branches that have been deleted on the remote.
@@ -91,8 +97,15 @@
 	# Shows old, new, and ancestor when highlighting a conflict
 	conflictstyle = zdiff3
 
+	# Use Kaleidoscope for diffs when invoking `git mergetool`
+	tool = ksdiff
+
 [mergetool]
 	prompt = false
+
+[mergetool "ksdiff"]
+	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
+	trustExitCode = true
 
 [push]
 	# Pushes the current branch to the remote, even if it is not tracked.
