@@ -35,11 +35,9 @@
 	# Without this, filenames with accented characters can appear as untracked after checkout.
 	precomposeunicode = true
 
-	## `git branch` is difficult to use with less (see https://stackoverflow.com/a/49862151).
-	## This makes interactions that require paging a bit more reasonable.
-	## pager = less -FRX
-	## pager = "diff-so-fancy | less --tabs=4 -RFX" # nicer diffs
-	pager = delta
+	# `git branch` is difficult to use with less (see https://stackoverflow.com/a/49862151).
+	# This makes interactions that require paging a bit more reasonable.
+	pager = less -FRX
 
 	# Improve Git monorepo performance with a file system monitor
 	# (https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
@@ -48,11 +46,6 @@
 
 	# Replaces CRLF to LF if they get introduced
 	autocrlf = input
-
-[delta]
-    navigate = true  # use n and N to move between diff sections
-    side-by-side = true
-	line-numbers = true
 
 [diff]
 	# Detect copies as well as renames.
@@ -86,9 +79,6 @@
 [init]
 	templatedir = ~/.dotfiles/files/config/git/template
 	defaultBranch = develop
-
-[interactive]
-	diffFilter = delta --color-only
 
 [log]
 	# Display dates as 2023-05-25 13:54:51 instead of Thu May 25 13:54:51 2023
