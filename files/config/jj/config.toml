@@ -7,16 +7,6 @@ stack = ["log", "-r", "stack"]
 name = "Enrique Osuna"
 email = "12620+feosuna1@users.noreply.github.com"
 
-# Configure `delta` formatter
-[merge-tools.delta]
-diff-args=[
-    "--side-by-side",   # Show diffs in a side-by-side format
-    "--line-numbers",   # Show line numbers in the diff output
-    "--navigate",       # Use n and N to move between diff sections
-    "--width=$width",   # Propagate terminal width to delta so it can wrap lines correctly
-    "$left", "$right"
-]
-diff-expected-exit-codes = [0, 1]
 
 [templates]
 draft_commit_description = '''
@@ -34,8 +24,8 @@ conflict-marker-style = "git"
 # The default command to run when `jj` is invoked without arguments.
 default-command = ["log", "-r", "stack"]
 
-# Use `delta` as the default diff formatter for all commands that show diffs
-diff-formatter = "delta"
+# Render diffs the same as git does.
+diff-formatter = ":git"
 
 [revsets]
 # When advancing a bookmark, jump to the closest pushable commit.
