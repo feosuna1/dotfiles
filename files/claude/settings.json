@@ -51,7 +51,7 @@
     ],
     "ask": [
       "Bash(jj push *)",
-      "Bash(jj git push *)",
+      "Bash(jj git push *)"
     ],
     "deny": [
       "Bash(chmod *)",
@@ -93,7 +93,7 @@
       "Write(~/Desktop/**)",
       "Write(~/Documents/**)",
       "Write(~/Downloads/**)",
-      "Write(~/Library/**)",
+      "Write(~/Library/**)"
     ]
   },
   "statusLine": {
