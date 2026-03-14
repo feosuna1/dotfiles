@@ -2,6 +2,7 @@
 
 [aliases]
 stack = ["log", "-r", "stack"]
+forked_stack = ["log", "-r", "forked_stack"]
 
 [colors]
 "diff token" = { underline = false }
@@ -43,11 +44,11 @@ merge-editor = "ksdiff"
 bookmark-advance-to = 'closest_pushable(@)'
 
 [revset-aliases]
-# Range of commits that are on the current branch.
-stack = "trunk()..heads(@::)"
+# Starting from the fork point of the current commit, extending to the current commit's descendants.
+stack = "fork_point(trunk()..@)::descendants(@)"
 
-# The last commit of the current branch, returns nothing if the current branch splits
-tip = "exactly(heads(@-::~@), 1)"
+# Starting from the fork point of the current comment, extending to the fork point's descendants.
+forked_stack = "descendants(fork_point(trunk()..@))"
 
 # The closest revision, that is not empty, that can be pushed to the remote.
 'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
