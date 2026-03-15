@@ -5,6 +5,14 @@ stack = ["log", "-r", "stack"]
 forked_stack = ["log", "-r", "forked_stack"]
 show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=never", "-r", "roots(closest_not_empty(@):: & bookmarks())", "--template", 'bookmarks.join(", ") ++ "\n"']
 
+# Lifted from https://github.com/jj-vcs/jj/discussions/4974
+#
+#          trunk()..                    All commits not in the trunk
+#    roots(trunk()..)                   Take only the root commits of those...
+#    roots(trunk()..) & mutable()       ...as long as they're mutable
+#
+move_everything_to_trunk = ["rebase", "-d", "trunk()", "-s", "roots(trunk().. & mine()) & mutable()"]
+
 [colors]
 "diff token" = { underline = false }
 
