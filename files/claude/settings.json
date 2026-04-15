@@ -13,6 +13,7 @@
     "allow": [
       "Bash(* --help *)",
       "Bash(* --version *)",
+      "Bash(/Users/feo/.claude/skills/**/scripts/*)",
       "Bash(brew info *)",
       "Bash(brew list *)",
       "Bash(cat *)",
@@ -23,6 +24,7 @@
       "Bash(echo *)",
       "Bash(file *)",
       "Bash(find *)",
+      "Bash(gh pr view *)",
       "Bash(git branch *)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -48,11 +50,14 @@
       "Bash(uniq *)",
       "Bash(wc *)",
       "Bash(which *)",
-      "Bash(whoami)"
+      "Bash(whoami)",
+      "Skill(write-commit-message)"
     ],
     "ask": [
+      "Bash(curl *)",
+      "Bash(jj git push *)",
       "Bash(jj push *)",
-      "Bash(jj git push *)"
+      "Bash(rm *)"
     ],
     "deny": [
       "Bash(chmod *)",
@@ -62,7 +67,6 @@
       "Bash(git push * --force *)",
       "Bash(git push * -f *)",
       "Bash(git reset * --hard *)",
-      "Bash(rm *)",
       "Edit(**/.env.*)",
       "Edit(**/.env)",
       "Edit(**/credentials/**)",
