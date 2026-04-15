@@ -4,6 +4,7 @@ function fish_jj_prompt
     if not command -sq jj
         return 1
     end
+    set -l bookmarks "$(jj 2>/dev/null show_current_branch)"
     set -l info "$(
         jj log 2>/dev/null --no-graph --ignore-working-copy --color=always --revisions @ \
             --template '
@@ -11,7 +12,13 @@ function fish_jj_prompt
                     "(", ")",
                     separate(
                         " ",
-                        bookmarks.join(", "),
+                        label(
+                            separate(" ",
+                                if(current_working_copy && bookmarks, "working_copy"),
+                                "bookmarks"
+                            ),
+                            "'$bookmarks'"
+                        ),
                         change_id.shortest(),
                         if(conflict, label("conflict", "×")),
                         if(divergent, label("divergent", "??")),
