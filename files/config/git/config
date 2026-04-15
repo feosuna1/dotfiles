@@ -39,10 +39,10 @@
 	# This makes interactions that require paging a bit more reasonable.
 	pager = less -FRX
 
-	# Improve Git monorepo performance with a file system monitor
-	# (https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
-	fsmonitor = true
-	untrackedcache = true
+	# # Improve Git monorepo performance with a file system monitor
+	# # (https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
+	# fsmonitor = true
+	# untrackedcache = true
 
 	# Replaces CRLF to LF if they get introduced
 	autocrlf = input
