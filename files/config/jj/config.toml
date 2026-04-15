@@ -2,7 +2,7 @@
 
 [aliases]
 stack = ["log", "-r", "stack"]
-forked_stack = ["log", "-r", "forked_stack"]
+forked_stack = ["log", "-r", "descendants(stack)"]
 show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=never", "-r", "roots(closest_not_empty(@):: & bookmarks())", "--template", 'bookmarks.join(", ") ++ "\n"']
 
 # Lifted from https://github.com/jj-vcs/jj/discussions/4974
@@ -53,11 +53,10 @@ merge-editor = "ksdiff"
 bookmark-advance-to = 'closest_pushable(@)'
 
 [revset-aliases]
-# Starting from the fork point of the current commit, extending to the current commit's descendants.
-stack = "fork_point(trunk()..@)::descendants(@)"
 
-# Starting from the fork point of the current comment, extending to the fork point's descendants.
-forked_stack = "descendants(fork_point(trunk()..@))"
+# Returns the stack of commits, from the fork point of trunk() to the descendants of the closest non-empty commit
+# reachable from the current commit.
+stack = "trunk()..descendants(closest_not_empty(@))"
 
 # The closest revision, that is not empty, that can be pushed to the remote.
 'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
