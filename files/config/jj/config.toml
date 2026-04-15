@@ -58,6 +58,10 @@ stack = "trunk()..descendants(closest_not_empty(@))"
 # The closest revision, that is not empty, that can be pushed to the remote.
 'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
 
+# The `trunk().. &` bit is an optimization to scan for non-`mine()` commits only among commits that are not
+# in `trunk()`.
+"immutable_heads()" = "builtin_immutable_heads() | (trunk().. & ~mine())"
+
 # Finds the closest non-empty commit reachable from `to`.
 'closest_not_empty(to)' = "heads(::to ~ empty() & mine() & mutable())"
 
