@@ -45,9 +45,6 @@ default-command = ["log", "-r", "coalesce(stack, present(@) | ancestors(immutabl
 # Render diffs the same as git does.
 diff-formatter = ":git"
 
-# Use Kaleidoscope for  merges when invoking `jj merge`
-merge-editor = "ksdiff"
-
 [revsets]
 # When advancing a bookmark, jump to the closest pushable commit.
 bookmark-advance-to = 'closest_pushable(@)'
