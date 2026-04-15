@@ -29,6 +29,8 @@ jj is **not Git with different commands.** These paradigm shifts matter:
 | `jj next [N]`      | Move working copy to child                | `--edit`, `--conflict`                                               |
 | `jj prev [N]`      | Move working copy to parent               | `--edit`, `--conflict`                                               |
 
+**`-m` is repeatable.** Each `-m MESSAGE` becomes one paragraph; jj joins them with blank lines. Applies to every command accepting `-m MESSAGE` (`new`, `commit`, `describe`, `squash`, `split`).
+
 ### Rewriting History
 
 | Command                  | Purpose                                     | Key Flags                                                                   |
