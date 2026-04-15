@@ -40,7 +40,7 @@ concat(
 conflict-marker-style = "git"
 
 # The default command to run when `jj` is invoked without arguments.
-default-command = ["log", "-r", "stack"]
+default-command = ["log", "-r", "coalesce(stack, present(@) | ancestors(immutable_heads().., 2) | trunk())"]
 
 # Render diffs the same as git does.
 diff-formatter = ":git"
