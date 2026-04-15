@@ -65,12 +65,13 @@ stack = "trunk()..descendants(closest_not_empty(@))"
 # Finds the closest non-empty commit reachable from `to`.
 'closest_not_empty(to)' = "heads(::to ~ empty() & mine() & mutable())"
 
-# The closest revision, that is not empty, that can be pushed to the remote.
-latest_commit = 'heads(::@ & mutable() & (~description(exact:"") | ~empty()))'
 
 # The last commit with un-described changes. Commits with descriptions are considered to be ready to be pushed.
 # While commits without descriptions are considered to be in progress.
 staged = 'heads(::@ & mutable() & (description(exact:"") & ~empty()))'
+
+my_work = "trunk().. & mine() & mutable()"
+broken = "my_work & conflicts()"
 
 [visualjj]
 auto-describe = false
