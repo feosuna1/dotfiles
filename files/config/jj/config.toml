@@ -70,3 +70,9 @@ latest_commit = 'heads(::@ & mutable() & (~description(exact:"") | ~empty()))'
 # The last commit with un-described changes. Commits with descriptions are considered to be ready to be pushed.
 # While commits without descriptions are considered to be in progress.
 staged = 'heads(::@ & mutable() & (description(exact:"") & ~empty()))'
+
+[visualjj]
+auto-describe = false
+snapshot-enabled = false
+auto-init = false
+show-immutable = false
