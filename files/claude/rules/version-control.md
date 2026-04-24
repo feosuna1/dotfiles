@@ -1,6 +1,6 @@
 # Version Control
 
-Project repositories may use either Git (git) or Jujutsu (jj). Before performing operations on a repository, it is important that you understand what kind of repository you are working with. You should memorize this fact for the duration of the session and future sessions.
+Project repositories may use either Git (git) or Jujutsu (jj). Before performing VCS operations on a repository, it is important that you understand what kind of repository you are working with. You save the memory of this fact for future use.
 
 ## Identifying Repository Type
 
