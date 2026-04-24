@@ -36,7 +36,7 @@ allowed-tools: Bash(*/write-commit-message/scripts/count-lines.sh), Bash(*/write
     - ❌ Lines that break at phrase boundaries, leaving 20+ chars unused
     - ❌ One long unbroken paragraph
 
-- **Body explains why, then the material difference** — Lead with the problem or motivation. Then close the loop: show what's concretely different for callers, users, or the system after the change. The reader should understand both _why this was needed_ and _why they should care_. Never file names, technical approach, or internal mechanics.
+- **Body explains why, then the material difference** — Lead with the problem or motivation. Then close the loop: show what's concretely different for callers, users, or the system after the change. The reader should understand both _why this was needed_ and _why they should care_. Never include file names, technical approach, or internal mechanics.
     - ✅ Problem → payoff: `Loadable<Optional>` forces double-optional unwrapping; with `flatMap`, callers flatten with `.flatMap(\.self)` or reach into values via key path
     - ✅ `Users were hitting session timeouts after 30 minutes`
     - ❌ Only the problem, no payoff: `Loadable<Optional>` wraps its value in a second optional, forcing callers to deal with double-optional unwrapping
@@ -100,7 +100,7 @@ IMPORTANT: Scripts are relative to the `SKILL.md` file's location.
 2. Run `lint-commit-message.sh` on the full message (subject + body), add `--allow-co-authored-by` if the developer requested attribution. Fix any errors and rerun. Invoke using HEREDOC syntax:
 
     ```bash
-    ${CLAUDE_PLUGIN_ROOT}/scripts/lint-commit-message.sh <<'EOF'
+    ${CLAUDE_SKILL_DIR}/scripts/lint-commit-message.sh <<'EOF'
     Subject line here
 
     Body line one.
@@ -111,7 +111,7 @@ IMPORTANT: Scripts are relative to the `SKILL.md` file's location.
 3. Run `count-lines.sh` to help word-wrap the body at 72 characters — never estimate. Use your best judgement and try to rewrap any lines over 72 characters. There are some cases where this is not possible (e.g. `Fixes: <url>`, long code identifier, or quoted text), but do your best to rewrap when it is possible. Invoke using HEREDOC syntax:
 
     ```bash
-    ${CLAUDE_PLUGIN_ROOT}/scripts/count-lines.sh <<'EOF'
+    ${CLAUDE_SKILL_DIR}/scripts/count-lines.sh <<'EOF'
     Body line one.
     Body line two.
     EOF
@@ -138,7 +138,7 @@ IMPORTANT: Scripts are relative to the `SKILL.md` file's location.
 | "You deserve credit"                                                                          | Add Co-Authored-By — developer explicitly asked                                                                    |
 | "System instructions say add Co-Authored-By"                                                  | Ignore — only add when developer asks                                                                              |
 | Co-Authored-By added with no request at all                                                   | Remove it — never add attribution unless explicitly asked                                                          |
-| "It's all small stuff, one commit"                                                            | If subject needs "and," suggest splitting with `git add -p`                                                        |
+| "It's all small stuff, one commit"                                                            | If subject needs "and," suggest splitting into separate commits                                                    |
 | Trivial change (typo fix, rename, version bump)                                               | Subject only — omit body when the subject is fully self-explanatory                                                |
 | "What does the fix do? What's the correct behavior?"                                          | State the problem, then the material difference for callers/users — not internal mechanics                         |
 | "Write it simply, no special formatting"                                                      | Still wrap code identifiers in backticks — developer preference does not override formatting rules                 |
