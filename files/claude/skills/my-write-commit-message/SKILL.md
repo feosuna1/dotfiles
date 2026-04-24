@@ -1,7 +1,7 @@
 ---
-name: write-commit-message
+name: my-write-commit-message
 description: Use when drafting/writing commit messages/descriptions, creating commits, amending commits, or any operation requiring commit message formatting. This applies to all VCS operations including `git`, `jj`, `sapling`, etc.
-allowed-tools: Bash(*/write-commit-message/scripts/count-lines.sh), Bash(*/write-commit-message/scripts/lint-commit-message.sh)
+allowed-tools: Bash(*/my-write-commit-message/scripts/count-lines.sh), Bash(*/my-write-commit-message/scripts/lint-commit-message.sh)
 ---
 
 # Writing Commit Messages

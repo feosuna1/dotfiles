@@ -51,7 +51,7 @@
       "Bash(wc *)",
       "Bash(which *)",
       "Bash(whoami)",
-      "Skill(write-commit-message)"
+      "Skill(my-write-commit-message)"
     ],
     "ask": [
       "Bash(curl *)",

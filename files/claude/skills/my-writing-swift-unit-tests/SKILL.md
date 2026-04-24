@@ -1,5 +1,5 @@
 ---
-name: writing-swift-unit-tests
+name: my-writing-swift-unit-tests
 description: Use when adding or modifying Swift unit test files. DO NOT use for UI tests or snapshot tests.
 ---
 

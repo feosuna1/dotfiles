@@ -25,4 +25,4 @@ Take note of this fact and persist this information throughout the session, incl
 
 ## Using jj
 
-Always invoke `using-jj` skill for any jj question, even if the answer seems obvious. This skill contains project-specific conventions and aliases that general jj knowledge does not cover.
+Always invoke `my-using-jj` skill for any jj question, even if the answer seems obvious. This skill contains project-specific conventions and aliases that general jj knowledge does not cover.

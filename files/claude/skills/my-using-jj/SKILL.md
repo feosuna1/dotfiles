@@ -1,5 +1,5 @@
 ---
-name: using-jj
+name: my-using-jj
 description: Use when performing version control operations in a Jujutsu (jj) repository, or when answering questions about jj usage. Covers the jj mental model, commands, revsets, filesets, and workflows needed to operate effectively in jj repos.
 ---
 

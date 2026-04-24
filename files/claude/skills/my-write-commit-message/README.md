@@ -1,4 +1,4 @@
-# write-commit-message
+# my-write-commit-message
 
 A Claude Code skill for writing well-formatted VCS commit messages.
 
