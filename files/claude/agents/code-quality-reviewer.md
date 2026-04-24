@@ -1,7 +1,7 @@
 ---
 name: code-quality-reviewer
 description: Use this agent when you need to review code for quality, maintainability, and adherence to best practices. Examples: After implementing a new feature or function, when refactoring existing code, before committing significant changes, or when uncertain about whether validation logic or error handling is robust enough.
-tools: Glob, Grep, Read, WebFetch, WebSearch
+tools: Bash, Glob, Grep, Read
 model: sonnet
 ---
 
