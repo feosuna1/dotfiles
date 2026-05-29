@@ -4,6 +4,8 @@
     "commit": "",
     "pr": ""
   },
+  "awaySummaryEnabled": false,
+  "effortLevel": "medium",
   "enabledPlugins": {},
   "env": {
     "ENABLE_TOOL_SEARCH": "true"
@@ -59,6 +61,7 @@
       "Bash(jj push *)",
       "Bash(rm *)"
     ],
+    "defaultMode": "auto",
     "deny": [
       "Bash(chmod *)",
       "Bash(chown *)",
@@ -101,8 +104,15 @@
       "Write(~/Library/**)"
     ]
   },
+  "skipAutoPermissionPrompt": true,
   "statusLine": {
     "command": "fish ~/.dotfiles/files/claude/statusline-command.fish",
     "type": "command"
-  }
+  },
+  "theme": "auto",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "voiceEnabled": true
 }
