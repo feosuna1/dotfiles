@@ -21,7 +21,7 @@ make_and_install_roots() {
         symlink=${symlink#*//}
         if [[ "$symlink" == *".symlink" ]]; then
             # A symlink file contains a single line representing the target to symlink to
-            src=$(cat "$SYMLINK_DIR/$symlink")
+            src=$(cat "$symlink")
             src="${src/#\~\/.dotfiles/$HOME}"
             dest="$TARGET_ROOT_DIR/${symlink%.symlink}"
         else
@@ -39,16 +39,13 @@ make_and_install_roots() {
     rsync -razI --ignore-existing --progress "$COPY_DIR/" "$HOME"
 
     # shellcheck disable=all
-    [[ -f ~/.zshenv ]] && source ~/.zshenv
+    [[ -f ~/.bash_profile ]] && source ~/.bash_profile
 
     # shellcheck disable=all
-    [[ -f ~/.zprofile ]] && source ~/.zprofile
-
-    # shellcheck disable=all
-    [[ -f ~/.zshrc ]] && source ~/.zshrc
+    [[ -f ~/.bashrc ]] && source ~/.bashrc
 }
 
 make_and_install_roots
-"$BIN_DIR/install-brew"
-"$BIN_DIR/configure-user-defaults"
-"$BIN_DIR/configure-dns-servers"
+source "$BIN_DIR/install-brew"
+source "$BIN_DIR/configure-user-defaults"
+source "$BIN_DIR/configure-dns-servers"
