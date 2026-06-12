@@ -18,4 +18,4 @@ fi
 
 brew analytics off || true
 brew update
-brew bundle install
+brew bundle install || true

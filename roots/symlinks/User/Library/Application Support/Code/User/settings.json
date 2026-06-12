@@ -138,5 +138,7 @@
   },
 
   // Gitlens
-  "gitlens.rebaseEditor.ordering": "asc"
+  "gitlens.rebaseEditor.ordering": "asc",
+  "workbench.activityBar.location": "top",
+  "terminal.integrated.gpuAcceleration": "off"
 }

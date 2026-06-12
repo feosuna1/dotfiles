@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 set -o errexit # Exit if any individual command fails and isn't handled
 set -o nounset # Exit if unset variables are used
 
@@ -21,7 +22,7 @@ make_and_install_roots() {
         symlink="${symlink#"$SYMLINK_DIR"/}"
         if [[ "$symlink" == *".symlink" ]]; then
             # A symlink file contains a single line representing the target to symlink to
-            src=$(cat "$symlink")
+            src=$(cat "$SYMLINK_DIR/$symlink")
             src="${src/#\~/$HOME}"
             dest="$TARGET_ROOT_DIR/${symlink%.symlink}"
         else
@@ -30,19 +31,17 @@ make_and_install_roots() {
         fi
 
         # Only create the symlink if the source file or directory exists
-        if [[ -f "$src" || -d "$src" ]] && [[ ! -f "$dest" ]]; then
+        if [[ -f "$src" ]] && [[ ! -f "$dest" ]]; then
+            echo "Linking \"$symlink\"..."
             mkdir -p "$(dirname "$dest")"
             ln -sf "$src" "$dest"
+        else
+            echo "Skipping \"$symlink\"..."
         fi
     done
 
+    echo "Copying \"$COPY_DIR\" to \"$HOME\"..."
     rsync -razI --ignore-existing --progress "$COPY_DIR/" "$HOME"
-
-    # shellcheck disable=all
-    [[ -f ~/.bash_profile ]] && source ~/.bash_profile
-
-    # shellcheck disable=all
-    [[ -f ~/.bashrc ]] && source ~/.bashrc
 }
 
 make_and_install_roots

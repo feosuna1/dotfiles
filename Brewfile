@@ -1,7 +1,5 @@
 tap "1password/tap", trusted: true
 tap "homebrew/autoupdate"
-tap "homebrew/bundle"
-tap "homebrew/core"
 tap "xcodesorg/made", trusted: true
 # Download with resuming and segmented downloading
 brew "aria2"
@@ -43,6 +41,7 @@ brew "xcbeautify"
 brew "zlib"
 # Install and switch between multiple versions of Xcode
 brew "xcodesorg/made/xcodes"
+brew "xcodes"
 # Command-line interface for 1Password
 cask "1password-cli"
 vscode "alefragnani.bookmarks"

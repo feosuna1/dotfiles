@@ -84,7 +84,7 @@ set_defaults_if_missing com.apple.finder FXDefaultSearchScope -string "SCcf"
 set_defaults_if_missing com.apple.NetworkBrowser BrowseAllInterfaces -bool true
 
 # Show the ~/Library folder
-chflags nohidden ~/Library && xattr -d com.apple.FinderInfo ~/Library
+chflags nohidden ~/Library && (xattr -d com.apple.FinderInfo ~/Library 2> /dev/null || true)
 
 # Show the /Volumes folder
 sudo chflags nohidden /Volumes
