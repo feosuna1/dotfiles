@@ -18,11 +18,11 @@ make_and_install_roots() {
     SYMLINK_DIR="$SOURCE_DIR/symlinks/User"
 
     find "$SYMLINK_DIR/" -type f \( ! -name ".DS_Store" \) | while read -r -d $'\n' symlink; do
-        symlink=${symlink#*//}
+        symlink="${symlink#"$SYMLINK_DIR"/}"
         if [[ "$symlink" == *".symlink" ]]; then
             # A symlink file contains a single line representing the target to symlink to
             src=$(cat "$symlink")
-            src="${src/#\~\/.dotfiles/$HOME}"
+            src="${src/#\~/$HOME}"
             dest="$TARGET_ROOT_DIR/${symlink%.symlink}"
         else
             src="$SYMLINK_DIR/$symlink"
