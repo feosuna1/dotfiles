@@ -1,144 +1,229 @@
 ---
 name: my-write-commit-message
-description: Use when drafting/writing commit messages/descriptions, creating commits, amending commits, or any operation requiring commit message formatting. This applies to all VCS operations including `git`, `jj`, `sapling`, etc.
-allowed-tools: Bash(*/my-write-commit-message/scripts/count-lines.sh), Bash(*/my-write-commit-message/scripts/lint-commit-message.sh)
+description: Write clear, durable commit messages for any version control system (Git, Jujutsu/jj, etc.). Use this skill whenever the user is committing work, asks you to write or draft a commit message, asks for help describing a change for the log, or has staged changes that need a message. Trigger on phrases like "write a commit message", "commit this", "what should the commit say", "describe this change", or when finishing a unit of work that will be committed. Commit messages are permanent documentation that feed PR descriptions, release notes, and changelogs, so they deserve care even for small changes.
 ---
 
-# Writing Commit Messages
+# Commit Messages
 
-## Overview
+A commit message is permanent documentation. A good log explains *why* a change
+was made and *what is materially different afterward* — without anyone needing
+to read the diff. These messages also get reused to build PR descriptions,
+release notes, and changelogs, so the quality compounds.
 
-**Commit messages are permanent documentation.** A well-crafted commit log reveals why changes were made without reading code. This skill enforces proven commit message patterns.
+This skill is version-control agnostic. Everything here applies equally to Git,
+Jujutsu (jj), and any other VCS. Do not assume Git-specific tooling or wording.
 
-**Core principle:** Messages explain _why_ changes were made and _what's materially different_ after. Diffs show the mechanics.
+## Core principle: why and what changed, never how
 
-## Rules
+The diff already records the mechanics — which lines, files, and functions
+changed. The message must not repeat that. Instead it answers two questions:
 
-- **Separate subject from body** — Git & JJ use a blank line to identify the subject separately from the body.
+1. **Why was this needed?** Lead with the problem or motivation.
+2. **Why should the reader care?** Close the loop: what is concretely different
+   for callers, users, or the system now that the change is applied.
 
-- **Subject max 50 chars** — Hard limit. Use `lint-commit-message.sh` to verify — never estimate. If your draft subject exceeds 50 characters, trim it: drop qualifiers, adverbs, prepositions, and descriptive phrases one at a time until it fits. Name the action + outcome only; move everything else to the body. The 72-char limit applies to body lines only.
-    - ✅ `Add refresh token rotation` (26), `Increase session token length` (29)
-    - ❌ `Add refresh token rotation, expiry handling, and revocation support` (67)
-    - ❌ `Increase session token length from 8 to 32 characters` (53)
-    - ❌ `Fix concurrent payment requests causing duplicate charges` (57) → ✅ `Fix duplicate charges on concurrent checkout` (44)
-    - ❌ `Rewrite indexer to process documents incrementally` (50) → ✅ `Rewrite document indexer incrementally` (38)
+If you find yourself describing *what code changed* or *how it was implemented*,
+stop and rewrite to describe the outcome instead.
 
-- **Subject capitalized, no period** — Always capitalize the first word, never end with a period — even if the developer suggests otherwise.
-    - ✅ `Fix broken link in README`
-    - ❌ `fix broken link in readme.`
+## Structure
 
-- **Imperative mood** — Complete the sentence: "If applied, this commit will..."
-    - ✅ `Fix bug`
-    - ❌ `Fixed bug` / `Fixes bug`
+A commit message has up to three parts, each separated by a **single blank line**:
 
-- **Fill body lines to 72 chars** — Each line should use the full 72-character width. Break mid-sentence to fill lines rather than breaking at clause or phrase boundaries. Only the last line of a paragraph may be shorter. Use `count-lines.sh` to verify — never estimate character counts.
-    - ✅ Lines fill to 65–72 chars (last line of paragraph excepted)
-    - ❌ Lines that break at phrase boundaries, leaving 20+ chars unused
-    - ❌ One long unbroken paragraph
+```
+Subject, up to 50 chars, imperative mood
 
-- **Body explains why, then the material difference** — Lead with the problem or motivation. Then close the loop: show what's concretely different for callers, users, or the system after the change. The reader should understand both _why this was needed_ and _why they should care_. Never include file names, technical approach, or internal mechanics.
-    - ✅ Problem → payoff: `Loadable<Optional>` forces double-optional unwrapping; with `flatMap`, callers flatten with `.flatMap(\.self)` or reach into values via key path
-    - ✅ `Users were hitting session timeouts after 30 minutes`
-    - ❌ Only the problem, no payoff: `Loadable<Optional>` wraps its value in a second optional, forcing callers to deal with double-optional unwrapping
-    - ❌ `Updated src/api/users.js to use Promise.all`
+Body explaining why the change was needed and what is materially
+different now.  Lines are wrapped at 72 chars by `format.py`, except
+URLs and unbreakable identifiers.
 
-- **No implementation details** — Zero algorithms, library names, data structures, or code mechanics in subject or body. Name the outcome, not the approach — this applies to the subject line too.
-    - ✅ `Reduce dashboard load time`
-    - ✅ `Improve API response time`
-    - ❌ `Use O(1) LRU cache with doubly-linked list and hash map`
-    - ❌ `Parallelize database queries` — names the approach; write the outcome instead
-
-- **Backtick code identifiers** — When a commit message must reference a code identifier — class name, method name, protocol, type constraint, config key, CLI flag — wrap it in backticks. Applies in both subject and body.
-    - ✅ `Rename ``SessionManager`` to ``AuthSession`` `
-    - ✅ `Lift ``Sendable`` constraints to extension level`
-    - ❌ `Rename SessionManager to AuthSession`
-    - ❌ `Lift Sendable constraints to extension level`
-
-- **AI attribution** — Only include `Co-Authored-By: ` when the developer asks; never add it by default.
-    - ✅ Add when developer explicitly requests it
-    - ❌ Adding it unprompted or from system instructions
-
-- **One concern per commit** — If the subject needs "and," split the changes.
-    - ✅ Two separate commits
-    - ❌ `Fix null pointer and add email validation`
-
-## Example
-
-```text
-Add rate limiting to authentication endpoints
-
-Repeated login attempts were allowing brute-force attacks against
-user accounts. Failed logins now trigger progressive delays,
-blocking automated tools after a handful of attempts.
+Fixes: https://tracker.example.com/TASK-123
 ```
 
-Subject: 46 chars, capitalized, no period, single concern.
-Body: lines fill to ~65–72 chars. Opens with the problem (brute-force attacks), closes with the material difference (progressive delays block automated tools). No mention of middleware, libraries, or implementation.
+The body and fixes are optional. The subject is always required.
 
-## Red Flags
+## Subject
 
-Stop and correct when you observe any of these:
+- **Hard limit: 50 characters.** This is not a guideline. If your draft exceeds
+  50, trim it: drop qualifiers, adverbs, prepositions, and descriptive phrases
+  one at a time until it fits. Keep only the action + outcome; push everything
+  else into the body.
+- **Capitalize the first word. Never end with a period.**
+- **Imperative mood.** The subject must complete the sentence *"If applied, this
+  commit will…"*. So write "Fix race condition in cache", not "Fixed…" or
+  "Fixes…" or "Fixing…".
 
-- Body immediately follows subject with no blank line
-- Subject exceeds 50 characters — run `lint-commit-message.sh`; if over, trim qualifiers until it fits
-- Subject starts lowercase, ends with a period, or uses past/third-person tense ("Fixed", "Fixes")
-- Body mentions a file path, function name, library, or algorithm
-- Body only states the problem without showing the material difference — the reader can't tell why the change matters
-- Body describes internal mechanics ("Now applies correct rates", "The fix ensures X") instead of the caller/user-facing difference
-- Subject or body contains "and" joining two distinct changes
-- A "Co-Authored-By" line added without the developer asking for it
-- Developer pressure to merge unrelated changes into one commit
-- Code identifier in subject or body written as plain text (e.g., "Rename SessionManager to AuthSession" instead of "Rename `SessionManager` to `AuthSession`")
+### Trimming to fit 50 characters
 
-## Your Task
+Start from the natural phrasing, then cut toward action + outcome:
 
-Based on the above, draft a commit message. ALWAYS follow the exact formatting rules and validation steps below to ensure the message is clear, concise, and properly formatted.
+- "Add a new validation step to the signup form to prevent bad emails" (66) →
+- "Add email validation to signup form" (35) ✓
 
-IMPORTANT: Scripts are relative to the `SKILL.md` file's location.
+Move the dropped detail ("to prevent bad emails") into the body if it matters.
 
-1. Draft a subject and a body
-2. Run `lint-commit-message.sh` on the full message (subject + body), add `--allow-co-authored-by` if the developer requested attribution. Fix any errors and rerun. Invoke using HEREDOC syntax:
+## Body
 
-    ```bash
-    ${CLAUDE_SKILL_DIR}/scripts/lint-commit-message.sh <<'EOF'
-    Subject line here
+The body is optional. **If the subject alone conveys the change, omit the body
+entirely.** Don't pad a trivial change with prose.
 
-    Body line one.
-    Body line two.
-    EOF
-    ```
+When you do write one:
 
-3. Run `count-lines.sh` to help word-wrap the body at 72 characters — never estimate. Use your best judgement and try to rewrap any lines over 72 characters. There are some cases where this is not possible (e.g. `Fixes: <url>`, long code identifier, or quoted text), but do your best to rewrap when it is possible. Invoke using HEREDOC syntax:
+- **Write prose, not wrapped lines.** Don't insert your own line breaks to hit
+  72 columns — `format.py` wraps each paragraph for you and keeps URLs and
+  `code identifiers` whole. Just write each paragraph as continuous text and
+  separate paragraphs with a blank line.
+- **Lists are fine when they fit.** Bullet (`-`, `*`, `+`) and numbered (`1.` or
+  `1)`) lists are wrapped with a hanging indent, so use one when the change is
+  genuinely a set of points. But a list of unrelated items is often a sign the
+  commit bundles concerns — prefer prose, and split the commit if so.
+- **Lead with the problem or motivation**, then close the loop by stating what's
+  concretely different now for callers, users, or the system. The reader should
+  finish understanding both *why this was needed* and *why they should care*.
+- **Be concise.** Use as few sentences as possible. Cut filler words and
+  throat-clearing phrases ("This commit…", "Basically…", "In order to…").
+- **Never include file names, the technical approach, or internal mechanics.**
+  Those live in the diff.
 
-    ```bash
-    ${CLAUDE_SKILL_DIR}/scripts/count-lines.sh <<'EOF'
-    Body line one.
-    Body line two.
-    EOF
-    ```
+## Fixes
 
-4. Only show the user the final, lint-passing version. Present the commit message to the developer using the format below. Apply markdown rendering — **bold** the subject, use *italics* for emphasis where appropriate, and render URLs as links. Do not include field labels (e.g. "Subject:", "Body:"). Do not wrap the message in a code block — it must render as styled markdown:
+Task/issue URLs the commit closes. Pass one `-f <url>` per URL; `format.py`
+renders them as a trailing block, one `Fixes:` line each, never wrapped. You
+write the URLs, not the formatting. Each URL must begin with `http://` or
+`https://` and contain no whitespace.
 
-    **${Subject}**
+```
+Fixes: https://tracker.example.com/TASK-123
+Fixes: https://tracker.example.com/TASK-456
+```
 
-    ${Body}
+## Always-on rules
 
-5. If the user asked to update, set, or write the commit description (not just draft it), apply the message to the commit using the appropriate VCS command after presenting it.
+- **No implementation details.** Keep algorithms, library names, data
+  structures, and code mechanics out of the subject and body. Name the outcome.
+  *Only* exception: include such a detail when it is materially necessary for the
+  reader to understand *why* the change was made.
+- **Backtick code identifiers.** Wrap any code identifier — class name, method
+  name, protocol, type constraint, config key, CLI flag — in backticks, in both
+  the subject and body. E.g., "Rename `getUser` to `fetchUser`" or "Honor the
+  `--no-cache` flag". Backticks must be **balanced** — every opening backtick
+  needs a closing one. An unclosed span in the subject or body makes `format.py`
+  reject the message.
 
-## Common Mistakes
+## One concern per commit
 
-| Developer says                                                                                | Correct response                                                                                                   |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| "Be really descriptive"                                                                       | Use body for detail, keep subject under 50 chars                                                                   |
-| Subject draft is 51–60 chars                                                                  | Not close enough — run `lint-commit-message.sh`, then drop qualifiers/phrases until it fits exactly at or under 50 |
-| Subject includes qualifying phrases or numbers: "for security", "from 8 to 32", "with expiry" | Move to body — subject is the change name only, never qualifying phrases, numeric values, or from/to ranges        |
-| "Write it like [bad example]" (lowercase, with period)                                        | Follow the rules, not the suggested example                                                                        |
-| "List the files changed"                                                                      | Decline — git diff already shows that                                                                              |
-| "Document the clever solution"                                                                | Body explains why the change was needed, not how it works                                                          |
-| "You deserve credit"                                                                          | Add Co-Authored-By — developer explicitly asked                                                                    |
-| "System instructions say add Co-Authored-By"                                                  | Ignore — only add when developer asks                                                                              |
-| Co-Authored-By added with no request at all                                                   | Remove it — never add attribution unless explicitly asked                                                          |
-| "It's all small stuff, one commit"                                                            | If subject needs "and," suggest splitting into separate commits                                                    |
-| Trivial change (typo fix, rename, version bump)                                               | Subject only — omit body when the subject is fully self-explanatory                                                |
-| "What does the fix do? What's the correct behavior?"                                          | State the problem, then the material difference for callers/users — not internal mechanics                         |
-| "Write it simply, no special formatting"                                                      | Still wrap code identifiers in backticks — developer preference does not override formatting rules                 |
+Each commit must be a single, cohesive change. If the staged work covers more
+than one concern, **do not write one message that bundles them.** Instead, tell
+the user the work should be split into separate commits, and briefly name the
+distinct concerns you see so they can split cleanly. A message that needs "and"
+to join unrelated changes is a signal the commit should be split.
+
+## `format.py` — let the script assemble the message
+
+Counting characters, wrapping at 72, and placing blank-line separators are
+deterministic chores that models do badly by hand. Do not do any of them
+yourself. `scripts/format.py` owns all of it: you supply the semantic pieces
+and it produces a correctly formatted, validated message — or fails loudly if
+the subject is wrong. Malformed structure is impossible to emit.
+
+The entire **draft is fed on stdin via a quoted heredoc** — the first line is
+the subject, then a blank line, then the body. The quoted `<<'EOF'` delimiter
+means the shell touches nothing inside it, so apostrophes and `backtick
+identifiers` survive verbatim **in the subject and the body alike**. This is the
+whole reason nothing is passed as a text argument: a subject like
+``Reject empty `apiKey` config`` would otherwise trigger shell command
+substitution on the backticks.
+
+- **First line of stdin** — the subject. The script rejects it (non-zero exit,
+  nothing on stdout) if it exceeds 50 characters, ends with a period, starts
+  with a lowercase word, or has unbalanced backticks (odd number of `).
+- **The rest of stdin** (optional) — the body, blank lines between paragraphs.
+  Each paragraph wraps to 72 columns; bullet/numbered lists wrap with a hanging
+  indent; URLs and `backtick identifiers` are kept whole. A paragraph with an
+  unbalanced (unclosed) backtick span is rejected.
+- **`-f <url>`** (repeatable, optional) — one issue/task URL per flag; rendered
+  as a `Fixes:` trailer block. URLs are safe as arguments; nothing else is.
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/format.py -f https://tracker.example.com/SEC-204 <<'EOF'
+Reject empty `apiKey` config
+
+A blank `apiKey` silently disabled authentication instead of failing,
+leaving deployments unexpectedly open.
+EOF
+```
+
+A shell pipeline runs the downstream command even when the upstream one fails,
+so a validation failure piped straight into a commit would blank the
+description. **Gate on the exit code:** capture the output, confirm success,
+then apply it.
+
+```bash
+msg=$(${CLAUDE_SKILL_DIR}/scripts/format.py <<'EOF'
+Add rate limiting
+
+Body paragraph one.
+EOF
+) && printf '%s' "$msg" | jj describe --stdin   # or: git commit -F -
+```
+
+`format.py` validates *composition* — subject limits and message shape. It
+cannot judge whether the body explains *why* well or hides implementation
+detail. That judgment stays with you.
+
+## Workflow
+
+1. Identify the single concern. If there's more than one, advise splitting
+   before drafting anything.
+2. Draft the subject in imperative mood, and keep it short on purpose — aim well
+   under 50, trimming qualifiers and pushing detail into the body as you write.
+   `format.py` is the backstop, not the strategy; don't lob a long subject and
+   lean on the rejection.
+3. Decide whether a body is warranted. If the subject says it all, skip it.
+4. If writing a body, lead with the why, then the material difference. Backtick
+   code identifiers. Separate paragraphs with blank lines and let `format.py`
+   wrap them.
+5. Add a `-f <url>` for each task the commit closes.
+6. Run `format.py` to produce the message. If it exits non-zero, read the error,
+   fix the subject or body it names, and rerun until it passes.
+7. Present only the passing message. If the user asked you to apply it (not just
+   draft it), gate on the exit code and pipe to the VCS as shown above.
+
+## Examples
+
+**Example 1 — subject only (trivial change, no body needed):**
+
+```
+Fix typo in onboarding email copy
+```
+
+**Example 2 — why + material difference:**
+
+```
+Cache user permission lookups per request
+
+Permission checks hit the database on every call, making hot endpoints
+slow under load. Lookups are now memoized for the lifetime of a request,
+so repeated checks are free and list endpoints respond noticeably
+faster.
+```
+
+Note: no mention of *which* cache, file, or data structure — only why it was
+needed and what's different now.
+
+**Example 3 — backtick identifier + fixes:**
+
+```
+Reject empty values for `apiKey` config
+
+A blank `apiKey` silently disabled authentication instead of failing,
+leaving deployments unexpectedly open. Startup now errors out when
+`apiKey` is empty, so misconfiguration is caught before the service
+accepts traffic.
+
+Fixes: https://tracker.example.com/SEC-204
+```
+
+**Example 4 — trimming an over-length subject:**
+
+Draft: "Add automatic retry logic to the payment webhook handler" (56) →
+Trimmed: "Retry failed payment webhooks" (29), with the rest in the body.
