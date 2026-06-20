@@ -1,5 +1,5 @@
 ---
-name: my-review-code
+name: my-code-review
 description: Use when work is complete (tests pass, feature works) and ready to commit or deploy
 allowed-tools: Agent, TaskCreate
 ---
