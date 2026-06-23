@@ -1,0 +1,23 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+DOTFILES_DRY_RUN="${DOTFILES_DRY_RUN:-0}"
+
+install_copies() {
+    COPY_DIR="$HOME/.dotfiles/roots/copy/User"
+
+    if [[ "$DOTFILES_DRY_RUN" == "1" ]]; then
+        echo "Would copy \"$COPY_DIR\" to \"$HOME\"."
+    else
+        echo "Copying \"$COPY_DIR\" to \"$HOME\"..."
+        rsync -razI --ignore-existing --progress "$COPY_DIR/" "$HOME"
+    fi
+}
+
+install_copies

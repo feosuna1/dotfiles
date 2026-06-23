@@ -1,0 +1,49 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+DOTFILES_DRY_RUN="${DOTFILES_DRY_RUN:-0}"
+
+install_symlinks() {
+    TARGET_ROOT_DIR="$HOME"
+    SYMLINK_DIR="$HOME/.dotfiles/roots/symlinks/User"
+
+    find "$SYMLINK_DIR/" -type f \( ! -name ".DS_Store" \) | while read -r -d $'\n' symlink; do
+        symlink="${symlink#"$SYMLINK_DIR"/}"
+        if [[ "$symlink" == *".symlink" ]]; then
+            # A symlink file contains a single line representing the target to symlink to
+            src=$(cat "$SYMLINK_DIR/$symlink")
+            src="${src/#\~/$HOME}"
+            dest="$TARGET_ROOT_DIR/${symlink%.symlink}"
+        else
+            src="$SYMLINK_DIR/$symlink"
+            dest="$TARGET_ROOT_DIR/$symlink"
+        fi
+
+        # Only create the symlink if the source file or directory exists.
+        # Existing symlinks are safe to update; real files/directories are left
+        # alone so install.sh does not overwrite user data.
+        if [[ -e "$src" || -L "$src" ]]; then
+            if [[ -L "$dest" || ! -e "$dest" ]]; then
+                if [[ "$DOTFILES_DRY_RUN" == "1" ]]; then
+                    echo "Would link \"$dest\" -> \"$src\""
+                else
+                    echo "Linking \"$dest\" -> \"$src\""
+                    mkdir -p "$(dirname "$dest")"
+                    ln -sfn "$src" "$dest"
+                fi
+            else
+                echo "Skipping \"$symlink\"; \"$dest\" exists and is not a symlink."
+            fi
+        else
+            echo "Skipping \"$symlink\"; \"$src\" does not exist."
+        fi
+    done
+}
+
+install_symlinks
