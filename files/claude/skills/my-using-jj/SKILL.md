@@ -200,6 +200,8 @@ jj bookmark create feature-x -r @-
 jj git push --bookmark feature-x
 ```
 
+`jj git push --bookmark NAME` pushes a brand-new (not-yet-on-remote) bookmark without any extra flag. Don't reach for `--allow-new` — that's a Git/other-tool habit, and on jj versions that lack it the flag errors out with "unexpected argument" and wastes a round trip. If a push is rejected for a different reason, read the error rather than guessing flags.
+
 ### Recover from Mistakes
 
 ```bash
