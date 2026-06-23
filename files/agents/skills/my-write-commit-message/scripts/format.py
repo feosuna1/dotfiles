@@ -36,6 +36,7 @@ import argparse
 import re
 import sys
 import unicodedata
+from typing import NamedTuple
 
 SUBJECT_LIMIT = 50   # hard cap: the subject is rejected if it exceeds this
 BODY_WIDTH = 72      # column the body wraps at (protected tokens may exceed it)
@@ -49,7 +50,7 @@ def display_width(text: str) -> int:
     return sum(0 if unicodedata.combining(c) else 1 for c in text)
 
 
-def validate_subject(subject: str):
+def validate_subject(subject: str) -> list[str]:
     """Return a list of human-readable problems with the subject."""
     problems = []
     stripped = subject.strip()
@@ -84,20 +85,20 @@ def tokenize(paragraph: str):
             excerpt = excerpt[:40] + "…"
         raise ValueError(f"unbalanced backtick (odd number of `) in: {excerpt!r}")
     tokens = []
-    cur = []
+    char_buf = []
     in_backtick = False
     for ch in paragraph:
         if ch == "`":
             in_backtick = not in_backtick
-            cur.append(ch)
+            char_buf.append(ch)
         elif ch.isspace() and not in_backtick:
-            if cur:
-                tokens.append("".join(cur))
-                cur = []
+            if char_buf:
+                tokens.append("".join(char_buf))
+                char_buf = []
         else:
-            cur.append(ch)
-    if cur:
-        tokens.append("".join(cur))
+            char_buf.append(ch)
+    if char_buf:
+        tokens.append("".join(char_buf))
     return tokens
 
 
@@ -126,6 +127,13 @@ def wrap_tokens(tokens, width: int, first_indent: str = "", cont_indent: str = "
     return lines
 
 
+class ListItem(NamedTuple):
+    """A Markdown list item being accumulated mid-wrap."""
+    first: str          # leading text of the first line (marker + indent)
+    cont: str           # leading text of continuation lines (hanging indent)
+    content: list[str]  # content fragments, joined when the item is flushed
+
+
 def wrap_block(block: str, width: int):
     """Wrap one blank-line-delimited block. Prose lines reflow as a paragraph;
     a line opening with a list marker (-, *, +, 1., 1)) starts an item that
@@ -133,7 +141,7 @@ def wrap_block(block: str, width: int):
     it (lazy continuation), matching how the marker would read in Markdown."""
     out = []
     prose = []          # pending prose lines
-    item = None         # pending list item: (first_indent, cont_indent, [content])
+    item = None         # pending ListItem being accumulated
 
     def flush_prose():
         if prose:
@@ -154,9 +162,9 @@ def wrap_block(block: str, width: int):
             flush_item()
             indent, marker, content = m.groups()
             first = f"{indent}{marker} "
-            item = (first, " " * display_width(first), [content.strip()])
+            item = ListItem(first, " " * display_width(first), [content.strip()])
         elif item is not None:
-            item[2].append(line.strip())
+            item.content.append(line.strip())
         elif line.strip():
             prose.append(line.strip())
     flush_prose()
@@ -177,7 +185,7 @@ def parse_draft(raw: str):
     return text[:newline].strip(), text[newline + 1:]
 
 
-def build_message(subject: str, body_text: str, fixes, width: int = BODY_WIDTH) -> str:
+def build_message(subject: str, body_text: str, fixes: list[str], width: int = BODY_WIDTH) -> str:
     out = [subject.strip()]
     for block in re.split(r"\n\s*\n", body_text.strip("\n")):
         wrapped = wrap_block(block, width)

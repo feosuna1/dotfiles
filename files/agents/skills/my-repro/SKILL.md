@@ -5,8 +5,6 @@ description: Reproduce a reported or theorized bug in the running app to confirm
 
 # Reproduce a Bug
 
-Reproduces a reported or theorized bug in a runtime app environment. The goal is to confirm whether the bug is real and can be observed, which is a critical step before writing a fix.
-
 The goal is to turn a bug theory into steps the user can run by hand in the app, confirm the bug actually shows up, and end with a clear yes/no on whether the theory holds — so you go into the fix knowing the trigger instead of guessing.
 
 A reproduction is evidence. The point isn't to "make the bug happen" by any means necessary; it's to learn whether the bug happens for the reason you think it does. Keep that framing — it shapes how clean the repro needs to be.

@@ -24,7 +24,7 @@ This is the user's personal `dotfiles` that configures the development environme
 **Adding Claude Configuration:**
 
 - Rules (global instructions): `files/agents/rules/<name>.md` — agent-agnostic; indexed by `files/agents/RULES.md`
-- Skills (workflows): `files/claude/skills/<name>/SKILL.md`
+- Skills (workflows): `files/agents/skills/<name>/SKILL.md` if agent-agnostic, else `files/claude/skills/<name>/SKILL.md` for Claude-specific ones
 - Both automatically loaded via symlink to `~/.claude/` (Claude's `rules/` symlink points at `files/agents/rules/`)
 
 **Keeping Claude and Codex in sync:**
@@ -97,11 +97,12 @@ markdownlint-cli2 "**/*.md"
 ```text
 .dotfiles/
 ├── files/
-│   ├── agents/           Agent-agnostic config (RULES.md index; rules/ = global rules)
-│   │   └── rules/        Global instructions and coding standards
+│   ├── agents/           Agent-agnostic config (RULES.md index; rules/ + skills/)
+│   │   ├── rules/        Global instructions and coding standards
+│   │   └── skills/       Agent-agnostic workflow skills
 │   ├── bin/              Custom commands (git-*, configure-*, utilities)
 │   ├── claude/           Claude Code configuration (deployed to ~/.claude/)
-│   │   └── skills/       Custom workflow skills
+│   │   └── skills/       Claude-specific workflow skills
 │   └── config/           Shell and tool configurations
 │       ├── fish/         Fish shell theme and environment
 │       ├── git/          Git config, ignore patterns, hooks
@@ -121,7 +122,7 @@ markdownlint-cli2 "**/*.md"
 **Claude Code Integration:**
 
 - Global rules in `files/agents/rules/` apply to all projects (Claude loads them via its `rules/` symlink; `files/agents/RULES.md` indexes them for other agents)
-- Skills in `files/claude/skills/` provide specialized workflows
+- Skills in `files/agents/skills/` (agent-agnostic) and `files/claude/skills/` (Claude-specific) provide specialized workflows
 - `configure-claude` script installs Claude plugins from marketplace
 - Settings symlinked to `~/.claude/` (rules, settings.json)
 
