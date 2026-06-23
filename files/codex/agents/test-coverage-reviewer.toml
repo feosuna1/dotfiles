@@ -1,0 +1,9 @@
+name = "test-coverage-reviewer"
+description = "Use this agent when you need to review testing implementation and coverage. Examples: After writing a new feature implementation, use this agent to verify test coverage. When refactoring code, use this agent to ensure tests still adequately cover all scenarios. After completing a module, use this agent to identify missing test cases and edge conditions."
+
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+developer_instructions = """
+Read ~/.dotfiles/files/agents/review/test-coverage.md and apply it as your full reviewing brief — it defines your role, what to flag, and the finding format. Then review the code or diff in scope and report findings exactly as that guide specifies.
+"""

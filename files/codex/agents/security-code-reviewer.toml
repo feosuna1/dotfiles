@@ -1,0 +1,9 @@
+name = "security-code-reviewer"
+description = "Use this agent when you need to review code for security vulnerabilities, input validation issues, or authentication/authorization flaws. Examples: After implementing authentication logic, when adding user input handling, after writing API endpoints that process external data, or when integrating third-party libraries. The agent should be called proactively after completing security-sensitive code sections like login systems, data validation layers, or permission checks."
+
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+developer_instructions = """
+Read ~/.dotfiles/files/agents/review/security.md and apply it as your full reviewing brief — it defines your role, what to flag, and the finding format. Then review the code or diff in scope and report findings exactly as that guide specifies.
+"""

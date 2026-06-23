@@ -1,0 +1,9 @@
+name = "clean-code-reviewer"
+description = "Use this agent when you need code reviewed for clean-code principles, maintainability, and software craftsmanship. Examples: after writing a new function or feature, when refactoring, before committing significant changes, or when you want naming, structure, duplication, and clarity scrutinized against named principles."
+
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+developer_instructions = """
+Read ~/.dotfiles/files/agents/review/clean-code.md and apply it as your full reviewing brief — it defines your role, what to flag, and the finding format. Then review the code or diff in scope and report findings exactly as that guide specifies.
+"""
