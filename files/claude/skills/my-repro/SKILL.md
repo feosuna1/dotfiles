@@ -29,7 +29,7 @@ Prefer repros that need **no code changes**. A bug that shows up on untouched co
 
 ## 3. Optional helper code
 
-Some states are hard to reach by hand: a race that needs precise timing, a feature flag, seeded data, a forced error path. If the theory hinges on one of these, offer minimal helper code. Ask first with `AskUserQuestion` — two options: **Add helper** / **Skip** — because helper code is a real edit to their tree and they may prefer to set up the state another way.
+Some states are hard to reach by hand: a race that needs precise timing, a feature flag, seeded data, a forced error path. If the theory hinges on one of these, offer minimal helper code. Ask first — present two options: **Add helper** / **Skip** — because helper code is a real edit to their tree and they may prefer to set up the state another way.
 
 If adding:
 
@@ -50,7 +50,7 @@ Then stop. They have to run the app; you can't observe the symptom for them.
 
 ## 5. Ask the outcome
 
-When they come back, use `AskUserQuestion` with three options:
+When they come back, ask them to pick one of three outcomes:
 
 - **Reproduced** — the symptom showed up as the theory predicted.
 - **Did not reproduce** — it didn't happen.
