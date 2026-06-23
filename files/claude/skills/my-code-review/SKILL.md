@@ -7,7 +7,8 @@ Review the diff in stages: pick the reviewers, run them, validate what they surf
 
 **Step 1 — Select reviewers.** Run the reviewers whose domain the diff touches; skip the rest:
 
-- `code-quality-reviewer` — always applies.
+- `code-quality-reviewer` — correctness, robustness, and language idioms. Skip only if the diff has no runtime code (config- or docs-only).
+- `clean-code-reviewer` — naming, function size, duplication, comment discipline, and craftsmanship. Always applies — even docs-only diffs, since limiting and justifying comments is part of its remit.
 - `performance-reviewer` — skip if there's no runtime code (config- or docs-only).
 - `security-code-reviewer` — skip if there are no inputs, auth flows, or data handling.
 - `test-coverage-reviewer` — skip only if the diff has no implementation files (no source or tests).
