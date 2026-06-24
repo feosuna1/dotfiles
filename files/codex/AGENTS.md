@@ -13,9 +13,14 @@ config that only Codex consumes — anything agent-agnostic belongs in
   review guide in `files/agents/review/` by absolute path. Codex has no `@import`,
   so the instructions tell the agent to read that file at runtime; the portable
   review knowledge stays in the shared guide.
-- `rules/` — reserved for Codex-only rule fragments. The shared global rules are
-  not duplicated here: Codex consumes them by referencing `files/agents/RULES.md`
-  by absolute path from `~/.codex/AGENTS.md`.
+- `rules/` — Codex command-permission rules (`default.rules`, Starlark
+  `prefix_rule` allow/prompt/forbidden), deployed to `~/.codex/rules/`. The shared
+  global *instruction* rules aren't duplicated here: Codex consumes those by
+  referencing `files/agents/RULES.md` by absolute path from `~/.codex/AGENTS.md`.
+
+Filesystem path protections (`[permissions]` deny globs) are *not* kept here.
+They live in the machine-local `~/.codex/config.toml`, which Codex writes its own
+state into and which changes too often to track — set them there directly.
 
 ## The boundary
 

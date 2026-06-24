@@ -1,0 +1,66 @@
+# Codex command permission rules — deployed to ~/.codex/rules/default.rules
+#
+# Mirrors the Claude Code permission policy (files/claude/settings.json) for
+# Codex. Rules are Starlark: `prefix_rule` matches a command's argv by PREFIX,
+# and `decision` is one of "allow" (run without prompting), "prompt" (ask first),
+# or "forbidden" (block). A list at a position means "any of these", e.g.
+# ["push", "fetch"].
+
+# --- Always allowed (run without prompting) ---
+prefix_rule(pattern = ["brew", "info"], decision = "allow")
+prefix_rule(pattern = ["brew", "list"], decision = "allow")
+prefix_rule(pattern = ["cat"], decision = "allow")
+prefix_rule(pattern = ["cut"], decision = "allow")
+prefix_rule(pattern = ["date"], decision = "allow")
+prefix_rule(pattern = ["df"], decision = "allow")
+prefix_rule(pattern = ["du"], decision = "allow")
+prefix_rule(pattern = ["echo"], decision = "allow")
+prefix_rule(pattern = ["file"], decision = "allow")
+prefix_rule(pattern = ["find"], decision = "allow")
+prefix_rule(pattern = ["gh", "pr", "view"], decision = "allow")
+prefix_rule(pattern = ["git", "branch"], decision = "allow")
+prefix_rule(pattern = ["git", "diff"], decision = "allow")
+prefix_rule(pattern = ["git", "log"], decision = "allow")
+prefix_rule(pattern = ["git", "show"], decision = "allow")
+prefix_rule(pattern = ["git", "stash", "list"], decision = "allow")
+prefix_rule(pattern = ["git", "status"], decision = "allow")
+prefix_rule(pattern = ["grep"], decision = "allow")
+prefix_rule(pattern = ["head"], decision = "allow")
+prefix_rule(pattern = ["jj", "diff"], decision = "allow")
+prefix_rule(pattern = ["jj", "log"], decision = "allow")
+prefix_rule(pattern = ["jj", "show"], decision = "allow")
+prefix_rule(pattern = ["jj", "status"], decision = "allow")
+prefix_rule(pattern = ["jq"], decision = "allow")
+prefix_rule(pattern = ["ls"], decision = "allow")
+prefix_rule(pattern = ["ps"], decision = "allow")
+prefix_rule(pattern = ["pwd"], decision = "allow")
+prefix_rule(pattern = ["rg"], decision = "allow")
+prefix_rule(pattern = ["sort"], decision = "allow")
+prefix_rule(pattern = ["stat"], decision = "allow")
+prefix_rule(pattern = ["tail"], decision = "allow")
+prefix_rule(pattern = ["tr"], decision = "allow")
+prefix_rule(pattern = ["uname"], decision = "allow")
+prefix_rule(pattern = ["uniq"], decision = "allow")
+prefix_rule(pattern = ["wc"], decision = "allow")
+prefix_rule(pattern = ["which"], decision = "allow")
+prefix_rule(pattern = ["whoami"], decision = "allow")
+
+# --- Always ask (prompt before running) ---
+prefix_rule(pattern = ["curl"], decision = "prompt")
+prefix_rule(pattern = ["jj", "git", "push"], decision = "prompt")
+prefix_rule(pattern = ["jj", "push"], decision = "prompt")
+prefix_rule(pattern = ["rm"], decision = "prompt")
+
+# Force/destructive git. Prefix rules match argv from the start, so these only
+# catch the flag immediately after the subcommand — `git push --force ...`,
+# `git push -f ...`, `git reset --hard ...`. A flag that trails other args
+# (e.g. `git push origin main --force`) is NOT a prefix and slips through;
+# Codex's rule engine can't express "flag anywhere", so this is best-effort.
+prefix_rule(pattern = ["git", "push", "--force"], decision = "prompt")
+prefix_rule(pattern = ["git", "push", "-f"], decision = "prompt")
+prefix_rule(pattern = ["git", "reset", "--hard"], decision = "prompt")
+
+# --- Always forbidden (block without prompting) ---
+prefix_rule(pattern = ["chmod"], decision = "forbidden")
+prefix_rule(pattern = ["chown"], decision = "forbidden")
+prefix_rule(pattern = ["git", "clean"], decision = "forbidden")
