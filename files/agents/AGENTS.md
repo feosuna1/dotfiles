@@ -1,35 +1,29 @@
-# Agent Rules
+# Agent-Agnostic Configuration
 
-A portable, agent-agnostic set of standing rules for AI coding agents.
+Portable config shared across AI coding agents (Claude Code, Codex, and others).
+Anything that doesn't depend on a specific agent lives here, so there is one
+source of truth; Claude-only config lives in `files/claude/` (see its `AGENTS.md`).
 
-- **[`RULES.md`](RULES.md)** — the entry point: a progressive-disclosure index.
-  It's a table of contents whose entries link to the rule bodies and describe
-  *when* to read each one.
-- **`rules/`** — the rule bodies, one self-contained file per rule.
+## Contents
 
-An agent reads `RULES.md`, then opens a rule file only when its situation
-applies — rather than loading every rule up front.
+- `RULES.md` — progressive-disclosure index of the global rules: a table of
+  contents linking to each rule body with a "when to read it" hook.
+- `rules/` — the rule bodies, one self-contained file per rule.
+- `skills/` — agent-agnostic workflow skills (one `SKILL.md` directory each). A
+  skill that depends on a Claude feature lives in `files/claude/skills/` instead.
+- `review/` — shared code-review guides. A reviewer subagent under
+  `files/claude/agents/` (and its Codex twin under `files/codex/agents/`) wraps
+  one of these so the review knowledge has a single home.
 
-## Installing into an agent
+## How agents consume it
 
-To make an agent use these rules, add a reference to `RULES.md` in that agent's
-global-instructions file, using the **absolute path**. Don't symlink the
-agent's file to `RULES.md` and don't copy `RULES.md` elsewhere: `RULES.md` links
-to its rule bodies with paths relative to its own location, so the agent must
-read it in place (at `~/.dotfiles/files/agents/RULES.md`) for the `rules/` links
-to resolve.
-
-**Codex** reads `~/.codex/AGENTS.md` as global instructions. Add a line there
-pointing at this index:
-
-```markdown
-Follow the standing rules indexed at ~/.dotfiles/files/agents/RULES.md.
-```
-
-The same pattern works for any agent that loads a global instructions file:
-reference `~/.dotfiles/files/agents/RULES.md` from it by absolute path.
-
-**Claude Code** is wired differently and does not use `RULES.md`. It loads every
-file in `rules/` eagerly through its native `rules/` mechanism —
-`~/.claude/rules/dotfiles` symlinks to `~/.dotfiles/files/agents/rules`. The
-rule bodies are the single source of truth shared by both paths.
+- **Claude Code** loads `rules/` eagerly via `~/.claude/rules/dotfiles` →
+  `files/agents/rules`; picks up `skills/` through per-skill symlinks in
+  `~/.claude/skills/`; and pulls a `review/` guide into a subagent with `@import`.
+- **Codex and other agents** reference `RULES.md` by **absolute path** from the
+  agent's global-instructions file — e.g. add to `~/.codex/AGENTS.md`: `Follow the
+  standing rules indexed at ~/.dotfiles/files/agents/RULES.md`. Use the absolute
+  path; don't symlink or copy `RULES.md`, since it links to `rules/` relative to
+  its own location and must be read in place. Skills are symlinked into
+  `~/.agents/skills/`; a `review/` guide is read by absolute path from the Codex
+  agent's `developer_instructions`.
