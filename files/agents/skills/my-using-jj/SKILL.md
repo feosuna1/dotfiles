@@ -43,6 +43,26 @@ jj is **not Git with different commands.** These paradigm shifts matter:
 | `jj parallelize REVSETS` | Make revisions siblings                     |                                                                             |
 | `jj abandon`             | Discard revision(s)                         | `-r REVSETS`                                                                |
 
+#### Pitfalls when rewriting non-interactively
+
+These two bite in scripted or agent-driven sessions where no editor can be opened:
+
+- **`jj split` opens editors.** With no filesets it launches the interactive diff
+  editor; even *with* filesets, if the split revision has a description it then
+  prompts an editor for *each* resulting commit's message. `-m` only supplies the
+  selected (first) commit's message — the remaining commit still prompts. To
+  reorder/extract files non-interactively, **don't use `split`**: insert an empty
+  commit and move files into it instead —
+  `jj new -A <parent> --no-edit -m "msg"` then
+  `jj squash --from @ --into @- <paths>` (a partial squash doesn't prompt).
+- **`jj absorb` follows line-blame, not intent.** It distributes each working-copy
+  hunk into the ancestor commit that *last touched those lines* — which may not be
+  the commit you'd consider its logical home. Example: a new paragraph added to a
+  file lands in whatever commit first *created* that file, not the related one
+  next to it. Read the "Absorbed changes into …" output, and `jj undo` if it
+  picked the wrong target. When intent matters, prefer an explicit
+  `jj squash --into <rev> <paths>`.
+
 ### Inspecting State
 
 | Command             | Purpose                        | Key Flags                                                             |
