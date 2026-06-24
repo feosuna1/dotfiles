@@ -14,10 +14,9 @@ agent-agnostic belongs in `files/agents/` instead.
   review knowledge is agent-agnostic, the body `@import`s a shared guide from
   `files/agents/review/` and this file keeps only the Claude-specific frontmatter
   (`tools`, `model`); the portable knowledge stays in the shared guide.
-- `skills/` — Claude-specific skills only. Agent-agnostic skills live in
-  `files/agents/skills/`; a skill stays here only when it depends on a Claude
-  feature (e.g. `my-code-review` dispatches named Claude subagents and files
-  findings with `TaskCreate`).
+- `skills/` — Claude-specific skills only (currently none — every skill is
+  agent-agnostic under `files/agents/skills/`). A skill belongs here only if it
+  depends on a Claude-only feature that can't be generalized.
 
 Claude plugins are installed separately via the `configure-claude` script in
 `files/bin/`, not stored here.

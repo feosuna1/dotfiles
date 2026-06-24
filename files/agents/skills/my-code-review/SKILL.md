@@ -29,8 +29,8 @@ Dispatch one fresh validator per finding, in parallel, none of which produced th
 - Try to refute the claim; default to *not confirmed* when the evidence is ambiguous, unreproducible, or already handled elsewhere.
 - Return **CONFIRMED** (with file:line evidence, and for a bug how it manifests), **REFUTED**, or **UNCERTAIN**.
 
-Validate with the matching-domain reviewer where its expertise helps (a fresh `security-code-reviewer` for a security claim, `performance-reviewer` for a performance claim); otherwise a general-purpose agent. Keep only CONFIRMED findings.
+Validate with the matching-domain reviewer where its expertise helps (a fresh `security-code-reviewer` for a security claim, `performance-reviewer` for a performance claim); otherwise a fresh general-purpose agent with no special role. Keep only CONFIRMED findings.
 
 Non-falsifiable candidates have nothing to verify — hold them to a high bar yourself, keeping only the few that are concretely actionable and dropping the rest. Keep an Informational security note only if it's actionable.
 
-**Step 5 — File confirmed findings.** With TaskCreate, create one task per surviving finding, grouped by severity and area. Include the claim, file:line, the validator's confirming evidence, and a recommended fix where available. If nothing survived, say so — an empty list is the right outcome when there are no high-signal issues.
+**Step 5 — File confirmed findings.** Record one task per surviving finding, grouped by severity and area — using your environment's task tool (e.g. `TaskCreate`) if it has one, otherwise as a structured list. Include the claim, file:line, the validator's confirming evidence, and a recommended fix where available. If nothing survived, say so — an empty list is the right outcome when there are no high-signal issues.
