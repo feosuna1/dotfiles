@@ -57,6 +57,9 @@
     ],
     "ask": [
       "Bash(curl *)",
+      "Bash(git push * --force *)",
+      "Bash(git push * -f *)",
+      "Bash(git reset * --hard *)",
       "Bash(jj git push *)",
       "Bash(jj push *)",
       "Bash(rm *)"
@@ -65,11 +68,7 @@
     "deny": [
       "Bash(chmod *)",
       "Bash(chown *)",
-      "Bash(curl *)",
       "Bash(git clean *)",
-      "Bash(git push * --force *)",
-      "Bash(git push * -f *)",
-      "Bash(git reset * --hard *)",
       "Edit(**/.env.*)",
       "Edit(**/.env)",
       "Edit(**/credentials/**)",
