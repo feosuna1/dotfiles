@@ -16,6 +16,21 @@ jj is **not Git with different commands.** These paradigm shifts matter:
 5. **No current branch.** Bookmarks (jj's branches) don't advance automatically with new commits. You move them explicitly.
 6. **Everything is undoable.** Every operation is recorded. `jj undo` reverses the last operation. `jj op restore` jumps to any prior state.
 
+### An empty `@` is normal — don't "fix" it
+
+A freshly checked-out `@` with no changes and no description is the **expected resting state** in jj, not a problem to correct. It *is* the working copy: start editing files and they become part of `@` automatically. This trips up Git-trained instincts — there is no detached-HEAD hazard, no "uncommitted work" to rescue, no need to create a commit before you can work.
+
+**An empty `@` is not a "stray," "leftover," or "orphan" commit.** Don't describe it that way, and don't `jj abandon` it to "clean up." After many operations — `jj squash`, `jj new`, finishing a change — jj routinely leaves you on a fresh empty `@`. That is jj working as designed, putting you back at the resting state ready for the next change, not a mess left behind. Abandoning it just creates another empty `@` in its place.
+
+Specifically, when `@` is empty:
+
+- **Don't run `jj new` to "make a commit to work in."** You are already in one. `jj new` just creates *another* empty commit on top — usually not what you want.
+- **Don't abandon it as cleanup.** An empty `@` with no description is the normal idle state, not debris. Leave it; start editing.
+- **Don't feel obligated to describe it.** An empty or in-progress `@` can carry no description. Add one with `jj describe` (or `jj commit`) when the change is far enough along to name — describing an empty commit up front is fine but never required.
+- **`empty()` and the "(empty)" / "(no description set)" markers in `jj log` are informational, not warnings.** They describe state; they are not errors to act on.
+
+Only deliberately create a new change (`jj new`/`jj commit`) when you actually want to *start a separate change* — e.g. the current one is done and you're moving on. Working inside the existing empty `@` is the default.
+
 ## Commands
 
 ### Creating and Editing Changes
@@ -202,15 +217,33 @@ jj new -m "Next change"                # Start next change in stack
 
 ### Amend an Earlier Commit
 
+**Prefer working on a new commit on top of the target, then squashing it back.** When you need to modify a commit already in history, don't edit it in place — create a descendant commit, make your changes there, review them in isolation, then fold them into the target with `jj squash`.
+
 ```bash
-# Option 1: Edit directly
+# Preferred: new-commit-on-top, then squash back
+jj new TARGET              # new child of TARGET; @ becomes it — leave it UNDESCRIBED
+# ... make changes (auto-tracked into @) ...
+jj diff                    # review the fix as its own diff
+jj squash --into TARGET    # fold @ into TARGET; descendants auto-rebase
+```
+
+**Leave the WIP commit undescribed.** Don't pass `-m` to the `jj new` above and don't `jj describe` it. When you squash a commit that *has* its own description into the target, jj combines the two descriptions — opening an editor to merge them (or concatenating them), which corrupts the target's message and stalls on an editor prompt in an agent session. An undescribed `@` squashes cleanly: jj keeps the target's description as-is and never prompts.
+
+Why prefer this over editing in place:
+
+- **Your work stays isolated and reviewable.** The fix is its own diff until you deliberately commit it into the target, instead of silently rewriting a historical commit as you type.
+- **It's easy to back out.** Don't like the fix? `jj abandon @` and the target is untouched. With `jj edit` you've already rewritten the target.
+- **You squash on your terms.** Inspect with `jj diff` / `jj show` first, then fold it in once you're happy — no half-finished edits living inside history.
+
+```bash
+# Alternative: edit the commit directly (when a child-then-squash is overkill)
 jj edit CHANGE_ID
 # ... make changes ...
 jj new   # Return to creating new work
 
-# Option 2: Absorb from working copy
-# Make fixes in working copy, then:
-jj absorb   # Auto-distributes hunks to matching ancestors
+# Alternative: absorb from working copy (distributes hunks by line-blame)
+# Make fixes in the working copy, then:
+jj absorb   # Auto-distributes hunks to matching ancestors — see absorb pitfall above
 ```
 
 ### Push a Bookmark
