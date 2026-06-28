@@ -1,0 +1,207 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+# wt — create and remove per-project worktrees, backed by jj or git.
+#
+#   wt new [-p PROJECT] [-b BASE] <name> [ref]   Create a worktree, print its path.
+#   wt rm  [-p PROJECT] [-b BASE] <name>         Remove a worktree by name.
+#   wt rm  --dir <path>                          Remove the worktree at an exact path.
+#
+# The optional <ref> bases the new worktree on a revision: a git commit-ish for
+# git repos, a jj revision for jj repos. Omit it to branch from the project's
+# current state.
+#
+# Worktrees live at <BASE>/<project-slug>/<name>, where <project-slug> encodes
+# the project's repository-root path the same way Claude Code names its
+# ~/.claude/projects/ dirs: every non-alphanumeric character replaced one-to-one
+# with a hyphen (e.g. /Users/feo/.dotfiles -> -Users-feo--dotfiles). BASE
+# defaults to ~/.worktrees; PROJECT defaults to the current directory and is
+# resolved to its repository root so the slug is stable from any subdirectory.
+#
+# On create, paths listed in <project-root>/.worktreeinclude are symlinked into
+# the worktree, pointing back at the source tree. Each non-comment line is a path
+# or shell glob relative to the project root; globs expand against the source
+# tree and a matched directory is linked as a single symlink. This carries
+# gitignored or otherwise untracked files (e.g. .env, local config, node_modules)
+# that the VCS checkout itself leaves behind.
+
+DEFAULT_BASE="${HOME}/.worktrees"
+
+die() {
+    printf 'wt: %s\n' "$1" >&2
+    exit "${2:-1}"
+}
+
+usage() {
+    cat >&2 <<'EOF'
+usage:
+  wt new [-p PROJECT] [-b BASE] <name> [ref]   create a worktree, print its path
+  wt rm  [-p PROJECT] [-b BASE] <name>         remove a worktree by name
+  wt rm  --dir <path>                          remove the worktree at an exact path
+EOF
+}
+
+slugify() {
+    printf '%s' "$1" | sed 's/[^A-Za-z0-9]/-/g'
+}
+
+# Prints "<vcs>\t<root>" (vcs = jj|git, root = repository root) for the repo
+# containing $1, or returns non-zero if $1 is not in a jj or git repo. jj is
+# checked first so colocated repos are treated as jj, matching the rest of this
+# setup. Callers capture stdout, e.g. `repo=$(detect_repo "$dir") || die …`.
+detect_repo() {
+    local dir="$1" root
+    if root=$(jj -R "$dir" root 2>/dev/null); then
+        printf '%s\t%s\n' jj "$root"
+    elif root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null); then
+        printf '%s\t%s\n' git "$root"
+    else
+        return 1
+    fi
+}
+
+# Symlink files listed in <root>/.worktreeinclude into the worktree <dir>. See
+# the header comment for the file format. Best-effort: a failed link warns but
+# never aborts, so a stray entry can't fail worktree creation.
+link_includes() {
+    local root="$1" dir="$2"
+    local include_file="${root}/.worktreeinclude"
+    [ -f "$include_file" ] || return 0
+
+    local line pattern match src dest
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Trim surrounding whitespace, then skip blank lines and comments.
+        pattern="${line#"${line%%[![:space:]]*}"}"
+        pattern="${pattern%"${pattern##*[![:space:]]}"}"
+        [ -n "$pattern" ] || continue
+        case "$pattern" in
+            \#*) continue ;;
+        esac
+        pattern="${pattern#/}" # a leading slash just means project-root-relative
+
+        # Expand the pattern against the source tree. Each line is one pattern —
+        # embedded whitespace is literal, not a separator. IFS= disables word
+        # splitting so paths with spaces survive; pathname expansion still
+        # yields one field per match. nullglob drops non-matching globs;
+        # dotglob lets globs catch dotfiles.
+        while IFS= read -r match; do
+            src="${root}/${match}"
+            [ -e "$src" ] || continue # literal non-matches pass through; skip them
+            dest="${dir}/${match}"
+            if [ -e "$dest" ] || [ -L "$dest" ]; then
+                printf 'wt: %s already in worktree, not linking\n' "$match" >&2
+                continue
+            fi
+            mkdir -p "$(dirname "$dest")"
+            ln -s "$src" "$dest" ||
+                printf 'wt: failed to link %s\n' "$match" >&2
+        done < <(
+            cd "$root" || exit 0
+            shopt -s nullglob dotglob
+            IFS=
+            for m in $pattern; do printf '%s\n' "$m"; done
+        )
+    done <"$include_file"
+}
+
+cmd_new() {
+    local base="$DEFAULT_BASE" project="$PWD" name=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -b | --base) [ $# -ge 2 ] || die "$1 requires a value" 2; base="$2"; shift 2 ;;
+            -p | --project) [ $# -ge 2 ] || die "$1 requires a value" 2; project="$2"; shift 2 ;;
+            -h | --help) usage; return 0 ;;
+            --) shift; break ;;
+            -*) die "unknown option: $1" 2 ;;
+            *) break ;;
+        esac
+    done
+    name="${1:-}"
+    [ -n "$name" ] || { usage; return 2; }
+    case "$name" in */*) die "name must not contain '/': $name" 2 ;; esac
+    local ref="${2:-}"
+
+    local repo
+    repo=$(detect_repo "$project") || die "not a jj or git repo: $project" 2
+    local VCS="${repo%%$'\t'*}" ROOT="${repo#*$'\t'}"
+
+    local dir
+    dir="${base}/$(slugify "$ROOT")/${name}"
+    mkdir -p "$(dirname "$dir")"
+
+    # With a ref, base the worktree on it; without, branch from the project's
+    # current state (jj shares the working-copy commit's parents, git uses HEAD).
+    if [ "$VCS" = jj ]; then
+        if [ -n "$ref" ]; then
+            jj -R "$ROOT" workspace add --name "$name" --revision "$ref" "$dir" >&2
+        else
+            jj -R "$ROOT" workspace add --name "$name" "$dir" >&2
+        fi
+    else
+        if [ -n "$ref" ]; then
+            git -C "$ROOT" worktree add "$dir" "$ref" >&2
+        else
+            git -C "$ROOT" worktree add "$dir" >&2
+        fi
+    fi
+
+    link_includes "$ROOT" "$dir"
+
+    printf '%s\n' "$dir"
+}
+
+cmd_rm() {
+    local base="$DEFAULT_BASE" project="$PWD" dir="" name=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -b | --base) [ $# -ge 2 ] || die "$1 requires a value" 2; base="$2"; shift 2 ;;
+            -p | --project) [ $# -ge 2 ] || die "$1 requires a value" 2; project="$2"; shift 2 ;;
+            -d | --dir) [ $# -ge 2 ] || die "$1 requires a value" 2; dir="$2"; shift 2 ;;
+            -h | --help) usage; return 0 ;;
+            --) shift; break ;;
+            -*) die "unknown option: $1" 2 ;;
+            *) break ;;
+        esac
+    done
+
+    if [ -z "$dir" ]; then
+        name="${1:-}"
+        [ -n "$name" ] || { usage; return 2; }
+        case "$name" in */*) die "name must not contain '/': $name" 2 ;; esac
+        local repo
+        repo=$(detect_repo "$project") || die "not a jj or git repo: $project" 2
+        local ROOT="${repo#*$'\t'}"
+        dir="${base}/$(slugify "$ROOT")/${name}"
+    fi
+
+    [ -e "$dir" ] || die "no such worktree: $dir" 2
+
+    # jj forget leaves the directory on disk, so we delete it; git removes the
+    # directory itself. --force/forget so a dirty worktree still gets cleaned up.
+    if jj -R "$dir" status >/dev/null 2>&1; then
+        jj -R "$dir" workspace forget >&2
+        rm -rf "$dir"
+    else
+        # git refuses to remove the worktree you're standing in, so run from the
+        # main worktree resolved out of the worktree list.
+        local main
+        main=$(git -C "$dir" worktree list --porcelain | awk '/^worktree /{print $2; exit}')
+        git -C "$main" worktree remove --force "$dir" >&2
+    fi
+
+    # Tidy the now-possibly-empty per-project slug directory.
+    rmdir "$(dirname "$dir")" 2>/dev/null || true
+}
+
+case "${1:-}" in
+    new | create) shift; cmd_new "$@" ;;
+    rm | remove) shift; cmd_rm "$@" ;;
+    -h | --help | "") usage ;;
+    *) die "unknown command: $1 (expected 'new' or 'rm')" 2 ;;
+esac
