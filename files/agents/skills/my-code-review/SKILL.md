@@ -1,9 +1,11 @@
 ---
 name: my-code-review
-description: Run a multi-agent code review on finished work — dispatch domain reviewers, independently validate their findings, and file only confirmed, high-signal issues as tasks. Use when a change is complete (tests pass, feature works) and ready to commit or deploy.
+description: Run a multi-agent code review on finished work — dispatch domain reviewers, independently validate their findings, and file only confirmed, high-signal issues as tasks. Accepts `--no-tasks` to return the confirmed findings instead of filing them, for a caller (e.g. an automated fix loop) that acts on them programmatically. Use when a change is complete (tests pass, feature works) and ready to commit or deploy.
 ---
 
 Review the diff in stages: pick the reviewers, run them, validate what they surface, then file only what's confirmed.
+
+This skill accepts an optional `--no-tasks` flag. Without it (the default), Step 5 files confirmed findings as tasks. With it, Step 5 skips task-filing and instead returns the confirmed findings as a structured list for the caller to consume — used when another skill (e.g. an automated fix loop) acts on the findings rather than a human reading tasks.
 
 **Step 1 — Select reviewers.** Run the reviewers whose domain the diff touches; skip the rest:
 
@@ -33,4 +35,9 @@ Validate with the matching-domain reviewer where its expertise helps (a fresh `s
 
 Non-falsifiable candidates have nothing to verify — hold them to a high bar yourself, keeping only the few that are concretely actionable and dropping the rest. Keep an Informational security note only if it's actionable.
 
-**Step 5 — File confirmed findings.** Record one task per surviving finding, grouped by severity and area — using your environment's task tool (e.g. `TaskCreate`) if it has one, otherwise as a structured list. Include the claim, file:line, the validator's confirming evidence, and a recommended fix where available. If nothing survived, say so — an empty list is the right outcome when there are no high-signal issues.
+**Step 5 — Output confirmed findings.** How you emit the surviving findings depends on the flag:
+
+- **Default (no flag):** record one task per surviving finding, grouped by severity and area — using your environment's task tool (e.g. `TaskCreate`) if it has one, otherwise as a structured list.
+- **With `--no-tasks`:** skip task creation entirely. Return the surviving findings as a structured list for the caller to consume — do not file any tasks.
+
+Either way, include the claim, file:line, the validator's confirming evidence, and a recommended fix where available. If nothing survived, say so — an empty list is the right outcome when there are no high-signal issues.
