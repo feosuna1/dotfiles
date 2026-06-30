@@ -13,6 +13,12 @@ show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=ne
 #
 move_everything_to_trunk = ["rebase", "-d", "trunk()", "-s", "roots(trunk().. & mine()) & mutable()"]
 
+[fsmonitor]
+backend = "watchman"
+
+[fsmonitor.watchman]
+register-snapshot-trigger = true
+
 [colors]
 "diff token" = { underline = false }
 
