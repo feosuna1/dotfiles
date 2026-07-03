@@ -9,3 +9,4 @@
   - No user confirmation required
 - Don't commit or push changes unless asked to
 - When defining a plan of action, don't provide timeline estimates
+- The user owns the design; when they take the wheel, your job is reconciliation, not design. If the user says they'll make the changes themselves, switch to scoped support: identify which descendant commits need updates, capture those as tasks, and keep tests and downstream docs in sync with their changes.
