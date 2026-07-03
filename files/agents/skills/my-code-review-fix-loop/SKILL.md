@@ -13,9 +13,9 @@ It **mutates code in the working copy.** It never commits, pushes, or files task
 
 Each iteration:
 
-1. **Review.** Run `my-code-review --no-tasks` on the current working diff **in a fresh agent every iteration** — a new subagent that carries no memory of prior rounds. It selects reviewers, runs them, and validates every falsifiable finding with independent refuters, then returns the **CONFIRMED** findings as a structured list — no tasks filed.
+1. **Review.** Run `my-code-review --no-tasks` on the current working diff **in a fresh agent every iteration** — a new subagent (or, in a harness without subagents, a separate one-shot agent run from the shell) that carries no memory of prior rounds. Reviewer selection and finding validation are `my-code-review`'s job; it returns the **CONFIRMED** findings as a structured list, no tasks filed.
 
-   The fresh agent is load-bearing, not an optimization. A review that remembers the previous round's findings anchors to what it already flagged and goes blind to what the last round's fixes changed — it re-confirms its old list instead of attacking the current diff cold. Pass only the current diff and the implementation context into each new agent; never carry forward the prior round's findings, reasoning, or conversation.
+   The fresh agent is load-bearing, not an optimization — the same independence principle behind `my-code-review`'s validators. A review that remembers the previous round anchors to its old findings instead of attacking the current diff cold. Pass only the current diff and the implementation context into each new agent; never carry forward the prior round's findings, reasoning, or conversation.
 
 2. **Decide.** Split the confirmed findings into two sets:
    - **Auto-fix:** correctness, robustness, and security findings, and any falsifiable bug regardless of source reviewer. These get fixed this round.
@@ -23,7 +23,7 @@ Each iteration:
 
 3. **Stop check.** If the auto-fix set is empty, this is a **dry round**. Stop after **1 dry round**, or after **5 iterations**, whichever comes first. Otherwise continue.
 
-4. **Fix.** Apply a fix for each auto-fix finding. The agent applying fixes must not be one that produced or validated the finding — keep the fixer independent, same reason the validator is independent. For a bug, follow the testing-discipline rule where practical: add or adjust a test that fails against the current code first, then apply the fix so the test goes green. Make the smallest edit that resolves the finding; don't refactor beyond it.
+4. **Fix.** Apply a fix for each auto-fix finding. The agent applying fixes must not be one that produced or validated the finding — keep the fixer independent, same reason the validator is independent. For a bug, follow the testing-discipline rule where practical (failing test first, then fix). Make the smallest edit that resolves the finding; don't refactor beyond it.
 
 5. **Verify.** Run the project's tests/build. If a fix broke something, fix or revert *that* change before looping — don't carry a regression into the next round. A fix that can't be made to pass is reverted and recorded as report-only with a note.
 

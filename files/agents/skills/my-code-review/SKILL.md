@@ -25,7 +25,7 @@ This skill accepts an optional `--no-tasks` flag. Without it (the default), Step
 
 **Step 4 — Validate every falsifiable finding.** Reviewers emit false positives, and forwarding them unfiltered spends the developer's attention on non-issues — so each falsifiable candidate must clear an independent check before it can become a task.
 
-Dispatch one fresh validator per finding, in parallel, none of which produced the finding. Give each only its single claim and location — not the other findings, so it stays unbiased — and have it:
+Dispatch one fresh validator per finding, in parallel, none of which produced the finding. If your environment can't fan out that widely (few parallel subagents, or a fleet this size risks timing out), batch the dispatch into smaller sequential waves — but still spawn a fresh validator instance for every claim; never reuse one validator across findings, since a context polluted by a previous validation biases the next. If your harness has no subagent primitive at all, get the same isolation by launching each validator as a separate one-shot agent run from the shell (e.g. `codex exec` with the matching reviewer agent), one claim per run. Validating inline in your own context is the last resort — if forced to it, take the claims one at a time and say in the output that validation was not independent. Give each only its single claim and location — not the other findings, so it stays unbiased — and have it:
 
 - Read (and trace or run) the actual code rather than trust the finding's wording.
 - Try to refute the claim; default to *not confirmed* when the evidence is ambiguous, unreproducible, or already handled elsewhere.
