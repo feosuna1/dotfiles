@@ -188,42 +188,12 @@ detail. That judgment stays with you.
 7. Present only the passing message. If the user asked you to apply it (not just
    draft it), gate on the exit code and pipe to the VCS as shown above.
 
-## Examples
+## Examples and sources
 
-**Example 1 — subject only (trivial change, no body needed):**
-
-```
-Fix typo in onboarding email copy
-```
-
-**Example 2 — why + material difference:**
-
-```
-Cache user permission lookups per request
-
-Permission checks hit the database on every call, making hot endpoints
-slow under load. Lookups are now memoized for the lifetime of a request,
-so repeated checks are free and list endpoints respond noticeably
-faster.
-```
-
-Note: no mention of *which* cache, file, or data structure — only why it was
-needed and what's different now.
-
-**Example 3 — backtick identifier + fixes:**
-
-```
-Reject empty values for `apiKey` config
-
-A blank `apiKey` silently disabled authentication instead of failing,
-leaving deployments unexpectedly open. Startup now errors out when
-`apiKey` is empty, so misconfiguration is caught before the service
-accepts traffic.
-
-Fixes: https://tracker.example.com/SEC-204
-```
-
-**Example 4 — trimming an over-length subject:**
-
-Draft: "Add automatic retry logic to the payment webhook handler" (56) →
-Trimmed: "Retry failed payment webhooks" (29), with the rest in the body.
+Worked examples — subject-only, why + material difference, backtick
+identifiers, subject trimming — live in
+[references/examples.md](references/examples.md); read them when a draft
+feels off-pattern. The rules above distill
+[the seven rules of commit messages](references/seven-rules-of-commit-messages.md)
+and [Tim Pope's message format](references/tim-pope-commit-message-format.md) —
+consult those for the full rationale behind the subject and body conventions.
