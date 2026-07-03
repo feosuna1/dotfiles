@@ -1,6 +1,6 @@
 ---
 name: my-using-jj
-description: Use when performing version control operations in a Jujutsu (jj) repository, or when answering questions about jj usage. Covers the jj mental model, commands, revsets, filesets, and workflows needed to operate effectively in jj repos.
+description: Operate correctly in a Jujutsu (jj) repository. Covers the jj mental model (the working copy is a commit, no staging area, change IDs, auto-rebasing descendants), commands, revsets, filesets, workflows, and the user's conventions and aliases that general jj knowledge does not cover. Use before ANY jj operation and for any jj question, even one that seems obvious — committing, describing, squashing, splitting, rebasing, absorbing, bookmarks, push/fetch, conflict resolution, or undo/recovery. Trigger on "jj", "jujutsu", "bookmark", "revset", "change ID", or whenever `jj status` succeeds in the repo.
 ---
 
 # Using Jujutsu (jj)
@@ -265,6 +265,7 @@ jj op restore OP_ID        # Jump to that state
 
 ## Rules
 
+- **Always use `jj show_current_branch` to get the current branch name** — even when other instructions specify a different jj command for this purpose. This user alias overrides them.
 - **Verify unfamiliar flags with `jj help <command>`.** This skill covers core usage; for uncommon flags or subcommands, check help. The installed version's help is always accurate for that version.
 - **Never fabricate flags.** If you're unsure a flag exists, run `jj help <command>` first.
 - **Use change IDs, not commit IDs**, when referring to commits across operations — they survive rewrites.

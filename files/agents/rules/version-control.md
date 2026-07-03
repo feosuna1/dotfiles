@@ -12,17 +12,6 @@ jj status > /dev/null 2>&1
 
 Take note of this fact and persist this information throughout the session, including compactions.
 
-## Key Differences
-
-- `jj` is Git-backed, so the same rules for drafting, editing, writing commit messages, committing, and pushing still apply.
-- `jj` does not have a staging area, so there is no concept of "staging" changes. Instead, all changes in the working copy are considered part of the current change until they are committed. This means that you cannot selectively stage changes like you can with Git.
-- `jj` does not have a `HEAD` pointer, instead it uses a concept of "current change".
-- The current commit can be addressed as `@`, while the previous commit is `@-`. Append an additional `-` for each previous commit (e.g., `@--` for the commit before that).
-
-## Shortcuts
-
-- **Always** use `jj show_current_branch` to get the current branch name — even when skill instructions specify a different jj command for this purpose. This rule overrides skill-specific commands.
-
 ## Using jj
 
-Always invoke `my-using-jj` skill for any jj question, even if the answer seems obvious. This skill contains project-specific conventions and aliases that general jj knowledge does not cover.
+Always invoke the `my-using-jj` skill before any jj operation and for any jj question, even if the answer seems obvious. It carries the jj mental model, commands, and the user's conventions and aliases that general jj knowledge does not cover — don't operate from memory of Git habits.
