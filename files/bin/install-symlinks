@@ -46,4 +46,26 @@ install_symlinks() {
     done
 }
 
+migrate_codex_agents_symlink() {
+    local dest="$HOME/.codex/AGENTS.md"
+    local src="$HOME/.dotfiles/files/codex/global-instructions.md"
+    local old_content="Follow the standing rules indexed at ~/.dotfiles/files/agents/RULES.md."
+
+    if [[ ! -e "$src" || -L "$dest" || ! -f "$dest" ]]; then
+        return 0
+    fi
+
+    if [[ "$(cat "$dest")" != "$old_content" ]]; then
+        return 0
+    fi
+
+    if [[ "$DOTFILES_DRY_RUN" == "1" ]]; then
+        echo "Would replace \"$dest\" with symlink to \"$src\""
+    else
+        echo "Replacing \"$dest\" with symlink to \"$src\""
+        ln -sfn "$src" "$dest"
+    fi
+}
+
 install_symlinks
+migrate_codex_agents_symlink

@@ -7,6 +7,17 @@ Review the diff in stages: pick the reviewers, run them, validate what they surf
 
 This skill accepts an optional `--no-tasks` flag. Without it (the default), Step 5 files confirmed findings as tasks. With it, Step 5 skips task-filing and instead returns the confirmed findings as a structured list for the caller to consume — used when another skill (e.g. an automated fix loop) acts on the findings rather than a human reading tasks.
 
+## Harness notes
+
+Invoking this skill is an explicit request for the multi-agent review workflow it
+defines. In Codex, use `tool_search` if the multi-agent tools or custom reviewer
+roles are not already visible. Use the custom reviewer roles for the first-pass
+domain finders; validator model choice is covered in Step 4.
+
+If the harness forbids subagents unless the user explicitly requested
+delegation, and this skill was triggered only implicitly, offer to run the
+multi-agent review rather than spawning agents silently.
+
 **Step 1 — Select reviewers.** Run the reviewers whose domain the diff touches; skip the rest:
 
 - `code-quality-reviewer` — correctness, robustness, and language idioms. Skip only if the diff has no runtime code (config- or docs-only).
@@ -18,7 +29,7 @@ This skill accepts an optional `--no-tasks` flag. Without it (the default), Step
 
 **Step 2 — Run them in parallel.** Give each reviewer the changed files and context on what was implemented, and have it report only noteworthy findings.
 
-**Step 3 — Collect candidates.** Gather all findings and merge duplicates — agents often flag the same issue. For each, record the claim, location (file:line), severity, and source agent. Post nothing yet. (`security-code-reviewer` may add an `Informational` tier and CWE `References`.) Then classify each:
+**Step 3 — Collect candidates.** Gather all findings and merge duplicates — agents often flag the same issue. For each, record the claim, location (file:line), evidence, severity, confidence, and source agent. Post nothing yet. (`security-code-reviewer` may add an `Informational` tier and CWE `References`.) Then classify each:
 
 - **Falsifiable** — a concrete claim you could prove wrong by reading or running the code: a bug, a performance characteristic, a doc-vs-code mismatch, a missing error path, an uncovered branch.
 - **Non-falsifiable** — a subjective judgment with nothing to test: naming taste, "consider extracting", "might be nice".
@@ -32,6 +43,8 @@ Dispatch one fresh validator per finding, in parallel, none of which produced th
 - Return **CONFIRMED** (with file:line evidence, and for a bug how it manifests), **REFUTED**, or **UNCERTAIN**.
 
 Validate with the matching-domain reviewer where its expertise helps (a fresh `security-code-reviewer` for a security claim, `performance-reviewer` for a performance claim); otherwise a fresh general-purpose agent with no special role. Keep only CONFIRMED findings.
+
+Run validators on your harness's cheapest capable model tier (e.g. `model: haiku` on the Agent tool, or a cheap Codex default/explorer/worker when custom reviewer roles are fixed to a frontier model): each validator gets one narrow, falsifiable claim with a specific location — exactly the local, high-volume work the cheap tier is built for, and this is the widest fleet the skill dispatches. Escalate a single validator to a stronger tier only when its claim genuinely spans files or requires deep tracing. Cheap-tier models also carry a smaller context window, so give each validator only the claim and the relevant slice of code, never the whole diff.
 
 Non-falsifiable candidates have nothing to verify — hold them to a high bar yourself, keeping only the few that are concretely actionable and dropping the rest. Keep an Informational security note only if it's actionable.
 

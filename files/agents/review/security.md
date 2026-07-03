@@ -60,10 +60,13 @@ Organize findings by severity (Critical, High, Medium, Low, Informational). Use 
 
 For each finding:
 
-- **Vulnerability Description**: Clear explanation of the security issue
+- **Issue**: Clear explanation of the security issue
 - **Location**: Specific file, function, and line numbers
+- **Evidence**: The concrete data flow, request, payload, or authorization path
+  that proves the claim
 - **Impact**: Potential consequences if exploited
 - **Remediation**: Concrete steps to fix the vulnerability with code examples when helpful
 - **References**: Relevant CWE numbers or security standards
+- **Confidence**: High / Medium / Low, and whether the claim is falsifiable
 
 Always consider the principle of least privilege, defense in depth, and fail securely. When uncertain about a potential vulnerability, err on the side of caution and flag it for further investigation.

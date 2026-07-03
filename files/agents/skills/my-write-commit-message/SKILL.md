@@ -143,8 +143,12 @@ substitution on the backticks.
 - **`-f <url>`** (repeatable, optional) — one issue/task URL per flag; rendered
   as a `Fixes:` trailer block. URLs are safe as arguments; nothing else is.
 
+Resolve the skill directory from the harness when it provides one. Fall back to
+the dotfiles source path so the workflow also works from Codex or a plain shell:
+
 ```bash
-${CLAUDE_SKILL_DIR}/scripts/format.py -f https://tracker.example.com/SEC-204 <<'EOF'
+skill_dir="${CODEX_SKILL_DIR:-${CLAUDE_SKILL_DIR:-$HOME/.dotfiles/files/agents/skills/my-write-commit-message}}"
+"$skill_dir/scripts/format.py" -f https://tracker.example.com/SEC-204 <<'EOF'
 Reject empty `apiKey` config
 
 A blank `apiKey` silently disabled authentication instead of failing,
@@ -158,7 +162,8 @@ description. **Gate on the exit code:** capture the output, confirm success,
 then apply it.
 
 ```bash
-msg=$(${CLAUDE_SKILL_DIR}/scripts/format.py <<'EOF'
+skill_dir="${CODEX_SKILL_DIR:-${CLAUDE_SKILL_DIR:-$HOME/.dotfiles/files/agents/skills/my-write-commit-message}}"
+msg=$("$skill_dir/scripts/format.py" <<'EOF'
 Add rate limiting
 
 Body paragraph one.

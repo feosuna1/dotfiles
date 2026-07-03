@@ -43,10 +43,13 @@ Organize findings by severity (Critical, High, Medium, Low). For each finding:
 
 - **Issue**: Description of the coverage gap, quality problem, or anti-pattern
 - **Location**: File and test name or line number
+- **Evidence**: The uncovered branch, missing assertion, or brittle test pattern
+  that proves the claim
 - **Impact**: What bugs or regressions this gap could allow through
 - **Recommendation**: Specific test cases to add, corrections to make, or
   refactoring to improve testability — with example implementations where
   helpful
+- **Confidence**: High / Medium / Low, and whether the claim is falsifiable
 
 Be thorough but practical — focus on tests that provide real value and catch
 actual bugs. Consider the testing pyramid and ensure appropriate balance between

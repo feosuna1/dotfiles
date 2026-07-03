@@ -7,6 +7,11 @@ config that only Codex consumes — anything agent-agnostic belongs in
 
 ## Contents
 
+- `global-instructions.md` — deployed to `~/.codex/AGENTS.md`; points Codex at
+  the shared rule index and the Codex-specific harness workflow trigger.
+- `harness-workflow.md` — Codex-specific operating guidance for tool discovery,
+  subagent orchestration, model economy, and large-context work. It is loaded on
+  demand from `global-instructions.md`, not duplicated into the shared rules.
 - `agents/` — Codex custom subagent definitions (one `.toml` each). Every file
   is a thin wrapper: Codex keys (`name`, `description`, `model`,
   `model_reasoning_effort`) plus `developer_instructions` that point at a shared

@@ -17,13 +17,15 @@ Each iteration:
 
    The fresh agent is load-bearing, not an optimization — the same independence principle behind `my-code-review`'s validators. A review that remembers the previous round anchors to its old findings instead of attacking the current diff cold. Pass only the current diff and the implementation context into each new agent; never carry forward the prior round's findings, reasoning, or conversation.
 
+   The per-round review agent is an orchestrator — it selects reviewers and collates results; the reviewer and validator subagents carry their own model tiers. Run it on a mid-tier model rather than inheriting a premium session model. In Codex, use `tool_search` if multi-agent tools are not already visible, and avoid reusing fixed frontier-model reviewer roles for narrow validation or mechanical fix tasks.
+
 2. **Decide.** Split the confirmed findings into two sets:
    - **Auto-fix:** correctness, robustness, and security findings, and any falsifiable bug regardless of source reviewer. These get fixed this round.
    - **Report-only:** style, naming, "consider extracting", and other non-falsifiable or low-severity findings. These are *never* auto-fixed — auto-fixing taste findings spawns more taste findings and the loop never converges. They accumulate in the final report instead.
 
 3. **Stop check.** If the auto-fix set is empty, this is a **dry round**. Stop after **1 dry round**, or after **5 iterations**, whichever comes first. Otherwise continue.
 
-4. **Fix.** Apply a fix for each auto-fix finding. The agent applying fixes must not be one that produced or validated the finding — keep the fixer independent, same reason the validator is independent. For a bug, follow the testing-discipline rule where practical (failing test first, then fix). Make the smallest edit that resolves the finding; don't refactor beyond it.
+4. **Fix.** Apply a fix for each auto-fix finding. The agent applying fixes must not be one that produced or validated the finding — keep the fixer independent, same reason the validator is independent. A fixer's scope is one confirmed finding, so dispatch it on a mid-tier model, not a premium one — the next round's review catches a bad fix either way. For a bug, follow the testing-discipline rule where practical (failing test first, then fix). Make the smallest edit that resolves the finding; don't refactor beyond it.
 
 5. **Verify.** Run the project's tests/build. If a fix broke something, fix or revert *that* change before looping — don't carry a regression into the next round. A fix that can't be made to pass is reverted and recorded as report-only with a note.
 

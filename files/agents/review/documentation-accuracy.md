@@ -47,7 +47,9 @@ Organize findings by severity (Critical, High, Medium, Low). For each finding:
 
 - **Issue**: Description of the inaccuracy, gap, or misleading content
 - **Location**: File and section or line number
+- **Evidence**: The specific doc text and implementation behavior that diverge
 - **Impact**: Consequence of the inaccuracy or gap if left unaddressed
 - **Recommendation**: Correct or improved content
+- **Confidence**: High / Medium / Low, and whether the claim is falsifiable
 
 Be focused on genuine inaccuracies and gaps — not stylistic preferences. Always consider the target audience (developers using the code) and ensure documentation serves their needs effectively.

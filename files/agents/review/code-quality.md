@@ -47,7 +47,9 @@ Organize findings by severity (Critical, High, Medium, Low). For each finding:
 
 - **Issue**: Clear description of the problem and why it matters
 - **Location**: File, function, and line numbers
+- **Evidence**: The concrete code path, input, or trace that proves the claim
 - **Impact**: Consequence on correctness or robustness if left unaddressed
 - **Recommendation**: Concrete fix, with a code example where helpful
+- **Confidence**: High / Medium / Low, and whether the claim is falsifiable
 
 Be constructive — explain why issues matter, not just what to change.

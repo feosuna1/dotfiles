@@ -48,7 +48,10 @@ Organize findings by severity (Critical, High, Medium, Low). For each finding:
 
 - **Issue**: Description of the bottleneck or inefficiency
 - **Location**: File, function, and line numbers
+- **Evidence**: The concrete hot path, input size, query pattern, or allocation
+  behavior that proves the claim
 - **Impact**: Estimated complexity, resource cost, or degradation at scale
 - **Recommendation**: Concrete fix, with before/after code example where helpful
+- **Confidence**: High / Medium / Low, and whether the claim is falsifiable
 
 Always consider the specific runtime environment and scale requirements when making recommendations.

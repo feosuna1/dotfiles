@@ -35,3 +35,37 @@ defeats the point of fanning out. If a fleet is at risk of the watchdog, split
 the work into smaller units rather than raising ambition per agent. Several
 tightly-scoped agents that each finish quickly beat one long-running agent that
 times out.
+
+## Model economy
+
+**Match each subagent's model tier to its task; don't let fleets inherit a
+premium session model.** A subagent spawned without an explicit `model` inherits
+the session's — so a fleet dispatched from an Opus- or Fable-class session pays
+the premium rate per agent for work a cheaper tier does as well. Narrow,
+falsifiable, single-claim work (validators, per-file sweeps, mechanical fixes)
+goes to the cheap tier (`haiku`); scoped code-writing and per-round
+orchestration to the mid tier (`sonnet`); reserve the session's premium model
+for the judgment the fleet reports back to.
+
+**The cheap tier carries a smaller context window** (Haiku: 200k vs 1M
+elsewhere), so cheap-tier agents must get sliced inputs — one claim, one file,
+one commit's diff — never the whole log or diff. This is the same slicing the
+context-budget section demands, with a second reason it can't be relaxed.
+
+**Pick the session model by the work's horizon, not by habit.** Drive
+orchestration-heavy skills (code review, fix loops) from a mid-tier session —
+the driver is procedural and its subagents carry their own tiers. Step up to a
+premium session for design, long-horizon agentic work, and cross-cutting
+reasoning where the extra capability changes the outcome.
+
+## Review and fix loops
+
+**Finders, validators, and fixers stay independent.** A reviewer that produced a
+claim should not validate it, and a validator should not be the fixer. If
+independent agents aren't available, validate inline one claim at a time and
+state that validation was not independent.
+
+**Stop loops before they sprawl.** Review/fix loops run on the current diff,
+apply the smallest confirmed fixes, verify, and stop at the configured dry round
+or iteration cap. Report anything still subjective or low-confidence instead of
+auto-fixing taste.

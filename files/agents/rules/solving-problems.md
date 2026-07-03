@@ -1,8 +1,11 @@
 # Solving Problems
 
-- Don't make assumptions about requirements - ask clarifying questions first
-- If questions don't resolve ambiguity, state your interpretation: "I understand this as [X]. Proceeding unless you indicate otherwise."
-- After requirements are clear, confirm your understanding and proposed approach before starting work
+- Clarify requirements before non-trivial work. Ask only when ambiguity is
+  blocking, risky, or impossible to resolve from the repo; otherwise state your
+  interpretation and proceed: "I understand this as [X]. Proceeding unless you
+  indicate otherwise."
+- For substantial or multi-phase work, summarize your understanding and proposed
+  approach before editing. For small explicit requests, act directly.
 - Break multi-part work into manageable tasks using your environment's task tool (e.g. `TaskCreate`), or a structured list if it has none:
   - 3+ distinct issues or findings
   - Work with sequential dependencies (can't start next step until current completes)

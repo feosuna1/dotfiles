@@ -80,7 +80,10 @@ Organize findings by severity (Critical, High, Medium, Low). For each finding:
 
 - **Issue**: Clear description of the problem and the principle it violates
 - **Location**: File, function, and line numbers
+- **Evidence**: The concrete code shape, duplication, or naming mismatch that
+  proves the claim
 - **Impact**: Consequence on maintainability or readability if left unaddressed
 - **Recommendation**: Concrete fix, with a code example where helpful
+- **Confidence**: High / Medium / Low, and whether the claim is falsifiable
 
 Be constructive — explain why issues matter and what principle they violate, not just what to change.
