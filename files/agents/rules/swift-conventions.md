@@ -70,6 +70,10 @@ HStack(spacing: 0) {
 
 When you spot this combination in existing code, surface it and ask before changing layout — the right gap is a design decision.
 
+## Concurrency
+
+**Don't reach for cancellation the work can't honor.** Cooperative cancellation (`Task.checkCancellation`, `.task(id:)` teardown) protects nothing when the operation isn't cancellation-aware and must run to completion for correctness — e.g. a commit that would leave data inconsistent if abandoned partway. For work that must finish, a detached `Task {}` is the honest fit; don't wrap it in structured-concurrency machinery whose only feature — cancellation — is meaningless here.
+
 ## UIKit
 
 **`UITabBarController.shouldAutomaticallyForwardAppearanceMethods` defaults to `false`, not `true`.** Container controllers (`UITabBarController`, `UINavigationController`) disable auto-forwarding because they manage tab/stack visibility themselves — only plain `UIViewController` defaults to `true`. So a `if !shouldAutomaticallyForwardAppearanceMethods { … }` block that manually forwards `viewWillAppear`/`viewDidAppear`/etc. to a non-tab child VC is **load-bearing, not dead code**. Before calling such guards dead, verify both: whether the property is overridden (`grep -n shouldAutomaticallyForwardAppearanceMethods`), and the actual default for the parent class.
@@ -89,6 +93,16 @@ DocC comments have two parts: the **abstract** (everything up to the first blank
 ```
 
 **Use single backticks for code references in DocC, not double.** Write `` `SomeType` ``, not `` ``SomeType`` ``.
+
+## Testing
+
+These extend the language-agnostic testing-discipline rule for Swift work.
+
+**Prefer native types; a one-off type built for a single test is a smell.** Reach for the standard library before rolling your own, especially for gating concurrent work — if you think you need an actor, consider a `Mutex`; if a mutex, consider an `Atomic`. Needing a bespoke object to support one test is a signal the design or the test is off. And don't add production API that exists only for tests: a test-only projection of a model belongs in a `private extension` in the test file via `@testable import`, not in shipping code.
+
+**Prefer determinism over fragile timing.** A test that leans on a `sleep` delay to let state settle is fragile — one main-actor hop is often not enough and the delay is a magic number. Rewrite it to observe the actual signal (`withObservationTracking` + a timeout, an awaited async method) so it passes for the right reason. Make flow methods `async` rather than fire-and-forget `Task {}` so tests can await them deterministically.
+
+**Don't contort the framework to unit-test it, and don't chase unreachable branches.** If a view is genuinely hard to unit-test (most SwiftUI rendering is), don't extract logic solely to make it testable — that trades a real design for test convenience. And don't write subprocess exit-tests to "cover" a `fatalError` guard; verifying that a fatal path is fatal is low-value coverage.
 
 ## Build & Test Tooling
 

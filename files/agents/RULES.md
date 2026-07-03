@@ -22,7 +22,7 @@ don't need to load every rule up front.
 
 - [Writing code](rules/writing-code.md) — read while writing any code: the checkable subset of clean-code standards — names, function size, structure, comments, correctness.
 - [State modeling & architecture](rules/state-modeling.md) — *(path-scoped to `**/*.swift`)* read when shaping state, models, or module boundaries: make impossible states unrepresentable, keep the model free of framework/navigation concerns, drive abstractions to the honest minimum.
-- [Swift conventions](rules/swift-conventions.md) — *(path-scoped to `**/*.swift`)* read when writing or reviewing Swift, SwiftUI, or UIKit: idiomatic preferences corrected before.
+- [Swift conventions](rules/swift-conventions.md) — *(path-scoped to `**/*.swift`)* read when writing or reviewing Swift, SwiftUI, or UIKit: idiomatic preferences corrected before, plus Swift-specific testing conventions.
 
 ## Tools and version control
 
