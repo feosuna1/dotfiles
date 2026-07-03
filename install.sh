@@ -20,6 +20,10 @@ fi
 source "$BIN_DIR/install-symlinks"
 # shellcheck disable=SC1091
 source "$BIN_DIR/install-copies"
+# shellcheck disable=SC1091
+source "$BIN_DIR/check-permission-parity"
+# shellcheck disable=SC1091
+source "$BIN_DIR/check-agent-parity"
 
 if [[ "$DOTFILES_SKIP_BREW" == "1" || "$DOTFILES_DRY_RUN" == "1" ]]; then
     echo "Skipping Homebrew setup."

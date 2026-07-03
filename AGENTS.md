@@ -41,6 +41,8 @@ This is the user's personal `dotfiles` that configures the development environme
 
 - The two agents carry parallel config: Claude permissions in `files/claude/settings.json` and Codex command rules in `files/codex/rules/`; subagents in `files/claude/agents/` and `files/codex/agents/`.
 - When you add or change a rule for one agent — a permission/approval entry, a subagent, a behavior rule — consider whether the other needs the same change and apply it there too, unless it's genuinely agent-specific.
+- `install.sh` runs `files/bin/check-permission-parity`, which warns when the Bash permission entries in `files/claude/settings.json` and the prefix rules in `files/codex/rules/default.rules` drift apart.
+- `install.sh` also runs `files/bin/check-agent-parity`, which warns when a reviewer agent's Claude and Codex wrappers drift: a missing twin, differing descriptions, a model-tier mismatch against the mapping in `files/agents/AGENTS.md`, or wrappers referencing different (or missing) review guides.
 
 **Modifying Shell Config:**
 

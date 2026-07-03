@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Warn when the Bash permission entries in files/claude/settings.json and the
+# prefix_rule patterns in files/codex/rules/default.rules have drifted apart.
+# Warn-only: drift should be surfaced at install time, not fail the install.
+#
+# Comparable subset: Claude `Bash(...)` entries whose pattern is an argv
+# prefix. `*` tokens are dropped (matching Codex's best-effort prefixes for
+# flags like `git push --force`); entries with a leading wildcard or an
+# embedded glob (paths) have no Codex equivalent and are skipped. Buckets map
+# allow -> allow, ask -> prompt, deny -> forbidden.
+
+CLAUDE_SETTINGS="$HOME/.dotfiles/files/claude/settings.json"
+CODEX_RULES="$HOME/.dotfiles/files/codex/rules/default.rules"
+
+check_permission_parity() {
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Skipping permission parity check; jq is not installed."
+        return 0
+    fi
+
+    local claude codex
+    claude=$(
+        jq -r '
+            {allow: "allow", ask: "prompt", deny: "forbidden"} as $decisions |
+            .permissions | to_entries[] |
+            select(.key | in($decisions)) |
+            .key as $bucket | .value[] |
+            select(startswith("Bash(")) |
+            "\(sub("^Bash\\("; "") | sub("\\)$"; ""))\t\($decisions[$bucket])"
+        ' "$CLAUDE_SETTINGS" |
+        awk -F '\t' '{
+            n = split($1, tokens, " ")
+            if (tokens[1] == "*") next
+            prefix = ""
+            for (i = 1; i <= n; i++) {
+                if (tokens[i] == "*") continue
+                if (index(tokens[i], "*") > 0) next
+                prefix = prefix (prefix == "" ? "" : " ") tokens[i]
+            }
+            if (prefix != "") print prefix "\t" $2
+        }' | sort -u
+    )
+    codex=$(
+        sed -n 's/^prefix_rule(pattern = \[\(.*\)\], decision = "\(.*\)")$/\1\t\2/p' \
+            "$CODEX_RULES" |
+        sed 's/"//g; s/, / /g' | sort -u
+    )
+
+    local claude_only codex_only
+    claude_only=$(comm -23 <(printf '%s\n' "$claude") <(printf '%s\n' "$codex"))
+    codex_only=$(comm -13 <(printf '%s\n' "$claude") <(printf '%s\n' "$codex"))
+
+    if [[ -z "$claude_only" && -z "$codex_only" ]]; then
+        echo "Claude and Codex permission rules are in parity."
+        return 0
+    fi
+    if [[ -n "$claude_only" ]]; then
+        echo "Warning: in Claude settings.json but missing from Codex default.rules:"
+        printf '%s\n' "$claude_only" | awk -F '\t' '{ print "  " $1 " (" $2 ")" }'
+    fi
+    if [[ -n "$codex_only" ]]; then
+        echo "Warning: in Codex default.rules but missing from Claude settings.json:"
+        printf '%s\n' "$codex_only" | awk -F '\t' '{ print "  " $1 " (" $2 ")" }'
+    fi
+    return 0
+}
+
+check_permission_parity

@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Warn when the reviewer-agent wrappers in files/claude/agents/*.md and
+# files/codex/agents/*.toml have drifted apart. Warn-only: drift should be
+# surfaced at install time, not fail the install.
+#
+# Checks per pair: both wrappers exist, descriptions are byte-identical, both
+# reference the same shared review guide (which must exist), and the model
+# tiers agree per the mapping documented in files/agents/AGENTS.md
+# (Claude sonnet <-> Codex effort "high", haiku <-> "medium").
+
+CLAUDE_AGENTS_DIR="$HOME/.dotfiles/files/claude/agents"
+CODEX_AGENTS_DIR="$HOME/.dotfiles/files/codex/agents"
+
+check_agent_parity() {
+    local drift=0 file name
+
+    local claude_names codex_names
+    claude_names=$(for file in "$CLAUDE_AGENTS_DIR"/*.md; do
+        basename "$file" .md
+    done | sort)
+    codex_names=$(for file in "$CODEX_AGENTS_DIR"/*.toml; do
+        basename "$file" .toml
+    done | sort)
+
+    while IFS= read -r name; do
+        [[ -z "$name" ]] && continue
+        echo "Warning: agent $name has a Claude wrapper but no Codex twin."
+        drift=1
+    done < <(comm -23 <(printf '%s\n' "$claude_names") <(printf '%s\n' "$codex_names"))
+    while IFS= read -r name; do
+        [[ -z "$name" ]] && continue
+        echo "Warning: agent $name has a Codex wrapper but no Claude twin."
+        drift=1
+    done < <(comm -13 <(printf '%s\n' "$claude_names") <(printf '%s\n' "$codex_names"))
+
+    while IFS= read -r name; do
+        [[ -z "$name" ]] && continue
+        local claude_file="$CLAUDE_AGENTS_DIR/$name.md"
+        local codex_file="$CODEX_AGENTS_DIR/$name.toml"
+
+        local claude_desc codex_desc
+        claude_desc=$(sed -n 's/^description: //p' "$claude_file")
+        codex_desc=$(sed -n 's/^description = "\(.*\)"$/\1/p' "$codex_file")
+        if [[ "$claude_desc" != "$codex_desc" ]]; then
+            echo "Warning: agent $name: descriptions differ between wrappers."
+            drift=1
+        fi
+
+        local claude_model codex_effort expected_effort=""
+        claude_model=$(sed -n 's/^model: //p' "$claude_file")
+        codex_effort=$(sed -n 's/^model_reasoning_effort = "\(.*\)"$/\1/p' "$codex_file")
+        case "$claude_model" in
+            sonnet) expected_effort="high" ;;
+            haiku) expected_effort="medium" ;;
+            *)
+                echo "Warning: agent $name: Claude model \"$claude_model\" is not a documented tier (see files/agents/AGENTS.md)."
+                drift=1
+                ;;
+        esac
+        if [[ -n "$expected_effort" && "$codex_effort" != "$expected_effort" ]]; then
+            echo "Warning: agent $name: Claude model $claude_model pairs with Codex effort \"$expected_effort\", found \"$codex_effort\"."
+            drift=1
+        fi
+
+        local claude_guide codex_guide
+        claude_guide=$(sed -n 's/^@//p' "$claude_file")
+        # shellcheck disable=SC2088 # literal pattern matched inside the toml, not a path
+        codex_guide=$(grep -o '~/\.dotfiles/files/agents/review/[a-z-]*\.md' "$codex_file" | head -n 1 || true)
+        if [[ "$claude_guide" != "$codex_guide" ]]; then
+            echo "Warning: agent $name: wrappers reference different review guides (\"$claude_guide\" vs \"${codex_guide:-none}\")."
+            drift=1
+        fi
+        if [[ -n "$claude_guide" && ! -f "${claude_guide/#\~/$HOME}" ]]; then
+            echo "Warning: agent $name: review guide $claude_guide does not exist."
+            drift=1
+        fi
+    done < <(comm -12 <(printf '%s\n' "$claude_names") <(printf '%s\n' "$codex_names"))
+
+    if [[ "$drift" -eq 0 ]]; then
+        echo "Claude and Codex reviewer agents are in parity."
+    fi
+    return 0
+}
+
+check_agent_parity
