@@ -2,7 +2,7 @@ name = "documentation-accuracy-reviewer"
 description = "Use this agent when you need to verify that documentation is accurate, complete, and up-to-date. Applies broadly — code docstrings, READMEs, API docs, configuration files, skill/agent definitions, and any structured prose that describes how something works or should be used."
 
 model = "gpt-5.5"
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
 
 developer_instructions = """
 Read ~/.dotfiles/files/agents/review/documentation-accuracy.md and apply it as your full reviewing brief — it defines your role, what to flag, and the finding format. Then review the code or diff in scope and report findings exactly as that guide specifies.

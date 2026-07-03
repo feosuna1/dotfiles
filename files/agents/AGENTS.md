@@ -15,6 +15,21 @@ source of truth; Claude-only config lives in `files/claude/` (see its `AGENTS.md
   `files/claude/agents/` (and its Codex twin under `files/codex/agents/`) wraps
   one of these so the review knowledge has a single home.
 
+### Reviewer model tiering
+
+The reviewer wrappers run on two tiers, and both stacks must agree; when you
+change a reviewer's tier in one wrapper set, update its twin.
+
+- **Strong tier** — `code-quality`, `clean-code`, `security-code`: Claude
+  `model: sonnet`, Codex `model_reasoning_effort = "high"`. These domains carry
+  the highest miss cost and need cross-file tracing (data flow for security,
+  edge-case logic for correctness); the validation pass in `my-code-review`
+  filters false positives but can't recover findings a weak finder never made.
+- **Cheap tier** — `documentation-accuracy`, `test-coverage`, `performance`:
+  Claude `model: haiku`, Codex `model_reasoning_effort = "medium"`. These
+  findings are mostly local and falsifiable, so the validation pass catches
+  the noise a cheaper finder produces.
+
 ## How agents consume it
 
 - **Claude Code** loads `rules/` eagerly via `~/.claude/rules/dotfiles` →
