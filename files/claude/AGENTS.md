@@ -20,6 +20,11 @@ agent-agnostic belongs in `files/agents/` instead.
 - `skills/` — Claude-specific skills only (currently none — every skill is
   agent-agnostic under `files/agents/skills/`). A skill belongs here only if it
   depends on a Claude-only feature that can't be generalized.
+- `rules/` — Claude-specific rules, symlinked to `~/.claude/rules/claude` next
+  to the agent-agnostic set (`~/.claude/rules/dotfiles` →
+  `files/agents/rules/`). A rule belongs here only when its content is tied to
+  Claude Code itself (harness limits, tool names); portable rules live in
+  `files/agents/rules/` and are indexed by `files/agents/RULES.md`.
 
 Claude plugins are installed separately via the `configure-claude` script in
 `files/bin/`, not stored here.
