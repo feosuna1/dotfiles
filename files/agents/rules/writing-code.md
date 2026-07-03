@@ -53,4 +53,5 @@ writing-time checklist, not a substitute for independent review.
 - Handle edge cases as you write: empty and single-element collections, boundary
   values, null/missing input, and the off-by-one at the loop's ends.
 - Use the language idiomatically and its type system properly (e.g. no `any` in
-  TypeScript, type hints in Python). Follow project conventions in CLAUDE.md.
+  TypeScript, type hints in Python). Follow project conventions in AGENTS.md
+  (or CLAUDE.md).

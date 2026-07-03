@@ -3,7 +3,7 @@
 - Don't make assumptions about requirements - ask clarifying questions first
 - If questions don't resolve ambiguity, state your interpretation: "I understand this as [X]. Proceeding unless you indicate otherwise."
 - After requirements are clear, confirm your understanding and proposed approach before starting work
-- Break multi-part work into manageable tasks using TaskCreate:
+- Break multi-part work into manageable tasks using your environment's task tool (e.g. `TaskCreate`), or a structured list if it has none:
   - 3+ distinct issues or findings
   - Work with sequential dependencies (can't start next step until current completes)
   - Large refactoring or multi-phase implementation

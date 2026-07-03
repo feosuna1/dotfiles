@@ -12,4 +12,4 @@
 - Bold **key metrics, decisions, and action items**.
 - Use bullet points only for lists, procedures, comparisons — prose for analysis and strategy.
 - Use Mermaid diagrams to help explain complex systems and interactions.
-- When presenting multiple options, use `AskUserQuestion` tool
+- When presenting multiple options, put them to the user as an explicit question with selectable choices — via a structured option tool (e.g. `AskUserQuestion`) if your environment has one.
