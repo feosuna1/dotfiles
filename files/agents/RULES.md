@@ -16,7 +16,7 @@ don't need to load every rule up front.
 ## How you communicate
 
 - [Output style](rules/output-style.md) — how to talk to the user in-session: lead with conclusions, no pleasantries, plain words, challenge reasoning as a peer.
-- [Human voice](rules/human-voice.md) — read when writing prose *as the user*: email, Slack, commit messages, feedback to others. Direct, humble, no filler.
+- [Human voice](guides/human-voice.md) — read when writing prose *as the user*: email, Slack, commit messages, feedback to others. Direct, humble, no filler. (The body lives in `guides/` so eager-loading agents pick up only the stub at `rules/human-voice.md`.)
 
 ## How you write code
 
@@ -29,4 +29,4 @@ don't need to load every rule up front.
 
 ## Time
 
-- [Calendars and dates](rules/calendars.md) — read before any date/time or calendar work: verify the current date from the system, compute date math in a script, confirm the timezone.
+- [Calendars and dates](guides/calendars.md) — read before any date/time or calendar work: verify the current date from the system, compute date math in a script, confirm the timezone. (The body lives in `guides/` so eager-loading agents pick up only the stub at `rules/calendars.md`.)

@@ -8,7 +8,11 @@ source of truth; Claude-only config lives in `files/claude/` (see its `AGENTS.md
 
 - `RULES.md` — progressive-disclosure index of the global rules: a table of
   contents linking to each rule body with a "when to read it" hook.
-- `rules/` — the rule bodies, one self-contained file per rule.
+- `rules/` — the rule bodies, one self-contained file per rule. Agents that
+  eager-load this directory (Claude Code) pay for every word in every session,
+  so a long rule that fires rarely keeps only a short trigger stub here.
+- `guides/` — full bodies for the stubbed rules above, loaded on demand when
+  the stub's trigger fires. `RULES.md` links straight to the guide.
 - `skills/` — agent-agnostic workflow skills (one `SKILL.md` directory each). A
   skill that depends on a Claude feature lives in `files/claude/skills/` instead.
 - `review/` — shared code-review guides. A reviewer subagent under
