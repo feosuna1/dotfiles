@@ -15,6 +15,11 @@ writing-time checklist, not a substitute for independent review.
   or `isReady` if it can be null. Names match behavior.
 - Functions are verb phrases; types are nouns; booleans read as predicates
   (`isValid`, `hasNext`). One word per concept — don't mix `get`/`fetch`/`retrieve`.
+- Name the role, not the mechanism, and reject invented metaphors. Prefer
+  `alreadySpent` to `spendingFloor`, `maximumAllowableAmount` to `available`,
+  `canSaveAssignments` (what it drives) to `hasChanges`. Precise domain terms
+  stay ("minimum" isn't "floor") — it's coined metaphors, not real jargon, that
+  get cut. A name this precise makes its explanatory comment unnecessary.
 
 ## Functions
 
@@ -26,6 +31,11 @@ writing-time checklist, not a substitute for independent review.
   arguments — split the function.
 - Command-query separation: a function either *does* something or *answers*
   something, never both.
+- Don't overload `subscript` for validating or mutating writes. A subscript
+  implies round-trip stability — `x[k] = v` then `x[k]` returns `v`. A setter
+  that clamps, rejects, or fires side effects breaks that and silently desyncs a
+  two-way binding. Offer a get-only subscript for reads and a verb-named command
+  (`assign(_:to:)`) for the rule-laden mutation.
 
 ## Structure
 
