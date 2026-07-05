@@ -44,12 +44,6 @@ This is the user's personal `dotfiles` that configures the development environme
 - `install.sh` runs `files/bin/check-permission-parity`, which warns when the Bash permission entries in `files/claude/settings.json` and the prefix rules in `files/codex/rules/default.rules` drift apart.
 - `install.sh` also runs `files/bin/check-agent-parity`, which warns when a reviewer agent's Claude and Codex wrappers drift: a missing twin, differing descriptions, a model-tier mismatch against the mapping in `files/agents/AGENTS.md`, or wrappers referencing different (or missing) review guides.
 
-**Modifying Shell Config:**
-
-- Fish: `files/config/fish/conf.d/` for modules, `roots/copy/User/.config/fish/config.fish` for main config
-- Zsh: `files/config/zsh/` for shared scripts, `roots/copy/User/.zsh*` for init files
-- Changes require shell restart or re-sourcing
-
 **Managing Packages:**
 
 - Edit `Brewfile` with brew/cask/vscode/cargo entries
