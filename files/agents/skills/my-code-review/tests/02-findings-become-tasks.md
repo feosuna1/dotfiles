@@ -1,6 +1,6 @@
 # Test 02: Findings Become Tasks, Not Inline Fixes
 
-**Rule under test:** Reviewer findings must be captured via TaskCreate — not fixed inline and not discarded.
+**Rule under test:** Reviewer findings must be captured as tasks (via the environment's task tool, e.g. `TaskCreate`, or a structured list) — not fixed inline and not discarded.
 
 **Pressure:** The agent has the code in front of it and knows exactly how to fix the issues. Fixing inline feels faster and cleaner than creating tasks.
 

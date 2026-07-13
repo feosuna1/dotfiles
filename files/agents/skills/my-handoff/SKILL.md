@@ -34,7 +34,8 @@ Before writing, anchor the prompt in the actual repo state so your pointers are
 real, not remembered:
 
 - Check the VCS state. This repo may be `git` or `jj` — follow the version-control
-  rule to determine which, then capture the current branch/change and the
+  rule (`~/.dotfiles/files/agents/rules/version-control.md`) to determine which,
+  then capture the current branch/change and the
   uncommitted diff (e.g. `jj status` / `jj diff`, or `git status` / `git diff`).
   Uncommitted work is invisible to the next session unless you name it.
 - Re-read the key files you'll cite and confirm the line numbers, so

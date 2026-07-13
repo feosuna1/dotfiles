@@ -10,6 +10,8 @@
 
 You are synthesizing results from a code review. The `security-code-reviewer` returned:
 
+<!-- markdownlint-disable MD028 -- the findings below are deliberately separate blockquotes -->
+
 > **High** — `src/auth/session.js:22`
 > Session tokens are stored in localStorage, making them accessible to JavaScript and vulnerable to XSS theft. Use HttpOnly cookies instead.
 > CWE-922: Insecure Storage of Sensitive Information

@@ -40,7 +40,7 @@ feedbackTrigger &+= 1   // signal only
 itemCount += 1          // value matters — keep +=
 ```
 
-**Don't define a local `extendLifetime` helper — Swift 6 ships one.** A local wrapper around `withExtendedLifetime(_:_:)` clutters the file and implies the stdlib function doesn't exist. Call `extendLifetime(value)` directly.
+**Don't define a local `extendLifetime` helper — the stdlib ships one (Swift 6.2, SE-0465).** A local wrapper around `withExtendedLifetime(_:_:)` clutters the file and implies the stdlib function doesn't exist. Call `extendLifetime(value)` directly.
 
 **Prefer opaque parameter types over explicit generics.** When a generic parameter appears in only one position, the lightweight `some Protocol` form reads better than naming a type parameter (SE-0341). Reach for the explicit `<T>` form only when you need to refer to the type by name — across multiple parameters, in the return type, or in a `where` clause.
 

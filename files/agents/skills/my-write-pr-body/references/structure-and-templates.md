@@ -15,12 +15,13 @@ appear almost universally:
   Treated as near-mandatory; its absence is a common cause of review back-and-forth.
 
 Sources:
+
 - Hypertext Dispatches
-  (https://tenthirtyam.org/dispatches/2026/04/04/how-to-write-an-effective-github-pull-request-template/)
+  (<https://tenthirtyam.org/dispatches/2026/04/04/how-to-write-an-effective-github-pull-request-template/>)
 - Willow Voice, *Write Good PR Descriptions*
-  (https://willowvoice.com/blog/how-to-write-good-pull-request-description)
+  (<https://willowvoice.com/blog/how-to-write-good-pull-request-description>)
 - CodeAnt, *Azure DevOps PR Template Examples*
-  (https://www.codeant.ai/blogs/azure-devops-pull-request-template-examples)
+  (<https://www.codeant.ai/blogs/azure-devops-pull-request-template-examples>)
 
 ## Context / links section, placed early
 
@@ -33,9 +34,10 @@ tutorial/reference links out of this section (those belong with implementation
 notes if anywhere).
 
 Sources:
+
 - Ashlee M. Boyer, *An Undefeated Pull Request Template*
-  (https://ashleemboyer.com/blog/pull-request-template/)
-- James Croft (https://www.jamescroft.co.uk/a-guide-to-making-a-good-pull-request/)
+  (<https://ashleemboyer.com/blog/pull-request-template/>)
+- James Croft (<https://www.jamescroft.co.uk/a-guide-to-making-a-good-pull-request/>)
 
 ## Optional sections, included only when they carry weight
 
@@ -50,12 +52,13 @@ Depending on the change type, useful additional sections include:
 - **Screenshots / visuals** — for UI changes.
 
 Sources:
+
 - Atlassian, *The Unwritten Pull Request Guide*
-  (https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests)
+  (<https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests>)
 - minware, *10 PR Template Sections*
-  (https://www.minware.com/blog/effective-pr-template)
+  (<https://www.minware.com/blog/effective-pr-template>)
 - freeCodeCamp, *How to Write a Good PR Description*
-  (https://www.freecodecamp.org/news/how-to-write-a-pull-request-description/)
+  (<https://www.freecodecamp.org/news/how-to-write-a-pull-request-description/>)
 
 ## Keep it lean and omit empty sections
 
@@ -66,6 +69,7 @@ leaving placeholders. Start with a minimal structure and only add sections when 
 real, repeating need justifies them.
 
 Sources:
-- minware (https://www.minware.com/blog/effective-pr-template)
+
+- minware (<https://www.minware.com/blog/effective-pr-template>)
 - Azure Repos guide
-  (https://oneuptime.com/blog/post/2026-02-16-how-to-configure-azure-repos-pull-request-templates-for-standardized-code-review-submissions/view)
+  (<https://oneuptime.com/blog/post/2026-02-16-how-to-configure-azure-repos-pull-request-templates-for-standardized-code-review-submissions/view>)

@@ -12,10 +12,11 @@ unrelated one, and keeps the history clean. This is the same single-responsibili
 rule the commit-messages skill applies at the commit level.
 
 Sources:
+
 - M. Kerem Keskin
-  (https://medium.com/deliveryherotechhub/good-manners-of-a-pull-request-some-best-practices-cb2de3c3aea1)
+  (<https://medium.com/deliveryherotechhub/good-manners-of-a-pull-request-some-best-practices-cb2de3c3aea1>)
 - Hugo Dias, *Pull Requests Best Practices*
-  (https://hugodias.substack.com/p/pull-requests-best-practices)
+  (<https://hugodias.substack.com/p/pull-requests-best-practices>)
 
 ## Smaller PRs review better
 
@@ -27,7 +28,7 @@ not a hard rule — it varies by language and framework — but the underlying p
 is to bias toward small, and to let the template nudge authors to split when a
 change grows large.
 
-Source: Hugo Dias (https://hugodias.substack.com/p/pull-requests-best-practices)
+Source: Hugo Dias (<https://hugodias.substack.com/p/pull-requests-best-practices>)
 
 Note for the spec: PR *size* is a property of the change, not the description.
 The skill can surface a gentle "consider splitting" nudge but shouldn't try to
@@ -43,7 +44,7 @@ themselves. For a PR that aggregates many commits, synthesize the overall story
 rather than concatenating commit messages.
 
 Source: Atlassian, *The Unwritten Pull Request Guide*
-(https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests)
+(<https://www.atlassian.com/blog/git/written-unwritten-guide-pull-requests>)
 
 ## Plain prose beats ceremony
 
@@ -53,7 +54,7 @@ and motivation; save deeper technical notes for later sections only if they help
 the reviewer.
 
 Source: HackerOne, *Writing A Great Pull Request Description*
-(https://www.hackerone.com/blog/writing-great-pull-request-description)
+(<https://www.hackerone.com/blog/writing-great-pull-request-description>)
 
 ## Keep instructions out of the rendered output
 
@@ -62,4 +63,4 @@ rendered PR reads as clean content rather than a half-filled form. The skill's
 output should be finished prose, not a template with leftover prompts.
 
 Source: Azure Repos guide
-(https://oneuptime.com/blog/post/2026-02-16-how-to-configure-azure-repos-pull-request-templates-for-standardized-code-review-submissions/view)
+(<https://oneuptime.com/blog/post/2026-02-16-how-to-configure-azure-repos-pull-request-templates-for-standardized-code-review-submissions/view>)

@@ -29,7 +29,7 @@ stop and rewrite to describe the outcome instead.
 
 A commit message has up to three parts, each separated by a **single blank line**:
 
-```
+```text
 Subject, up to 50 chars, imperative mood
 
 Body explaining why the change was needed and what is materially
@@ -91,7 +91,7 @@ renders them as a trailing block, one `Fixes:` line each, never wrapped. You
 write the URLs, not the formatting. Each URL must begin with `http://` or
 `https://` and contain no whitespace.
 
-```
+```text
 Fixes: https://tracker.example.com/TASK-123
 Fixes: https://tracker.example.com/TASK-456
 ```

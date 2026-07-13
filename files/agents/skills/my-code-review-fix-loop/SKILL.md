@@ -3,6 +3,8 @@ name: my-code-review-fix-loop
 description: Drive a converging review-fix loop on a finished change — repeatedly run the adversarial code review, apply fixes for confirmed high-signal findings, and re-review the result until the change goes quiet. Use when you want to grind a diff down to no remaining issues without hand-driving each round. Mutates the working copy; never commits.
 ---
 
+# Code Review Fix Loop
+
 This skill automates the loop you would otherwise run by hand: review, fix the confirmed findings, review again, and repeat until nothing new surfaces. It uses [`my-code-review`](../my-code-review/SKILL.md) as the find-and-validate engine and adds the fix-and-repeat control loop on top.
 
 It **mutates code in the working copy.** It never commits, pushes, or files tasks. When it finishes you inspect the accumulated changes yourself (`jj diff` / `git diff`) and keep, amend, or discard them.

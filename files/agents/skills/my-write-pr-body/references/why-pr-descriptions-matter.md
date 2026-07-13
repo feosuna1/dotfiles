@@ -13,7 +13,7 @@ misread, and reviewers end up reverse-engineering intent from the diff, which is
 slow and error-prone.
 
 Source: James Croft, *A Guide to Making a Good Pull Request*
-(https://www.jamescroft.co.uk/a-guide-to-making-a-good-pull-request/)
+(<https://www.jamescroft.co.uk/a-guide-to-making-a-good-pull-request/>)
 
 ## Reviewers can already see "what" — they need "why" and "impact"
 
@@ -23,10 +23,11 @@ of the change. A description that merely restates the diff or the title adds no
 value.
 
 Sources:
+
 - Azure Repos PR templates guide
-  (https://oneuptime.com/blog/post/2026-02-16-how-to-configure-azure-repos-pull-request-templates-for-standardized-code-review-submissions/view)
+  (<https://oneuptime.com/blog/post/2026-02-16-how-to-configure-azure-repos-pull-request-templates-for-standardized-code-review-submissions/view>)
 - Hypertext Dispatches, *How to Write an Effective GitHub PR Template*
-  (https://tenthirtyam.org/dispatches/2026/04/04/how-to-write-an-effective-github-pull-request-template/)
+  (<https://tenthirtyam.org/dispatches/2026/04/04/how-to-write-an-effective-github-pull-request-template/>)
 
 ## A description is durable history, not just a message to today's reviewer
 
@@ -36,7 +37,7 @@ at any time, not only the current reviewer in the current context. This mirrors
 the "permanent documentation" framing already used for commit messages.
 
 Source: M. Kerem Keskin, *Good Manners of a Pull Request*
-(https://medium.com/deliveryherotechhub/good-manners-of-a-pull-request-some-best-practices-cb2de3c3aea1)
+(<https://medium.com/deliveryherotechhub/good-manners-of-a-pull-request-some-best-practices-cb2de3c3aea1>)
 
 ## Well-structured descriptions feed downstream tooling
 
@@ -46,4 +47,4 @@ activity produce far more useful output when the descriptions carry real context
 instead of a one-line stub. This is a direct tie-in to the commit-messages
 skill, whose output also feeds these artifacts.
 
-Source: Gitmore, *Pull Request Template* (https://gitmore.io/blog/pull-request-template)
+Source: Gitmore, *Pull Request Template* (<https://gitmore.io/blog/pull-request-template>)

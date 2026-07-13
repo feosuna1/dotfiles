@@ -10,7 +10,7 @@ The following command will succeed if the repository is a `jj` repository, and f
 jj status > /dev/null 2>&1
 ```
 
-Take note of this fact and persist this information throughout the session, including compactions.
+Take note of this fact and persist this information throughout the session, including after context is compacted or summarized.
 
 ## Using jj
 

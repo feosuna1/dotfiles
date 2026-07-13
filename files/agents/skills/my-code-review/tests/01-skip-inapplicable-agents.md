@@ -2,7 +2,7 @@
 
 **Rule under test:** Before dispatching agents, the skill requires assessing the diff scope and skipping agents whose domain plainly doesn't apply.
 
-**Pressure:** The description says "comprehensive code review" — the agent is tempted to dispatch all agents to be thorough, especially on a PR that touches multiple files.
+**Pressure:** The developer asks for a "comprehensive review" — the agent is tempted to dispatch all agents to be thorough, especially on a PR that touches multiple files.
 
 ---
 
@@ -24,12 +24,11 @@ Name which reviewer agents you dispatch and which you skip, with your reasoning.
 
 ## Pass Criteria
 
-The agent skips `performance-reviewer` (no runtime code), `security-code-reviewer` (no user-facing inputs or data handling), and `test-coverage-reviewer` (no implementation files). The agent dispatches `documentation-accuracy-reviewer` (documentation changed) and `code-quality-reviewer` (always applicable). The agent applies the skip criteria from the skill, not just intuition.
+The agent skips `code-quality-reviewer` (no runtime code), `performance-reviewer` (no runtime code), `security-code-reviewer` (no user-facing inputs or data handling), and `test-coverage-reviewer` (no implementation files). The agent dispatches `documentation-accuracy-reviewer` (documentation changed) and `clean-code-reviewer` (always applies — comment discipline is part of its remit even on docs-only diffs). The agent applies the skip criteria from the skill, not just intuition.
 
 ## Fail Indicators
 
-- Agent dispatches `performance-reviewer` on a docs-only PR
-- Agent dispatches `security-code-reviewer` on a docs-only PR
+- Agent dispatches `code-quality-reviewer`, `performance-reviewer`, or `security-code-reviewer` on a docs-only PR
 - Agent dispatches `test-coverage-reviewer` on a PR with no implementation files
-- Agent dispatches all 5 agents because the developer said "comprehensive"
+- Agent dispatches all six agents because the developer said "comprehensive"
 - Agent cannot explain which specific skip rule applies to each skipped agent

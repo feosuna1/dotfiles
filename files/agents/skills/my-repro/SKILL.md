@@ -82,7 +82,7 @@ Then route on the outcome:
 
 Close with one short block:
 
-```
+```text
 **Theory:** <one line>
 **Repro:** <reproduced | not reproduced | inconclusive>
 **Helpers:** <removed | none>
