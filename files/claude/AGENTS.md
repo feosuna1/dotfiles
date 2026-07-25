@@ -14,6 +14,9 @@ agent-agnostic belongs in `files/agents/` instead.
   review knowledge is agent-agnostic, the body `@import`s a shared guide from
   `files/agents/review/` and this file keeps only the Claude-specific frontmatter
   (`tools`, `model`); the portable knowledge stays in the shared guide.
+- `scripts/` — hook scripts invoked by `settings.json`. Names are kebab-case
+  (`sort-settings.sh`) except where the script implements one named hook event,
+  in which case it mirrors the event (`worktreeCreate.sh` for `WorktreeCreate`).
 - `skills/` — Claude-specific skills only (currently none — every skill is
   agent-agnostic under `files/agents/skills/`). A skill belongs here only if it
   depends on a Claude-only feature that can't be generalized.

@@ -10,6 +10,38 @@
   "env": {
     "ENABLE_TOOL_SEARCH": "true"
   },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.dotfiles/files/claude/scripts/sort-settings.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.dotfiles/files/claude/scripts/worktree-create.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.dotfiles/files/claude/scripts/worktree-remove.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
   "model": "opus[1m]",
   "permissions": {
     "allow": [
@@ -69,8 +101,8 @@
       "Bash(chmod *)",
       "Bash(chown *)",
       "Bash(git clean *)",
-      "Edit(**/.env.*)",
       "Edit(**/.env)",
+      "Edit(**/.env.*)",
       "Edit(**/credentials/**)",
       "Edit(**/secrets/**)",
       "Edit(~/.aws/**)",
@@ -80,8 +112,8 @@
       "Edit(~/Documents/**)",
       "Edit(~/Downloads/**)",
       "Edit(~/Library/**)",
-      "Read(**/.env.*)",
       "Read(**/.env)",
+      "Read(**/.env.*)",
       "Read(**/credentials/**)",
       "Read(**/secrets/**)",
       "Read(~/.aws/**)",
@@ -91,8 +123,8 @@
       "Read(~/Documents/**)",
       "Read(~/Downloads/**)",
       "Read(~/Library/**)",
-      "Write(**/.env.*)",
       "Write(**/.env)",
+      "Write(**/.env.*)",
       "Write(**/credentials/**)",
       "Write(**/secrets/**)",
       "Write(~/.aws/**)",
@@ -113,27 +145,5 @@
     "enabled": true,
     "mode": "hold"
   },
-  "voiceEnabled": true,
-  "hooks": {
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.dotfiles/files/claude/scripts/worktree-create.sh"
-          }
-        ]
-      }
-    ],
-    "WorktreeRemove": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.dotfiles/files/claude/scripts/worktree-remove.sh"
-          }
-        ]
-      }
-    ]
-  }
+  "voiceEnabled": true
 }
