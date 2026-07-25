@@ -15,11 +15,6 @@ This is the user's personal `dotfiles` that configures the development environme
   `xc-list-runtimes`. Never camelCase.
 - Scripts in `files/bin/` carry no extension — they are commands invoked by name.
   Scripts elsewhere keep their extension (`.sh`, `.fish`).
-- The one exception is a script whose whole job is to implement a named external
-  event, where mirroring that name is clearer than describing the job: the
-  `worktreeCreate.sh` / `worktreeRemove.sh` hooks in `files/claude/scripts/` match
-  the Claude Code `WorktreeCreate` / `WorktreeRemove` hook events. Don't reach for
-  this unless the name really is dictated from outside.
 
 **Adding an `AGENTS.md`:**
 
@@ -63,24 +58,8 @@ This is the user's personal `dotfiles` that configures the development environme
 **Claude Rules/Skills:**
 
 - Changes to `files/claude/` affect all Claude Code sessions
-- Test new rules/skills in isolated project before global deployment
-- Verify YAML frontmatter in instruction files are valid
-- Skills must follow the expected format (see existing examples)
-
-## Critical Files
-
-- `files/config/git/config` - Git preferences, aliases, and tool configuration
-- `Brewfile` - Package manifest for reproducible environment setup
-- `install.sh` - Entry point for all installation logic
 
 ## Commands
-
-**Installation:**
-
-```bash
-# Full setup: symlinks, copies, brew, system config
-./install.sh
-```
 
 **Linting:**
 
@@ -97,38 +76,6 @@ markdownlint-cli2 "**/*.md"
 - `roots/symlinks/User/` contains symlink definitions (`.symlink` files point to targets in `files/`)
 - `roots/copy/User/` contains files to be copied (not symlinked) to home directory
 - Files are deployed relative to `$HOME` by preserving directory structure
-
-**Configuration Structure:**
-
-```text
-.dotfiles/
-├── files/
-│   ├── agents/           Agent-agnostic config (RULES.md index; rules/, skills/, review/)
-│   │   ├── rules/        Global instructions and coding standards
-│   │   ├── skills/       Agent-agnostic workflow skills
-│   │   └── review/       Shared code-review guides
-│   ├── bin/              Custom commands (git-*, configure-*, utilities)
-│   ├── claude/           Claude Code configuration (deployed to ~/.claude/)
-│   │   ├── agents/       Claude subagent definitions (reviewer agents)
-│   │   └── skills/       Claude-specific workflow skills
-│   ├── codex/            Codex configuration (deployed to ~/.codex/)
-│   │   ├── agents/       Codex subagent definitions
-│   │   └── rules/        Codex command/approval rules
-│   └── config/           Shell and tool configurations
-│       ├── fish/         Fish shell theme and environment
-│       ├── git/          Git config, ignore patterns, hooks
-│       └── zsh/          Zsh interactive and login scripts
-└── roots/
-    ├── symlinks/         Symlink definitions for user files
-    │   └── User/         Files to be symlinked to home directory
-    └── copy/             Files to be copied to home directory
-        └── User/         Files to be copied to home directory
-```
-
-**Symlink Mechanism:**
-
-- Files in `roots/symlinks/User/` mirror target home directory structure
-- `.symlink` extension = file contains path to actual target
 
 **Agent Configuration:**
 
