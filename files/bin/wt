@@ -1,4 +1,29 @@
 #!/bin/bash
+#
+# wt - a more ergonomic way of using git worktrees and jj workspaces.
+#
+# This script wraps git worktrees and jj workspaces behind one consistent interface. It can create,
+# list, remove, and open them.
+#
+# `wt` creates each new worktree outside the repo, in one shared base directory. IDEs and other
+# tools can then treat the main worktree as the source of truth. The path format is:
+#
+#   `<worktrees-base-dir>/<project-slug>/<name>/`.
+#
+# `<worktrees-base-dir>` defaults to `~/.worktrees`, and `--worktrees-base-dir` overrides it. Only
+# `wt new` uses it, because only `wt new` creates paths. The other commands (`rm`, `ls`, `cd`, `vs`)
+# ask the VCS which worktrees exist. They therefore also work on the main worktree and on a
+# worktree that `wt` did not create.
+#
+# `<project-slug>` is the main worktree path with each non-alphanumeric character replaced by `-`.
+# For example, `/Users/feo/.dotfiles` becomes `-Users-feo--dotfiles`. This matches Claude Code's
+# `~/.claude/projects/` naming.
+#
+# `wt new` also symlinks the paths that `<main-worktree>/.worktreeinclude` lists from the main
+# worktree into the new one. Each non-comment line is a project-relative path or a shell glob. Use
+# it for local, untracked files that each worktree needs, such as `.env`, editor settings, or
+# `node_modules`.
+
 set -o errexit # Exit if any individual command fails and isn't handled
 set -o nounset # Exit if unset variables are used
 
@@ -7,201 +32,584 @@ if [ -n "${BASH_VERSION:-}" ]; then
     set -o pipefail # Exit if any command in a pipeline fails and isn't handled
 fi
 
-# wt — create and remove per-project worktrees, backed by jj or git.
-#
-#   wt new [-p PROJECT] [-b BASE] <name> [ref]   Create a worktree, print its path.
-#   wt rm  [-p PROJECT] [-b BASE] <name>         Remove a worktree by name.
-#   wt rm  --dir <path>                          Remove the worktree at an exact path.
-#
-# The optional <ref> bases the new worktree on a revision: a git commit-ish for
-# git repos, a jj revision for jj repos. Omit it to branch from the project's
-# current state.
-#
-# Worktrees live at <BASE>/<project-slug>/<name>, where <project-slug> encodes
-# the project's repository-root path the same way Claude Code names its
-# ~/.claude/projects/ dirs: every non-alphanumeric character replaced one-to-one
-# with a hyphen (e.g. /Users/feo/.dotfiles -> -Users-feo--dotfiles). BASE
-# defaults to ~/.worktrees; PROJECT defaults to the current directory and is
-# resolved to its repository root so the slug is stable from any subdirectory.
-#
-# On create, paths listed in <project-root>/.worktreeinclude are symlinked into
-# the worktree, pointing back at the source tree. Each non-comment line is a path
-# or shell glob relative to the project root; globs expand against the source
-# tree and a matched directory is linked as a single symlink. This carries
-# gitignored or otherwise untracked files (e.g. .env, local config, node_modules)
-# that the VCS checkout itself leaves behind.
+# --- configuration
 
-DEFAULT_BASE="${HOME}/.worktrees"
+DEFAULT_WORKTREES_BASE_DIR="${HOME}/.worktrees"
 
-die() {
-    printf 'wt: %s\n' "$1" >&2
-    exit "${2:-1}"
-}
+# --- output
 
-usage() {
+print_usage() {
     cat >&2 <<'EOF'
+wt keeps a project's worktrees together in one directory outside the project, in
+jj repos and git repos alike.
+
 usage:
-  wt new [-p PROJECT] [-b BASE] <name> [ref]   create a worktree, print its path
-  wt rm  [-p PROJECT] [-b BASE] <name>         remove a worktree by name
-  wt rm  --dir <path>                          remove the worktree at an exact path
+  wt new [-p DIR] [-w DIR] <name> [ref]    create a worktree, print its path
+  wt rm  [-p DIR] <name>                   remove a worktree by name
+  wt rm  <dir>                             remove the worktree at that path
+  wt ls  [-p DIR]                          list every worktree of the repo
+  wt cd  [-p DIR] <name>                   print a worktree's path
+  wt vs  [-p DIR] <name>                   open a worktree in VS Code
+
+  -p, --project DIR             project to act on (default: cwd)
+  -w, --worktrees-base-dir DIR  where new puts worktrees (default: ~/.worktrees)
 EOF
 }
 
-slugify() {
-    printf '%s' "$1" | sed 's/[^A-Za-z0-9]/-/g'
+# The prefix "wt: " shows that a message comes from `wt` itself. It separates the message from the
+# output of the git or jj command that `wt` runs.
+#
+# - Parameters:
+#   - $1 - message - printed to stderr, prefixed "wt: "
+# - Returns: 0.
+warn() {
+    printf 'wt: %s\n' "$1" >&2
 }
 
-# Prints "<vcs>\t<root>" (vcs = jj|git, root = repository root) for the repo
-# containing $1, or returns non-zero if $1 is not in a jj or git repo. jj is
-# checked first so colocated repos are treated as jj, matching the rest of this
-# setup. Callers capture stdout, e.g. `repo=$(detect_repo "$dir") || die …`.
-detect_repo() {
-    local dir="$1" root
-    if root=$(jj -R "$dir" root 2>/dev/null); then
-        printf '%s\t%s\n' jj "$root"
-    elif root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null); then
-        printf '%s\t%s\n' git "$root"
+# Exits the script with a message to stderr and a status code.
+#
+# - Parameters:
+#   - $1 - message - printed to stderr, prefixed "wt: "
+#   - $2 - status - exit status (default 1)
+# - Returns: never; exits the script.
+die() {
+    warn "$1"
+    exit "${2:-1}"
+}
+
+# --- option parsing
+
+# One parser handles `-h`, a missing value, and an unknown option the same way for every command. A
+# command also rejects each option that it does not ask for. For example, `wt ls -w ...` fails,
+# because `ls` does not accept `-w`.
+#
+# - Parameters:
+#   - $1 - accepted - space-separated long option names this command allows
+#   - $2.. - the command's own arguments
+# - Returns: 0, setting `OPT_PROJECT_DIR`, `OPT_WORKTREES_BASE_DIR` and the `POSITIONAL` array.
+#   Prints usage and exits 0 on `-h`; dies 2 on an unknown option.
+parse_options() {
+    local accepted=" $1 " opt_name
+    shift
+
+    OPT_PROJECT_DIR="$PWD"
+    OPT_WORKTREES_BASE_DIR="$DEFAULT_WORKTREES_BASE_DIR"
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -p | --project) opt_name=project ;;
+            -w | --worktrees-base-dir) opt_name=worktrees-base-dir ;;
+            -h | --help) print_usage; exit 0 ;;
+            --) shift; break ;;
+            -*) die "unknown option: $1" 2 ;;
+            *) break ;;
+        esac
+
+        case "$accepted" in
+            *" $opt_name "*) ;;
+            *) die "unknown option: $1" 2 ;;
+        esac
+        [ $# -ge 2 ] || die "$1 requires a value" 2
+
+        case "$opt_name" in
+            project) OPT_PROJECT_DIR="$2" ;;
+            worktrees-base-dir) OPT_WORKTREES_BASE_DIR="$2" ;;
+        esac
+        shift 2
+    done
+
+    POSITIONAL=("$@")
+}
+
+# --- repo detection
+
+# Populates the `VCS`, `MAIN_WORKTREE_DIR` and `PROJECT_SLUG` global variables from the specified
+# directory.
+#
+# Every command needs this information. The function dies when it cannot find a main worktree,
+# either because the directory is in no repo, or because the repo records no path to it.
+#
+# - Parameters:
+#   - $1 - project_dir - the directory to inspect
+# - Returns: 0, setting VCS (jj or git), MAIN_WORKTREE_DIR (the main worktree's directory) and
+#   PROJECT_SLUG (the slug of MAIN_WORKTREE_DIR, see the header for the format). Dies 2 when no main
+#   worktree comes back.
+detect_vcs_and_main_worktree_dir() {
+    local project_dir="$1"
+    try_detect_vcs_and_main_worktree_dir "$project_dir" ||
+        die "cannot find the jj or git main worktree of: $project_dir" 2
+}
+
+# The non-fatal form, for a caller that tests a directory rather than commits to it.
+#
+# - Parameters:
+#   - $1 - project_dir - the directory to inspect
+# - Returns: 0, setting the same three globals. Returns 1 when neither VCS names a main worktree.
+try_detect_vcs_and_main_worktree_dir() {
+    local project_dir="$1"
+    if MAIN_WORKTREE_DIR=$(jj_main_worktree_dir "$project_dir"); then
+        VCS=jj
+    elif MAIN_WORKTREE_DIR=$(git_main_worktree_dir "$project_dir"); then
+        VCS=git
     else
         return 1
     fi
+
+    PROJECT_SLUG="${MAIN_WORKTREE_DIR//[^A-Za-z0-9]/-}"
 }
 
-# Symlink files listed in <root>/.worktreeinclude into the worktree <dir>. See
-# the header comment for the file format. Best-effort: a failed link warns but
-# never aborts, so a stray entry can't fail worktree creation.
+jj_main_worktree_dir() (
+    local project_dir="$1" workspace_dir enclosing_workspace_dir linked_repo_dir
+
+    # jj calls a worktree a workspace, so its vocabulary shows up in the commands below.
+    #
+    # `jj -R "$project_dir"` expects the directory that contains `.jj`, so it fails from a deeper
+    # path. From inside the directory, `jj workspace root` walks up and finds the root reliably.
+    cd -- "$project_dir" 2>/dev/null || return 1
+
+    # jj names the main workspace "default". Try that name first, before the more fragile ways to
+    # find the main workspace.
+    if workspace_dir=$(jj workspace root --name default 2>/dev/null); then
+        printf '%s\n' "$workspace_dir"
+        return 0
+    fi
+
+    # A `.jj/repo` directory identifies the main workspace.
+    enclosing_workspace_dir=$(jj workspace root 2>/dev/null) || return 1
+    if [ -d "$enclosing_workspace_dir/.jj/repo" ]; then
+        printf '%s\n' "$enclosing_workspace_dir"
+        return 0
+    fi
+
+    # A `.jj/repo` file contains a link to the main workspace's `.jj/repo`. From that directory,
+    # `jj workspace root` walks up and names that workspace.
+    linked_repo_dir=$(cat "$enclosing_workspace_dir/.jj/repo" 2>/dev/null) || return 1
+    cd -- "$enclosing_workspace_dir/.jj/$linked_repo_dir" 2>/dev/null || return 1
+    jj workspace root 2>/dev/null
+)
+
+git_main_worktree_dir() {
+    local project_dir="$1" git_dir common_git_dir candidate_dir
+
+    # `--git-dir` is that worktree's own directory instead.
+    git_dir=$(
+        git -C "$project_dir" rev-parse --path-format=absolute --git-dir 2>/dev/null
+    ) || return 1
+
+    # `--git-common-dir` is the main worktree's git dir, even from a secondary worktree
+    common_git_dir=$(
+        git -C "$project_dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null
+    ) || return 1
+
+    # The two are equal in the main worktree, its safe to delegate to git to find the root.
+    if [ "$git_dir" = "$common_git_dir" ]; then
+        git -C "$project_dir" rev-parse --path-format=absolute --show-toplevel 2>/dev/null
+        return
+    fi
+
+    # From a secondary worktree, the main worktree holds the common git dir, so it is the parent.
+    # Confirm that the parent belongs to the same repo, because git records no path back to a main
+    # worktree whose git dir sits outside it.
+    candidate_dir="${common_git_dir%/*}"
+    [ "$(git -C "$candidate_dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" \
+        = "$common_git_dir" ] || return 1
+
+    printf '%s\n' "$candidate_dir"
+}
+
+# --- worktree lookup
+
+# Reports whether the specified directory is a worktree that its own repo lists. Asks the VCS rather
+# than reading the path.
+#
+# Populates `VCS`, `MAIN_WORKTREE_DIR` and `PROJECT_SLUG` as soon as the directory is in a repo,
+# which spares the caller a second detection. The globals therefore also carry a value when the
+# function goes on to return 1, because the directory is in a repo but is not a worktree of it.
+#
+# - Parameters:
+#   - $1 - candidate_dir - the directory to test
+# - Returns: 0 when the VCS lists the directory as a worktree, 1 when it does not.
+detect_worktree_dir() {
+    local candidate_dir="$1" listed_dir rows
+
+    [ -d "$candidate_dir" ] || return 1
+    candidate_dir=$(realpath -- "$candidate_dir") || return 1
+    try_detect_vcs_and_main_worktree_dir "$candidate_dir" || return 1
+    rows=$(available_worktree_dirs) || exit 1
+
+    while IFS=$'\t' read -r _ listed_dir; do
+        # `-ef` compares the two directories by inode, so a symlinked or uncanonical record still
+        # matches.
+        if [ -n "$listed_dir" ] && [ "$listed_dir" -ef "$candidate_dir" ]; then
+            return 0
+        fi
+    done <<< "$rows"
+
+    return 1
+}
+
+# Searches the VCS worktree list for the name. It does not build a path under the worktrees base
+# dir, so it finds a worktree in any location, including one that `wt` did not create.
+#
+# - Parameters:
+#   - $1 - name - the worktree name to resolve
+# - Returns: 0, printing the worktree path to stdout. Dies 2 if no worktree carries the name, if
+#   more than one does, or if its directory is unknown or gone.
+resolve_worktree_dir() {
+    local name="$1"
+
+    local candidate candidate_dir rows
+    local -a matched_dirs=()
+    rows=$(available_worktree_dirs) || exit 1
+
+    while IFS=$'\t' read -r candidate candidate_dir; do
+        if [ "$candidate" = "$name" ]; then
+            matched_dirs+=("$candidate_dir")
+        fi
+    done <<< "$rows"
+
+    # Two worktrees in different parent directories can carry one name.
+    case "${#matched_dirs[@]}" in
+        0) die "no such worktree: $name" 2 ;;
+        1) ;;
+        *) die "$name names ${#matched_dirs[@]} worktrees: ${matched_dirs[*]}" 2 ;;
+    esac
+
+    [ -n "${matched_dirs[0]}" ] || die "no recorded path for worktree: $name" 2
+    [ -d "${matched_dirs[0]}" ] || die "worktree directory is gone: ${matched_dirs[0]}" 2
+    printf '%s\n' "${matched_dirs[0]}"
+}
+
+# Reports what the VCS says. Does not check that the path still exists.
+#
+# A caller must act on a non-zero status itself. `errexit` cannot do it, because bash turns it off
+# for a whole call that runs inside an `if` test, and `cmd_rm` tests `detect_worktree_dir`.
+#
+# - Returns: 0. Prints "<name>\t<path>" per worktree to stdout. The VCS command dies on failure,
+#   which leaves a non-zero status for a caller that captures the output.
+available_worktree_dirs() {
+    if [ "$VCS" = jj ]; then
+        jj_available_worktree_dirs
+    else
+        git_available_worktree_dirs
+    fi
+}
+
+jj_available_worktree_dirs() {
+    local name worktree_dir rows
+
+    # A process substitution hides the status of the command inside it, so a failed `jj` would look
+    # like an empty list. Capture the output, then act on the status.
+    rows=$(jj -R "$MAIN_WORKTREE_DIR" workspace list -T 'name ++ "\t" ++ root ++ "\n"') ||
+        die "cannot list the jj workspaces of $MAIN_WORKTREE_DIR"
+
+    while IFS=$'\t' read -r name worktree_dir; do
+        # The `root` template method renders its error into the output. A main workspace that an
+        # earlier jj version is missing a recorded path. This error text is the only way to find
+        # such a workspace.
+        case "$worktree_dir" in
+            '<Error:'*) worktree_dir="$MAIN_WORKTREE_DIR" ;;
+        esac
+
+        printf '%s\t%s\n' "$name" "$worktree_dir"
+    done <<< "$rows"
+}
+
+git_available_worktree_dirs() {
+    # git does not name its worktrees. Use the directory name as the worktree name, except for the
+    # main worktree, which gets the name "default". git lists the main worktree first.
+    #
+    # For the main worktree, git reports its git dir rather than its root when the two sit apart, as
+    # `git init --separate-git-dir` and a submodule arrange. `MAIN_WORKTREE_DIR` already holds the
+    # root, so use it for that row.
+    git -C "$MAIN_WORKTREE_DIR" worktree list --porcelain |
+        awk -v main_worktree_dir="$MAIN_WORKTREE_DIR" '/^worktree /{
+            worktree_dir = substr($0, 10)
+            if (++seen == 1) { name = "default"; worktree_dir = main_worktree_dir }
+            else { name = worktree_dir; sub(/.*\//, "", name) }
+            print name "\t" worktree_dir
+        }' || die "cannot list the git worktrees of $MAIN_WORKTREE_DIR"
+}
+
+# --- worktree listing
+
+# The VCS is the source of truth. The list therefore also holds a worktree that `wt` did not create,
+# and a worktree outside the worktrees base dir. The main worktree gets the name "default" under
+# either VCS.
+#
+# - Returns: 0. Prints one "<name>\t<path>" line per worktree to stdout, with a third field noting a
+#   path that is gone or unknown.
+list_worktrees() {
+    local name worktree_dir rows
+    rows=$(available_worktree_dirs) || exit 1
+    [ -n "$rows" ] || return 0
+
+    while IFS=$'\t' read -r name worktree_dir; do
+        # The VCS keeps listing a worktree after you delete its directory by hand. You must forget
+        # it (jj) or prune it (git).
+        if [ -z "$worktree_dir" ]; then
+            printf '%s\t?\t(path unknown)\n' "$name"
+        elif [ -d "$worktree_dir" ]; then
+            printf '%s\t%s\n' "$name" "$worktree_dir"
+        else
+            printf '%s\t%s\t(missing)\n' "$name" "$worktree_dir"
+        fi
+    done <<< "$rows"
+}
+
+# Padding lines up a short worktree name with a long one. The rows must be read first, because the
+# name column is only as wide as the widest name. A terminal gets the padded rows. Anything else
+# gets the rows unchanged, which keeps `wt ls | cut -f1` usable.
+#
+# - Parameters: none - reads list_worktrees rows on stdin.
+# - Returns: 0. Prints the rows to stdout, name column padded for a terminal and tab-separated
+#   otherwise.
+print_worktrees_table() {
+    if [ ! -t 1 ]; then
+        cat
+        return 0
+    fi
+
+    local name worktree_dir note width=0
+    local -a names=() worktree_dirs=() notes=()
+
+    while IFS=$'\t' read -r name worktree_dir note; do
+        names+=("$name")
+        worktree_dirs+=("$worktree_dir")
+        notes+=("$note")
+        if [ "${#name}" -gt "$width" ]; then
+            width="${#name}"
+        fi
+    done
+
+    local index
+    for index in "${!names[@]}"; do
+        note="${notes[index]}"
+        printf '%-*s  %s%s\n' \
+            "$width" "${names[index]}" "${worktree_dirs[index]}" "${note:+  $note}"
+    done
+}
+
+# --- worktree creation and removal
+
+# Adds the worktree at the specified directory using the optional commit ref.
+#
+# - Parameters:
+#   - $1 - worktree_dir - where to create the worktree
+#   - $2 - ref - revision to base it on, empty for the project's current state
+# - Returns: 0. Prints the VCS command's progress to stderr. `errexit` ends the script when that
+#   command fails.
+add_worktree() {
+    local worktree_dir="$1" ref="$2"
+    if [ "$VCS" = jj ]; then
+        jj -R "$MAIN_WORKTREE_DIR" workspace add ${ref:+--revision "$ref"} "$worktree_dir" >&2
+    else
+        git -C "$MAIN_WORKTREE_DIR" worktree add "$worktree_dir" ${ref:+"$ref"} >&2
+    fi
+}
+
+# Removes (and deletes) the worktree from the specified directory.
+#
+# - Parameters:
+#   - $1 - worktree_dir - the worktree to remove
+# - Returns: 0. Prints the VCS command's progress to stderr. `errexit` ends the script when that
+#   command fails.
+remove_worktree() {
+    local worktree_dir="$1"
+    if [ "$VCS" = jj ]; then
+        jj -R "$worktree_dir" workspace forget >&2
+        rm -rf "$worktree_dir"
+    else
+        git -C "$MAIN_WORKTREE_DIR" worktree remove --force "$worktree_dir" >&2
+    fi
+}
+
+# Removes the per-project directory that held the worktree, when it is now empty.
+#
+# `rm` also accepts a worktree that `wt new` did not create, whose parent is an unrelated directory.
+# A parent named for the project slug identifies the layout that `wt new` builds.
+#
+# - Parameters:
+#   - $1 - worktree_dir - the worktree that was just removed
+# - Returns: 0, whether or not the directory goes away.
+remove_empty_project_dir() {
+    local worktree_dir="$1"
+    local parent_dir="${worktree_dir%/*}"
+
+    if [ "${parent_dir##*/}" = "$PROJECT_SLUG" ]; then
+        rmdir "$parent_dir" 2>/dev/null || true
+    fi
+}
+
+# --- include linking
+
+# Expands one `.worktreeinclude` pattern against the main worktree.
+#
+# A subshell keeps the `cd` and the shell options away from the caller. `IFS=` disables word
+# splitting, so a path with spaces survives. Pathname expansion still gives one field per match.
+# `nullglob` drops a glob that matches nothing. `dotglob` lets a glob catch dotfiles.
+#
+# - Parameters:
+#   - $1 - pattern - a project-relative path or shell glob
+# - Returns: 0. Prints each match to stdout, one per line, relative to the main worktree.
+expand_include_pattern() (
+    local pattern="$1" match
+
+    cd "$MAIN_WORKTREE_DIR" || exit 0
+    shopt -s nullglob dotglob
+    IFS=
+    for match in $pattern; do printf '%s\n' "$match"; done
+)
+
+# Symlinks one matched path into the worktree. A glob match names either a file or a directory, so
+# `match` and `include_target` carry no kind suffix.
+#
+# - Parameters:
+#   - $1 - worktree_dir - the worktree to link into
+#   - $2 - match - the matched path, relative to the main worktree
+# - Returns: 0 even when the link fails, warning on stderr instead.
+link_include_match() {
+    local worktree_dir="$1" match="$2"
+    local include_target="${MAIN_WORKTREE_DIR}/${match}"
+    local include_link="${worktree_dir}/${match}"
+
+    # A plain path such as `.env` is not a glob, so it arrives even when no such file exists. Skip
+    # it instead of linking to nothing.
+    [ -e "$include_target" ] || return 0
+
+    if [ -e "$include_link" ] || [ -L "$include_link" ]; then
+        warn "$match already in worktree, not linking"
+        return 0
+    fi
+
+    # `errexit` ends the script when a command fails. Both commands below must handle their own
+    # failure, or one bad entry stops worktree creation.
+    mkdir -p "${include_link%/*}" || { warn "failed to link $match"; return 0; }
+    ln -s "$include_target" "$include_link" || warn "failed to link $match"
+}
+
+# Symlinks the paths that `<main-worktree>/.worktreeinclude` lists into the worktree. Each
+# symlink points back at the main worktree. The header comment gives the file format. The function
+# works on a best-effort basis, so that one bad entry cannot fail worktree creation.
+#
+# - Parameters:
+#   - $1 - worktree_dir - the worktree to link into
+# - Returns: 0 even when an entry fails, warning on stderr instead.
 link_includes() {
-    local root="$1" dir="$2"
-    local include_file="${root}/.worktreeinclude"
+    local worktree_dir="$1"
+    local include_file="${MAIN_WORKTREE_DIR}/.worktreeinclude"
+    local pattern match
+
     [ -f "$include_file" ] || return 0
 
-    local line pattern match src dest
-    while IFS= read -r line || [ -n "$line" ]; do
-        # Trim surrounding whitespace, then skip blank lines and comments.
-        pattern="${line#"${line%%[![:space:]]*}"}"
-        pattern="${pattern%"${pattern##*[![:space:]]}"}"
+    # `read` with the default IFS removes the leading and trailing whitespace of each line. It keeps
+    # the spaces inside the line, so a pattern can contain spaces.
+    while read -r pattern || [ -n "$pattern" ]; do
         [ -n "$pattern" ] || continue
         case "$pattern" in
             \#*) continue ;;
         esac
-        pattern="${pattern#/}" # a leading slash just means project-root-relative
+        pattern="${pattern#/}" # a leading slash means project-root-relative
 
-        # Expand the pattern against the source tree. Each line is one pattern —
-        # embedded whitespace is literal, not a separator. IFS= disables word
-        # splitting so paths with spaces survive; pathname expansion still
-        # yields one field per match. nullglob drops non-matching globs;
-        # dotglob lets globs catch dotfiles.
         while IFS= read -r match; do
-            src="${root}/${match}"
-            [ -e "$src" ] || continue # literal non-matches pass through; skip them
-            dest="${dir}/${match}"
-            if [ -e "$dest" ] || [ -L "$dest" ]; then
-                printf 'wt: %s already in worktree, not linking\n' "$match" >&2
-                continue
-            fi
-            mkdir -p "$(dirname "$dest")"
-            ln -s "$src" "$dest" ||
-                printf 'wt: failed to link %s\n' "$match" >&2
-        done < <(
-            cd "$root" || exit 0
-            shopt -s nullglob dotglob
-            IFS=
-            for m in $pattern; do printf '%s\n' "$m"; done
-        )
-    done <"$include_file"
+            link_include_match "$worktree_dir" "$match"
+        done < <(expand_include_pattern "$pattern")
+    done < "$include_file"
 }
 
+# --- commands
+
+# - Parameters: the `new` command line ([-p PROJECT] [-w DIR] <name> [ref]).
+# - Returns: 2 with usage if no name. Prints the new worktree's path to stdout.
 cmd_new() {
-    local base="$DEFAULT_BASE" project="$PWD" name=""
-    while [ $# -gt 0 ]; do
-        case "$1" in
-            -b | --base) [ $# -ge 2 ] || die "$1 requires a value" 2; base="$2"; shift 2 ;;
-            -p | --project) [ $# -ge 2 ] || die "$1 requires a value" 2; project="$2"; shift 2 ;;
-            -h | --help) usage; return 0 ;;
-            --) shift; break ;;
-            -*) die "unknown option: $1" 2 ;;
-            *) break ;;
-        esac
-    done
-    name="${1:-}"
-    [ -n "$name" ] || { usage; return 2; }
+    parse_options 'project worktrees-base-dir' "$@"
+    local name="${POSITIONAL[0]:-}" ref="${POSITIONAL[1]:-}"
+
+    [ -n "$name" ] || { print_usage; return 2; }
     case "$name" in */*) die "name must not contain '/': $name" 2 ;; esac
-    local ref="${2:-}"
 
-    local repo
-    repo=$(detect_repo "$project") || die "not a jj or git repo: $project" 2
-    local VCS="${repo%%$'\t'*}" ROOT="${repo#*$'\t'}"
+    detect_vcs_and_main_worktree_dir "$OPT_PROJECT_DIR"
 
-    local dir
-    dir="${base}/$(slugify "$ROOT")/${name}"
-    mkdir -p "$(dirname "$dir")"
+    local worktree_dir="${OPT_WORKTREES_BASE_DIR}/${PROJECT_SLUG}/${name}"
+    local parent_dir="${worktree_dir%/*}"
+    mkdir -p "$parent_dir" || die "cannot create directory: $parent_dir"
 
-    # With a ref, base the worktree on it; without, branch from the project's
-    # current state (jj shares the working-copy commit's parents, git uses HEAD).
-    if [ "$VCS" = jj ]; then
-        if [ -n "$ref" ]; then
-            jj -R "$ROOT" workspace add --name "$name" --revision "$ref" "$dir" >&2
-        else
-            jj -R "$ROOT" workspace add --name "$name" "$dir" >&2
-        fi
-    else
-        if [ -n "$ref" ]; then
-            git -C "$ROOT" worktree add "$dir" "$ref" >&2
-        else
-            git -C "$ROOT" worktree add "$dir" >&2
-        fi
-    fi
+    add_worktree "$worktree_dir" "$ref"
+    link_includes "$worktree_dir"
 
-    link_includes "$ROOT" "$dir"
-
-    printf '%s\n' "$dir"
+    printf '%s\n' "$worktree_dir"
 }
 
+# - Parameters: the `rm` command line ([-p DIR] <name>, or <dir>).
+# - Returns: 2 with usage if no argument arrives. Dies 2 rather than remove the main worktree.
 cmd_rm() {
-    local base="$DEFAULT_BASE" project="$PWD" dir="" name=""
-    while [ $# -gt 0 ]; do
-        case "$1" in
-            -b | --base) [ $# -ge 2 ] || die "$1 requires a value" 2; base="$2"; shift 2 ;;
-            -p | --project) [ $# -ge 2 ] || die "$1 requires a value" 2; project="$2"; shift 2 ;;
-            -d | --dir) [ $# -ge 2 ] || die "$1 requires a value" 2; dir="$2"; shift 2 ;;
-            -h | --help) usage; return 0 ;;
-            --) shift; break ;;
-            -*) die "unknown option: $1" 2 ;;
-            *) break ;;
-        esac
-    done
+    parse_options 'project' "$@"
 
-    if [ -z "$dir" ]; then
-        name="${1:-}"
-        [ -n "$name" ] || { usage; return 2; }
-        case "$name" in */*) die "name must not contain '/': $name" 2 ;; esac
-        local repo
-        repo=$(detect_repo "$project") || die "not a jj or git repo: $project" 2
-        local ROOT="${repo#*$'\t'}"
-        dir="${base}/$(slugify "$ROOT")/${name}"
-    fi
+    local name_or_dir="${POSITIONAL[0]:-}" worktree_dir
+    [ -n "$name_or_dir" ] || { print_usage; return 2; }
 
-    [ -e "$dir" ] || die "no such worktree: $dir" 2
-
-    # jj forget leaves the directory on disk, so we delete it; git removes the
-    # directory itself. --force/forget so a dirty worktree still gets cleaned up.
-    if jj -R "$dir" status >/dev/null 2>&1; then
-        jj -R "$dir" workspace forget >&2
-        rm -rf "$dir"
+    # A directory that the VCS lists as a worktree is the target itself. Anything else is a name to
+    # resolve against the project.
+    #
+    # `detect_worktree_dir` populates the globals in this shell, so it cannot run in a command
+    # substitution. Canonicalize the argument here instead.
+    if detect_worktree_dir "$name_or_dir"; then
+        worktree_dir=$(realpath -- "$name_or_dir") # canonicalize before `rm -rf`
     else
-        # git refuses to remove the worktree you're standing in, so run from the
-        # main worktree resolved out of the worktree list.
-        local main
-        main=$(git -C "$dir" worktree list --porcelain | awk '/^worktree /{print $2; exit}')
-        git -C "$main" worktree remove --force "$dir" >&2
+        detect_vcs_and_main_worktree_dir "$OPT_PROJECT_DIR"
+        worktree_dir=$(resolve_worktree_dir "$name_or_dir")
     fi
 
-    # Tidy the now-possibly-empty per-project slug directory.
-    rmdir "$(dirname "$dir")" 2>/dev/null || true
+    if [ "$worktree_dir" -ef "$MAIN_WORKTREE_DIR" ]; then
+        die "refusing to remove the main worktree: $worktree_dir" 2
+    fi
+
+    remove_worktree "$worktree_dir"
+    remove_empty_project_dir "$worktree_dir"
 }
+
+# - Parameters: the `ls` command line ([-p PROJECT]).
+# - Returns: 0. Prints the worktree table to stdout.
+cmd_ls() {
+    parse_options 'project' "$@"
+    detect_vcs_and_main_worktree_dir "$OPT_PROJECT_DIR"
+    list_worktrees | print_worktrees_table
+}
+
+# - Parameters: the `cd` command line ([-p PROJECT] <name>).
+# - Returns: 2 with usage if no name. Prints the worktree's path to stdout.
+cmd_cd() {
+    parse_options 'project' "$@"
+    local name="${POSITIONAL[0]:-}"
+    [ -n "$name" ] || { print_usage; return 2; }
+    detect_vcs_and_main_worktree_dir "$OPT_PROJECT_DIR"
+    resolve_worktree_dir "$name"
+}
+
+# - Parameters: the `vs` command line ([-p PROJECT] <name>).
+# - Returns: 2 with usage if no name; dies if `code` is not on PATH. Opens the
+#   worktree in VS Code.
+cmd_vs() {
+    parse_options 'project' "$@"
+    local name="${POSITIONAL[0]:-}"
+    [ -n "$name" ] || { print_usage; return 2; }
+    command -v code >/dev/null 2>&1 || die "code not found on PATH"
+
+    detect_vcs_and_main_worktree_dir "$OPT_PROJECT_DIR"
+
+    local worktree_dir
+    worktree_dir=$(resolve_worktree_dir "$name")
+    code "$worktree_dir"
+}
+
+# --- main dispatch
 
 case "${1:-}" in
     new | create) shift; cmd_new "$@" ;;
     rm | remove) shift; cmd_rm "$@" ;;
-    -h | --help | "") usage ;;
-    *) die "unknown command: $1 (expected 'new' or 'rm')" 2 ;;
+    ls | list) shift; cmd_ls "$@" ;;
+    cd) shift; cmd_cd "$@" ;;
+    vs | code) shift; cmd_vs "$@" ;;
+    -h | --help | "") print_usage ;;
+    *) die "unknown command: $1 (expected 'new', 'rm', 'ls', 'cd' or 'vs')" 2 ;;
 esac
