@@ -9,6 +9,18 @@ This is the user's personal `dotfiles` that configures the development environme
 1. Create executable script in `files/bin/git-<command>`
 2. Script automatically available as `git <command>` (git's PATH mechanism)
 
+**Naming Scripts:**
+
+- Script filenames are kebab-case: `git-safe-push`, `sort-settings.sh`,
+  `xc-list-runtimes`. Never camelCase.
+- Scripts in `files/bin/` carry no extension — they are commands invoked by name.
+  Scripts elsewhere keep their extension (`.sh`, `.fish`).
+- The one exception is a script whose whole job is to implement a named external
+  event, where mirroring that name is clearer than describing the job: the
+  `worktreeCreate.sh` / `worktreeRemove.sh` hooks in `files/claude/scripts/` match
+  the Claude Code `WorktreeCreate` / `WorktreeRemove` hook events. Don't reach for
+  this unless the name really is dictated from outside.
+
 **Adding an `AGENTS.md`:**
 
 - Whenever you create a new `AGENTS.md`, add a sibling `CLAUDE.md` next to it
