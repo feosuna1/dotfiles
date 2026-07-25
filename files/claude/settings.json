@@ -120,19 +120,7 @@
       "Read(~/.netrc)",
       "Read(~/.ssh/**)",
       "Read(~/Desktop/**)",
-      "Read(~/Documents/**)",
-      "Read(~/Downloads/**)",
-      "Read(~/Library/**)",
-      "Write(**/.env)",
-      "Write(**/.env.*)",
-      "Write(**/credentials/**)",
-      "Write(**/secrets/**)",
-      "Write(~/.aws/**)",
-      "Write(~/.ssh/**)",
-      "Write(~/Desktop/**)",
-      "Write(~/Documents/**)",
-      "Write(~/Downloads/**)",
-      "Write(~/Library/**)"
+      "Read(~/Documents/**)"
     ]
   },
   "skipAutoPermissionPrompt": true,
