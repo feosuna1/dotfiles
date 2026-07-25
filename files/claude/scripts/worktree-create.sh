@@ -13,7 +13,7 @@ set -o nounset # Exit if unset variables are used
 PAYLOAD=$(cat)
 
 NAME=$(jq -r '.name' <<<"$PAYLOAD")
-[ -n "$NAME" ] && [ "$NAME" != "null" ] || { echo "worktreeCreate: missing or null .name in payload" >&2; exit 1; }
+[ -n "$NAME" ] && [ "$NAME" != "null" ] || { echo "worktree-create: missing or null .name in payload" >&2; exit 1; }
 PROJECT_DIR=$(jq -r '.cwd' <<<"$PAYLOAD")
 
 exec bash "${HOME}/.dotfiles/files/bin/wt" new \

@@ -13,6 +13,6 @@ set -o nounset # Exit if unset variables are used
 PAYLOAD=$(cat)
 
 WORKTREE_PATH=$(jq -r '.worktree_path' <<<"$PAYLOAD")
-[ -n "$WORKTREE_PATH" ] && [ "$WORKTREE_PATH" != "null" ] || { echo "worktreeRemove: missing or null .worktree_path in payload" >&2; exit 1; }
+[ -n "$WORKTREE_PATH" ] && [ "$WORKTREE_PATH" != "null" ] || { echo "worktree-remove: missing or null .worktree_path in payload" >&2; exit 1; }
 
 exec bash "${HOME}/.dotfiles/files/bin/wt" rm --dir "$WORKTREE_PATH"
