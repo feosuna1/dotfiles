@@ -3,7 +3,8 @@ default: true
 
 # Disable some built-in rules
 config:
-  line-length: false
+  line-length:
+    tables: false
 
 # CLAUDE.md files are single-line `@AGENTS.md` import pointers — nothing to lint.
 ignores:
