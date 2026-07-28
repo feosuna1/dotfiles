@@ -110,12 +110,19 @@ effect everywhere. The `.claude/` directory at the repo root is the opposite:
 project settings that apply only to sessions opened in this repo, configuring
 how agents work **on** the dotfiles rather than what the dotfiles install.
 
-- `.claude/settings.json` — committed. Holds a `PostToolUse` hook on
-  `Write|Edit` that runs `files/claude/scripts/check-front-matter.sh`, rejecting
-  markdown written under `~/.dotfiles` whose YAML front matter a strict parser
-  can't read. Claude Code's own front matter parser is lenient, so an unquoted
-  `description:` containing `": "` reads fine in a session but breaks `yq`-based
-  tooling like `check-agent-parity`.
+- `.claude/settings.json` — committed. Holds two `PostToolUse` hooks on
+  `Write|Edit`, both scoped to markdown under `~/.dotfiles`:
+  - `files/claude/scripts/check-front-matter.sh` rejects YAML front matter a
+    strict parser can't read. Claude Code's own front matter parser is lenient,
+    so an unquoted `description:` containing `": "` reads fine in a session but
+    breaks `yq`-based tooling like `check-agent-parity`.
+  - `files/claude/scripts/lint-markdown.sh` runs `markdownlint-cli2 --fix` to
+    repair the mechanical rules in place, then reports whatever `--fix` can't
+    resolve. In practice that means MD013 line-length, since the repo wraps
+    markdown at 80 columns and rewrapping prose needs judgment. It also checks
+    the front matter `description` against the same 80 columns, which
+    markdownlint can't see because it strips front matter before linting — wrap
+    a long description as a folded block scalar (`>-`).
 - `.claude/settings.local.json` — gitignored personal overrides.
 
 ## Important Notes

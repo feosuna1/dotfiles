@@ -17,10 +17,10 @@ agent-agnostic belongs in `files/agents/` instead.
 - `scripts/` — hook scripts. Names are kebab-case (`sort-settings.sh`) except
   where the script implements one named hook event, in which case it mirrors the
   event (`worktreeCreate.sh` for `WorktreeCreate`). Most are wired by the
-  `settings.json` here, which is deployed globally. `check-front-matter.sh` is
-  the exception: it lives here for the naming and shellcheck conventions but is
-  wired by `.claude/settings.json` at the repo root, so it only runs for sessions
-  working on the dotfiles themselves.
+  `settings.json` here, which is deployed globally. `check-front-matter.sh` and
+  `lint-markdown.sh` are the exceptions: they live here for the naming and
+  shellcheck conventions but are wired by `.claude/settings.json` at the repo
+  root, so they only run for sessions working on the dotfiles themselves.
 - `skills/` — Claude-specific skills only (currently none — every skill is
   agent-agnostic under `files/agents/skills/`). A skill belongs here only if it
   depends on a Claude-only feature that can't be generalized.

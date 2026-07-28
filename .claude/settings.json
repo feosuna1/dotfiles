@@ -8,6 +8,11 @@
             "type": "command",
             "command": "bash ~/.dotfiles/files/claude/scripts/check-front-matter.sh",
             "statusMessage": "Checking YAML front matter"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.dotfiles/files/claude/scripts/lint-markdown.sh",
+            "statusMessage": "Linting markdown"
           }
         ]
       }
