@@ -1,6 +1,9 @@
 ---
 name: my-describe
-description: Look at the changes in the current commit and write (or rewrite) its description via the my-write-commit-message skill. Operates on the existing current commit in place; does not create a new commit, stage, or push.
+description: >-
+  Look at the changes in the current commit and write (or rewrite) its
+  description via the my-write-commit-message skill. Operates on the existing
+  current commit in place; does not create a new commit, stage, or push.
 disable-model-invocation: true
 ---
 

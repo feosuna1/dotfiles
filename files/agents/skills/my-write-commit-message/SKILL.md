@@ -1,6 +1,15 @@
 ---
 name: my-write-commit-message
-description: Write clear, durable commit messages for any version control system (Git, Jujutsu/jj, etc.). Use this skill whenever the user is committing work, asks you to write or draft a commit message, asks for help describing a change for the log, or has staged changes that need a message. Trigger on phrases like "write a commit message", "commit this", "what should the commit say", "describe this change", or when finishing a unit of work that will be committed. Commit messages are permanent documentation that feed PR descriptions, release notes, and changelogs, so they deserve care even for small changes.
+description: >-
+  Write clear, durable commit messages for any version control system (Git,
+  Jujutsu/jj, etc.). Use this skill whenever the user is committing work, asks
+  you to write or draft a commit message, asks for help describing a change for
+  the log, or has staged changes that need a message. Trigger on phrases like
+  "write a commit message", "commit this", "what should the commit say",
+  "describe this change", or when finishing a unit of work that will be
+  committed. Commit messages are permanent documentation that feed PR
+  descriptions, release notes, and changelogs, so they deserve care even for
+  small changes.
 ---
 
 # Commit Messages

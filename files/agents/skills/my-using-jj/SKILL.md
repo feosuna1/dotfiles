@@ -1,6 +1,15 @@
 ---
 name: my-using-jj
-description: Operate correctly in a Jujutsu (jj) repository. Covers the jj mental model (the working copy is a commit, no staging area, change IDs, auto-rebasing descendants), commands, revsets, filesets, workflows, and the user's conventions and aliases that general jj knowledge does not cover. Use before ANY jj operation and for any jj question, even one that seems obvious — committing, describing, squashing, splitting, rebasing, absorbing, bookmarks, push/fetch, conflict resolution, or undo/recovery. Trigger on "jj", "jujutsu", "bookmark", "revset", "change ID", or whenever `jj status` succeeds in the repo.
+description: >-
+  Operate correctly in a Jujutsu (jj) repository. Covers the jj mental model
+  (the working copy is a commit, no staging area, change IDs, auto-rebasing
+  descendants), commands, revsets, filesets, workflows, and the user's
+  conventions and aliases that general jj knowledge does not cover. Use before
+  ANY jj operation and for any jj question, even one that seems obvious —
+  committing, describing, squashing, splitting, rebasing, absorbing, bookmarks,
+  push/fetch, conflict resolution, or undo/recovery. Trigger on "jj", "jujutsu",
+  "bookmark", "revset", "change ID", or whenever `jj status` succeeds in the
+  repo.
 ---
 
 # Using Jujutsu (jj)

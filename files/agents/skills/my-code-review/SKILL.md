@@ -1,6 +1,12 @@
 ---
 name: my-code-review
-description: Run a multi-agent code review on finished work — dispatch domain reviewers, independently validate their findings, and file only confirmed, high-signal issues as tasks. Accepts `--no-tasks` to return the confirmed findings instead of filing them, for a caller (e.g. an automated fix loop) that acts on them programmatically. Use when a change is complete (tests pass, feature works) and ready to commit or deploy.
+description: >-
+  Run a multi-agent code review on finished work — dispatch domain reviewers,
+  independently validate their findings, and file only confirmed, high-signal
+  issues as tasks. Accepts `--no-tasks` to return the confirmed findings instead
+  of filing them, for a caller (e.g. an automated fix loop) that acts on them
+  programmatically. Use when a change is complete (tests pass, feature works)
+  and ready to commit or deploy.
 ---
 
 # Multi-Agent Code Review

@@ -1,6 +1,14 @@
 ---
 name: my-handoff
-description: Produce a single, self-contained prompt the user can paste into a fresh agent session to continue the current work without re-deriving context. Use this whenever the user wants to hand off, carry over, or resume work in a new session — phrases like "write a handoff prompt", "I'm running low on context", "give me something to paste into a new session", "continue this in a fresh session", "context is getting full", or "summarize this so a new session can pick up". This is for bootstrapping a *new agent session*, not for summarizing the conversation for the user themselves and not for commit/PR messages.
+description: >-
+  Produce a single, self-contained prompt the user can paste into a fresh agent
+  session to continue the current work without re-deriving context. Use this
+  whenever the user wants to hand off, carry over, or resume work in a new
+  session — phrases like "write a handoff prompt", "I'm running low on context",
+  "give me something to paste into a new session", "continue this in a fresh
+  session", "context is getting full", or "summarize this so a new session can
+  pick up". This is for bootstrapping a *new agent session*, not for summarizing
+  the conversation for the user themselves and not for commit/PR messages.
 ---
 
 # Session Handoff Prompt

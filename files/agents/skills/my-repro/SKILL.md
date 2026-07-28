@@ -1,6 +1,11 @@
 ---
 name: my-repro
-description: Reproduce a reported or theorized bug in the running app to confirm it's real before writing a fix. Use this whenever a bug is suspected, reported, or theorized and the next move is to debug or fix it — turn the theory into hand-run repro steps, confirm the symptom shows up, and end with a clear yes/no on whether the theory holds.
+description: >-
+  Reproduce a reported or theorized bug in the running app to confirm it's real
+  before writing a fix. Use this whenever a bug is suspected, reported, or
+  theorized and the next move is to debug or fix it — turn the theory into
+  hand-run repro steps, confirm the symptom shows up, and end with a clear
+  yes/no on whether the theory holds.
 ---
 
 # Reproduce a Bug

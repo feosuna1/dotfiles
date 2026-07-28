@@ -1,6 +1,17 @@
 ---
 name: my-write-pr-body
-description: Compose the title and description prose for a pull/merge request — host- and VCS-agnostic (GitHub, GitLab, Bitbucket, Azure DevOps; Git, Jujutsu/jj). Use this skill whenever the user is opening or updating a PR/MR, asks you to write or draft a PR description or title, asks "what should the PR say", or has a branch of commits ready for review. Other skills that open PRs should call this skill to generate the description content, then place it into whatever template the repo uses. Trigger on phrases like "write the PR description", "draft a PR body", "open a PR for this", or when a unit of work is finished and about to be reviewed. A PR description is the mental model the diff can't give a reviewer, and it feeds review, release notes, and changelogs — so it deserves care.
+description: >-
+  Compose the title and description prose for a pull/merge request — host- and
+  VCS-agnostic (GitHub, GitLab, Bitbucket, Azure DevOps; Git, Jujutsu/jj). Use
+  this skill whenever the user is opening or updating a PR/MR, asks you to write
+  or draft a PR description or title, asks "what should the PR say", or has a
+  branch of commits ready for review. Other skills that open PRs should call
+  this skill to generate the description content, then place it into whatever
+  template the repo uses. Trigger on phrases like "write the PR description",
+  "draft a PR body", "open a PR for this", or when a unit of work is finished
+  and about to be reviewed. A PR description is the mental model the diff can't
+  give a reviewer, and it feeds review, release notes, and changelogs — so it
+  deserves care.
 ---
 
 # Writing a PR description

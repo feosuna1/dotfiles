@@ -1,6 +1,11 @@
 ---
 name: my-code-review-fix-loop
-description: Drive a converging review-fix loop on a finished change — repeatedly run the adversarial code review, apply fixes for confirmed high-signal findings, and re-review the result until the change goes quiet. Use when you want to grind a diff down to no remaining issues without hand-driving each round. Mutates the working copy; never commits.
+description: >-
+  Drive a converging review-fix loop on a finished change — repeatedly run the
+  adversarial code review, apply fixes for confirmed high-signal findings, and
+  re-review the result until the change goes quiet. Use when you want to grind a
+  diff down to no remaining issues without hand-driving each round. Mutates the
+  working copy; never commits.
 ---
 
 # Code Review Fix Loop
