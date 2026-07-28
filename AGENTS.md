@@ -58,6 +58,7 @@ This is the user's personal `dotfiles` that configures the development environme
 **Claude Rules/Skills:**
 
 - Changes to `files/claude/` affect all Claude Code sessions
+- Changes to `.claude/settings.json` affect only sessions opened in this repo
 
 ## Commands
 
@@ -81,6 +82,21 @@ markdownlint-cli2 "**/*.md"
 
 - Agent-agnostic config (rules, skills, review guides) lives in `files/agents/` — see `files/agents/AGENTS.md`; the rules are indexed by `files/agents/RULES.md`
 - Claude Code-specific config (settings, subagents, Claude-only skills) lives in `files/claude/` — see `files/claude/AGENTS.md`
+
+**Config for working on this repo:**
+
+Everything under `files/` is *deployed* — symlinked into `~/.claude/` and in
+effect everywhere. The `.claude/` directory at the repo root is the opposite:
+project settings that apply only to sessions opened in this repo, configuring
+how agents work **on** the dotfiles rather than what the dotfiles install.
+
+- `.claude/settings.json` — committed. Holds a `PostToolUse` hook on
+  `Write|Edit` that runs `files/claude/scripts/check-front-matter.sh`, rejecting
+  markdown written under `~/.dotfiles` whose YAML front matter a strict parser
+  can't read. Claude Code's own front matter parser is lenient, so an unquoted
+  `description:` containing `": "` reads fine in a session but breaks `yq`-based
+  tooling like `check-agent-parity`.
+- `.claude/settings.local.json` — gitignored personal overrides.
 
 ## Important Notes
 

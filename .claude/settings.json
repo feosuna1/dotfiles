@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.dotfiles/files/claude/scripts/check-front-matter.sh",
+            "statusMessage": "Checking YAML front matter"
+          }
+        ]
+      }
+    ]
+  }
+}
