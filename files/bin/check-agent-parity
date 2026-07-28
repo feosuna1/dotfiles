@@ -12,8 +12,24 @@
 CLAUDE_AGENTS_DIR="$HOME/.dotfiles/files/claude/agents"
 CODEX_AGENTS_DIR="$HOME/.dotfiles/files/codex/agents"
 
+# Read one top-level key out of a Claude wrapper's YAML front matter. Missing
+# keys come back empty rather than as the string "null".
+claude_field() {
+    yq --front-matter=extract --exit-status "$2 // \"\"" "$1"
+}
+
+# Read one top-level key out of a Codex wrapper's TOML.
+codex_field() {
+    yq --input-format=toml --output-format=yaml --exit-status "$2 // \"\"" "$1"
+}
+
 check_agent_parity() {
     local drift=0 file name
+
+    if ! command -v yq > /dev/null 2>&1; then
+        echo "Error: agent parity check requires yq (see Brewfile)." >&2
+        return 1
+    fi
 
     local claude_names codex_names
     claude_names=$(for file in "$CLAUDE_AGENTS_DIR"/*.md; do
@@ -39,17 +55,30 @@ check_agent_parity() {
         local claude_file="$CLAUDE_AGENTS_DIR/$name.md"
         local codex_file="$CODEX_AGENTS_DIR/$name.toml"
 
+        # A malformed wrapper would make every field read as empty, and two
+        # empty fields compare equal — so report it instead of silently passing.
+        if ! claude_field "$claude_file" . > /dev/null 2>&1; then
+            echo "Warning: agent $name: Claude wrapper has malformed YAML front matter."
+            drift=1
+            continue
+        fi
+        if ! codex_field "$codex_file" . > /dev/null 2>&1; then
+            echo "Warning: agent $name: Codex wrapper has malformed TOML."
+            drift=1
+            continue
+        fi
+
         local claude_desc codex_desc
-        claude_desc=$(sed -n 's/^description: //p' "$claude_file")
-        codex_desc=$(sed -n 's/^description = "\(.*\)"$/\1/p' "$codex_file")
+        claude_desc=$(claude_field "$claude_file" .description)
+        codex_desc=$(codex_field "$codex_file" .description)
         if [[ "$claude_desc" != "$codex_desc" ]]; then
             echo "Warning: agent $name: descriptions differ between wrappers."
             drift=1
         fi
 
         local claude_model codex_effort expected_effort=""
-        claude_model=$(sed -n 's/^model: //p' "$claude_file")
-        codex_effort=$(sed -n 's/^model_reasoning_effort = "\(.*\)"$/\1/p' "$codex_file")
+        claude_model=$(claude_field "$claude_file" .model)
+        codex_effort=$(codex_field "$codex_file" .model_reasoning_effort)
         case "$claude_model" in
             sonnet) expected_effort="high" ;;
             haiku) expected_effort="medium" ;;
@@ -65,8 +94,9 @@ check_agent_parity() {
 
         local claude_guide codex_guide
         claude_guide=$(sed -n 's/^@//p' "$claude_file")
-        # shellcheck disable=SC2088 # literal pattern matched inside the toml, not a path
-        codex_guide=$(grep -o '~/\.dotfiles/files/agents/review/[a-z-]*\.md' "$codex_file" | head -n 1 || true)
+        # shellcheck disable=SC2088 # literal pattern matched inside the prose, not a path
+        codex_guide=$(codex_field "$codex_file" .developer_instructions |
+            grep -o '~/\.dotfiles/files/agents/review/[a-z-]*\.md' | head -n 1 || true)
         if [[ "$claude_guide" != "$codex_guide" ]]; then
             echo "Warning: agent $name: wrappers reference different review guides (\"$claude_guide\" vs \"${codex_guide:-none}\")."
             drift=1

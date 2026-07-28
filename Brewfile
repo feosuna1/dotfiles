@@ -37,11 +37,12 @@ brew "tmux"
 brew "wget"
 # Little beautifier tool for xcodebuild
 brew "xcbeautify"
-# General-purpose lossless data-compression library
-brew "zlib"
 # Install and switch between multiple versions of Xcode
 brew "xcodesorg/made/xcodes"
 brew "xcodes"
+brew "yq"
+# General-purpose lossless data-compression library
+brew "zlib"
 # Command-line interface for 1Password
 cask "1password-cli"
 vscode "alefragnani.bookmarks"
