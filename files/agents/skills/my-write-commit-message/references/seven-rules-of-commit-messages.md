@@ -1,6 +1,7 @@
 # How to Write a Git Commit Message
 
-**Source:** [How to Write a Git Commit Message by Chris Beams](https://cbea.ms/git-commit/)
+**Source:** [How to Write a Git Commit Message by Chris
+Beams](https://cbea.ms/git-commit/)
 
 This is a summary of the seven rules and key principles from the above article.
 
@@ -8,17 +9,23 @@ This is a summary of the seven rules and key principles from the above article.
 
 ## Why Great Commit Messages Matter
 
-**"A commit message shows whether a developer is a good collaborator."** — Peter Hutterer
+**"A commit message shows whether a developer is a good collaborator."** — Peter
+Hutterer
 
-A well-crafted commit message communicates context about code changes to other developers and your future self. While diffs reveal _what_ changed, only commit messages explain _why_.
+A well-crafted commit message communicates context about code changes to other
+developers and your future self. While diffs reveal _what_ changed, only commit
+messages explain _why_.
 
-**Key insight:** The command `git log` with well-written messages provides a valuable long-term history that benefits debugging, code reviews, and understanding project evolution.
+**Key insight:** The command `git log` with well-written messages provides a
+valuable long-term history that benefits debugging, code reviews, and
+understanding project evolution.
 
 ## The Seven Rules of a Great Git Commit Message
 
 ### 1. Separate subject from body with a blank line
 
-The first line is the commit title, used throughout Git tools (log, shortlog, rebase, etc.). A blank line distinguishes the summary from detailed explanation.
+The first line is the commit title, used throughout Git tools (log, shortlog,
+rebase, etc.). A blank line distinguishes the summary from detailed explanation.
 
 **When to use body:**
 
@@ -27,9 +34,11 @@ The first line is the commit title, used throughout Git tools (log, shortlog, re
 
 **Command line example:**
 
+<!-- markdownlint-disable MD013 -->
 ```bash
 git commit -m "Fix typo in introduction" -m "Corrected spelling of 'commit' in the opening paragraph."
 ```
+<!-- markdownlint-restore -->
 
 ### 2. Limit the subject line to 50 characters
 
@@ -102,7 +111,8 @@ The body should focus on:
 - **What** approach was chosen and why
 - Context that reviewers need
 
-**Don't explain how** — the code shows that. Use comments for complex implementation details.
+**Don't explain how** — the code shows that. Use comments for complex
+implementation details.
 
 **Example of good body:**
 
@@ -140,19 +150,25 @@ See also: #456, #789
 
 ### Use the Command Line, Not IDEs
 
-The Git command line interface provides full power and precision. While IDEs have Git integrations, they often abstract away important details and limit functionality.
+The Git command line interface provides full power and precision. While IDEs
+have Git integrations, they often abstract away important details and limit
+functionality.
 
 ### Learn Git Thoroughly
 
-Read [Pro Git](https://git-scm.com/book/en/v2) (available free online) to understand Git's design philosophy and capabilities.
+Read [Pro Git](https://git-scm.com/book/en/v2) (available free online) to
+understand Git's design philosophy and capabilities.
 
 ### Keep Commits Atomic
 
-Small, focused commits often need less explanation than large, sprawling ones. If you find yourself writing a lengthy commit body, consider whether the commit should be split into multiple atomic changes.
+Small, focused commits often need less explanation than large, sprawling ones.
+If you find yourself writing a lengthy commit body, consider whether the commit
+should be split into multiple atomic changes.
 
 ### Think of Future Maintainers
 
-Write commit messages for the person debugging this code at 2am six months from now. That person might be you.
+Write commit messages for the person debugging this code at 2am six months from
+now. That person might be you.
 
 ## Summary
 
@@ -166,4 +182,5 @@ Write commit messages for the person debugging this code at 2am six months from 
 6. Wrap body at 72 characters
 7. Explain what and why, not how
 
-Following these rules creates a readable, maintainable Git history that serves as valuable documentation for your project's lifetime.
+Following these rules creates a readable, maintainable Git history that serves
+as valuable documentation for your project's lifetime.

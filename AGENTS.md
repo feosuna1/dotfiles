@@ -1,6 +1,8 @@
 # Project: dotfiles
 
-This is the user's personal `dotfiles` that configures the development environment, shell settings, git workflows, and Claude Code behavior across all of the user's machines.
+This is the user's personal `dotfiles` that configures the development
+environment, shell settings, git workflows, and Claude Code behavior across all
+of the user's machines.
 
 ## Key Patterns
 
@@ -13,8 +15,8 @@ This is the user's personal `dotfiles` that configures the development environme
 
 - Script filenames are kebab-case: `git-safe-push`, `sort-settings.sh`,
   `xc-list-runtimes`. Never camelCase.
-- Scripts in `files/bin/` carry no extension — they are commands invoked by name.
-  Scripts elsewhere keep their extension (`.sh`, `.fish`).
+- Scripts in `files/bin/` carry no extension — they are commands invoked by
+  name. Scripts elsewhere keep their extension (`.sh`, `.fish`).
 
 **Adding an `AGENTS.md`:**
 
@@ -28,16 +30,29 @@ This is the user's personal `dotfiles` that configures the development environme
 
 **Adding Claude Configuration:**
 
-- Rules (global instructions): `files/agents/rules/<name>.md` — agent-agnostic; indexed by `files/agents/RULES.md`
-- Skills (workflows): `files/agents/skills/<name>/SKILL.md` if agent-agnostic, else `files/claude/skills/<name>/SKILL.md` for Claude-specific ones
-- Both automatically loaded via symlink to `~/.claude/` (Claude's `rules/dotfiles` symlink points at `files/agents/rules/`)
+- Rules (global instructions): `files/agents/rules/<name>.md` — agent-agnostic;
+  indexed by `files/agents/RULES.md`
+- Skills (workflows): `files/agents/skills/<name>/SKILL.md` if agent-agnostic,
+  else `files/claude/skills/<name>/SKILL.md` for Claude-specific ones
+- Both automatically loaded via symlink to `~/.claude/` (Claude's
+  `rules/dotfiles` symlink points at `files/agents/rules/`)
 
 **Keeping Claude and Codex in sync:**
 
-- The two agents carry parallel config: Claude permissions in `files/claude/settings.json` and Codex command rules in `files/codex/rules/`; subagents in `files/claude/agents/` and `files/codex/agents/`.
-- When you add or change a rule for one agent — a permission/approval entry, a subagent, a behavior rule — consider whether the other needs the same change and apply it there too, unless it's genuinely agent-specific.
-- `install.sh` runs `files/bin/check-permission-parity`, which warns when the Bash permission entries in `files/claude/settings.json` and the prefix rules in `files/codex/rules/default.rules` drift apart.
-- `install.sh` also runs `files/bin/check-agent-parity`, which warns when a reviewer agent's Claude and Codex wrappers drift: a missing twin, differing descriptions, a model-tier mismatch against the mapping in `files/agents/AGENTS.md`, or wrappers referencing different (or missing) review guides.
+- The two agents carry parallel config: Claude permissions in
+  `files/claude/settings.json` and Codex command rules in `files/codex/rules/`;
+  subagents in `files/claude/agents/` and `files/codex/agents/`.
+- When you add or change a rule for one agent — a permission/approval entry, a
+  subagent, a behavior rule — consider whether the other needs the same change
+  and apply it there too, unless it's genuinely agent-specific.
+- `install.sh` runs `files/bin/check-permission-parity`, which warns when the
+  Bash permission entries in `files/claude/settings.json` and the prefix rules
+  in `files/codex/rules/default.rules` drift apart.
+- `install.sh` also runs `files/bin/check-agent-parity`, which warns when a
+  reviewer agent's Claude and Codex wrappers drift: a missing twin, differing
+  descriptions, a model-tier mismatch against the mapping in
+  `files/agents/AGENTS.md`, or wrappers referencing different (or missing)
+  review guides.
 
 **Managing Packages:**
 
@@ -74,14 +89,19 @@ markdownlint-cli2 "**/*.md"
 **Installation System:**
 
 - `install.sh` orchestrates the setup process
-- `roots/symlinks/User/` contains symlink definitions (`.symlink` files point to targets in `files/`)
-- `roots/copy/User/` contains files to be copied (not symlinked) to home directory
+- `roots/symlinks/User/` contains symlink definitions (`.symlink` files point to
+  targets in `files/`)
+- `roots/copy/User/` contains files to be copied (not symlinked) to home
+  directory
 - Files are deployed relative to `$HOME` by preserving directory structure
 
 **Agent Configuration:**
 
-- Agent-agnostic config (rules, skills, review guides) lives in `files/agents/` — see `files/agents/AGENTS.md`; the rules are indexed by `files/agents/RULES.md`
-- Claude Code-specific config (settings, subagents, Claude-only skills) lives in `files/claude/` — see `files/claude/AGENTS.md`
+- Agent-agnostic config (rules, skills, review guides) lives in `files/agents/`
+  — see `files/agents/AGENTS.md`; the rules are indexed by
+  `files/agents/RULES.md`
+- Claude Code-specific config (settings, subagents, Claude-only skills) lives in
+  `files/claude/` — see `files/claude/AGENTS.md`
 
 **Config for working on this repo:**
 

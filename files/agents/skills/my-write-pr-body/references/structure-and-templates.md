@@ -12,7 +12,8 @@ appear almost universally:
   important section and the first thing reviewers read. It should make the diff
   legible, not restate the title.
 - **Testing** — what the author ran and how a reviewer can verify the change.
-  Treated as near-mandatory; its absence is a common cause of review back-and-forth.
+  Treated as near-mandatory; its absence is a common cause of review
+  back-and-forth.
 
 Sources:
 
@@ -37,7 +38,8 @@ Sources:
 
 - Ashlee M. Boyer, *An Undefeated Pull Request Template*
   (<https://ashleemboyer.com/blog/pull-request-template/>)
-- James Croft (<https://www.jamescroft.co.uk/a-guide-to-making-a-good-pull-request/>)
+- James Croft
+  (<https://www.jamescroft.co.uk/a-guide-to-making-a-good-pull-request/>)
 
 ## Optional sections, included only when they carry weight
 
@@ -65,8 +67,8 @@ Sources:
 A consistent warning: templates should not become forms full of empty headers.
 Keep prompts short, keep the rendered result scannable (a reviewer should find
 answers in under a minute), and drop sections that don't apply rather than
-leaving placeholders. Start with a minimal structure and only add sections when a
-real, repeating need justifies them.
+leaving placeholders. Start with a minimal structure and only add sections when
+a real, repeating need justifies them.
 
 Sources:
 

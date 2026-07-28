@@ -119,7 +119,9 @@ Revsets select commits. Almost every command accepts `-r REVSET`.
 
 ### String Patterns
 
-Used in `description()`, `author()`, `bookmarks()`, etc.: `exact:`, `glob:`, `regex:`, `substring:` (default). Append `-i` for case-insensitive (e.g., `substring-i:`).
+Used in `description()`, `author()`, `bookmarks()`, etc.: `exact:`, `glob:`,
+`regex:`, `substring:` (default). Append `-i` for case-insensitive (e.g.,
+`substring-i:`).
 
 ### Common Revset Recipes
 

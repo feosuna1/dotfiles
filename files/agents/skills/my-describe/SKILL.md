@@ -63,8 +63,8 @@ Pick the commit to describe:
 
 ## 3. Read the changes
 
-Look at the full diff of the target commit — this is the ground truth the message
-must describe:
+Look at the full diff of the target commit — this is the ground truth the
+message must describe:
 
 - **jj**: `jj -R "$root" show <rev>` (or `jj -R "$root" diff -r <rev>`) for the
   chosen revision.
@@ -76,9 +76,9 @@ Read the whole diff, not just the file list. A good message explains *why* and
 
 ## 4. Write the message
 
-Hand off to the **`my-write-commit-message`** skill with the diff as input. Let it
-produce the subject and body according to its conventions. Don't shortcut it with
-a one-liner unless the change is genuinely trivial.
+Hand off to the **`my-write-commit-message`** skill with the diff as input. Let
+it produce the subject and body according to its conventions. Don't shortcut it
+with a one-liner unless the change is genuinely trivial.
 
 ## 5. Apply it in place
 
@@ -108,10 +108,11 @@ quoted delimiter (`<<'EOF'`) so the shell doesn't expand anything inside.
   EOF
   ```
 
-Heredocs are POSIX-shell syntax. Tool calls run under a POSIX shell so these work
-as written, even though the user's interactive shell may be fish, which has no
-heredocs.
+Heredocs are POSIX-shell syntax. Tool calls run under a POSIX shell so these
+work as written, even though the user's interactive shell may be fish, which has
+no heredocs.
 
 After applying, show the user the final description (e.g. the relevant line from
-`jj -R "$root" log` / `git -C "$root" log`) so they can see what landed. If the diff was empty and there
-was nothing to describe, say so instead of inventing a message.
+`jj -R "$root" log` / `git -C "$root" log`) so they can see what landed. If the
+diff was empty and there was nothing to describe, say so instead of inventing a
+message.

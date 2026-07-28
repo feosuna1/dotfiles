@@ -30,8 +30,8 @@ Fixes: https://tracker.example.com/PERF-318
 ```
 
 The first line is the title; a blank line separates the summary, then the why,
-then the `Fixes:` trailer. No headings, no labels, no fences in the real output —
-a caller skill drops the title and the prose into its template's own sections.
+then the `Fixes:` trailer. No headings, no labels, no fences in the real output
+— a caller skill drops the title and the prose into its template's own sections.
 The trailer is **aggregated from the commits**: every distinct `Fixes:` URL
 across the PR's commit messages is collected and deduped here (one task in this
 example), matching the trailer the commit-message skill produces, so the
@@ -52,14 +52,14 @@ line, a blank line, and prose (no labels, no fences):
 > **Rate limiting**
 > Rate-limit the webhook endpoint to 60 requests per minute
 >
-> The webhook accepted unbounded traffic, leaving it open to floods. Requests are
-> now capped at 60/min, so a single source can't overwhelm downstream processing.
->
+> The webhook accepted unbounded traffic, leaving it open to floods. Requests
+> are now capped at 60/min, so a single source can't overwhelm downstream
+> processing.
 > **Structured logging**
 > Emit logs as structured JSON
 >
 > Plain-text logs were hard to query downstream. Logging now emits JSON, so
 > aggregation can filter on fields instead of grepping free-form lines.
 >
-> If you'd rather keep them together I can, but the reviewer will be juggling two
-> stories.
+> If you'd rather keep them together I can, but the reviewer will be juggling
+> two stories.
