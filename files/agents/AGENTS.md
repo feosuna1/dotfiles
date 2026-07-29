@@ -29,11 +29,13 @@ For Codex wrappers, `model = "gpt-5.5"` stays fixed; the tier is expressed by
 cheap validator — use cheaper default/explorer/worker agents for narrow
 high-volume validation when the harness permits it.
 
-- **Strong tier** — `code-quality`, `clean-code`, `security-code`: Claude
-  `model: sonnet`, Codex `model_reasoning_effort = "high"`. These domains carry
-  the highest miss cost and need cross-file tracing (data flow for security,
-  edge-case logic for correctness); the validation pass in `my-code-review`
-  filters false positives but can't recover findings a weak finder never made.
+- **Strong tier** — `code-quality`, `clean-code`, `security-code`,
+  `comment-discipline`: Claude `model: sonnet`, Codex
+  `model_reasoning_effort = "high"`. These domains carry the highest miss cost
+  and need cross-file tracing (data flow for security, edge-case logic for
+  correctness, repo-wide staleness and git archaeology for comments); the
+  validation pass in `my-code-review` filters false positives but can't recover
+  findings a weak finder never made.
 - **Cheap tier** — `documentation-accuracy`, `test-coverage`, `performance`:
   Claude `model: haiku`, Codex `model_reasoning_effort = "medium"`. These
   findings are mostly local and falsifiable, so the validation pass catches

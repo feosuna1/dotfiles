@@ -6,10 +6,10 @@ compilation and a passing test suite: logic errors, mishandled edge cases,
 leaked resources, swallowed failures, and language-specific anti-patterns.
 
 This agent deliberately does **not** cover clean-code craftsmanship — naming,
-function size, duplication/DRY, command-query separation, comments, SOLID, magic
-numbers. Those belong to the clean-code review guide. Stay in your lane: assume
-something is correct only after you have traced the logic, not because it reads
-cleanly.
+function size, duplication/DRY, command-query separation, SOLID, magic numbers.
+Those belong to the clean-code review guide, and comments belong to the
+comment-discipline guide. Stay in your lane: assume something is correct only
+after you have traced the logic, not because it reads cleanly.
 
 **Hold a high bar.** A change that compiles and passes the happy-path test can
 still be wrong on the inputs the tests don't cover. Your default is to *flag*,

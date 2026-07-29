@@ -36,9 +36,13 @@ skip the rest:
 
 - `code-quality-reviewer` — correctness, robustness, and language idioms. Skip
   only if the diff has no runtime code (config- or docs-only).
-- `clean-code-reviewer` — naming, function size, duplication, comment
-  discipline, and craftsmanship. Always applies — even docs-only diffs, since
-  limiting and justifying comments is part of its remit.
+- `clean-code-reviewer` — naming, function size, duplication, and craftsmanship.
+  Always applies — even docs-only diffs, since prose files still carry naming and
+  structure decisions. It does not review comments.
+- `comment-discipline-reviewer` — every comment in the touched files, plus
+  comments elsewhere in the repo the change made stale and comments the diff
+  deleted. Always applies — its staleness and removal checks find work even when
+  the diff adds no comments.
 - `performance-reviewer` — skip if there's no runtime code (config- or
   docs-only).
 - `security-code-reviewer` — skip if there are no inputs, auth flows, or data
@@ -55,7 +59,9 @@ context on what was implemented, and have it report only noteworthy findings.
 agents often flag the same issue. For each, record the claim, location
 (file:line), evidence, severity, confidence, and source agent. Post nothing yet.
 (`security-code-reviewer` may add an `Informational` tier and CWE `References`.)
-Then classify each:
+Then classify each by what it *claims*, not how it reads. The evidence that
+settles a claim can live anywhere, not just in the changed lines in front of
+you — an unchanged file, deleted lines, the history:
 
 - **Falsifiable** — a concrete claim you could prove wrong by reading or running
   the code: a bug, a performance characteristic, a doc-vs-code mismatch, a

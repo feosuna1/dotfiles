@@ -52,11 +52,20 @@ Each iteration:
 
 2. **Decide.** Split the confirmed findings into two sets:
    - **Auto-fix:** correctness, robustness, and security findings, and any
-     falsifiable bug regardless of source reviewer. These get fixed this round.
+     falsifiable bug regardless of source reviewer. A finding that names an
+     exact edit with a checkable result joins this set whatever its severity and
+     whatever recommendation vocabulary its reviewer uses — the comment
+     reviewer's DELETE, REWRITE, REFACTOR, and RESTORE all qualify, REFACTOR
+     included, since the comment that prompted the rename or extraction anchors
+     the edit and tests it. These get fixed this round.
    - **Report-only:** style, naming, "consider extracting", and other
-     non-falsifiable or low-severity findings. These are *never* auto-fixed —
-     auto-fixing taste findings spawns more taste findings and the loop never
-     converges. They accumulate in the final report instead.
+     non-falsifiable or low-severity findings — plus any finding whose fix needs
+     a resource this loop cannot mint, since it never commits or files tasks and
+     so has no durable destination or stable issue URL to point at. The comment
+     reviewer's RELOCATE lands here for that reason: an auto-fixer would invent
+     a link or quietly downgrade to DELETE and lose the rationale. These are
+     *never* auto-fixed — auto-fixing taste findings spawns more taste findings
+     and the loop never converges. They accumulate in the final report instead.
 
 3. **Stop check.** If the auto-fix set is empty, this is a **dry round**. Stop
    after **1 dry round**, or after **5 iterations**, whichever comes first.

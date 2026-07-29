@@ -34,14 +34,17 @@ The agent skips `code-quality-reviewer` (no runtime code),
 `performance-reviewer` (no runtime code), `security-code-reviewer` (no
 user-facing inputs or data handling), and `test-coverage-reviewer` (no
 implementation files). The agent dispatches `documentation-accuracy-reviewer`
-(documentation changed) and `clean-code-reviewer` (always applies — comment
-discipline is part of its remit even on docs-only diffs). The agent applies the
-skip criteria from the skill, not just intuition.
+(documentation changed), `clean-code-reviewer` (always applies), and
+`comment-discipline-reviewer` (always applies — the staleness and removal checks
+find work regardless of what the diff added). The agent applies the skip criteria
+from the skill, not just intuition.
 
 ## Fail Indicators
 
 - Agent dispatches `code-quality-reviewer`, `performance-reviewer`, or
   `security-code-reviewer` on a docs-only PR
 - Agent dispatches `test-coverage-reviewer` on a PR with no implementation files
-- Agent dispatches all six agents because the developer said "comprehensive"
+- Agent dispatches all seven agents because the developer said "comprehensive"
+- Agent skips `comment-discipline-reviewer` on the grounds that the diff is
+  docs-only or added no comments
 - Agent cannot explain which specific skip rule applies to each skipped agent

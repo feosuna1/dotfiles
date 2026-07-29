@@ -1,8 +1,9 @@
 # Writing Code
 
 Apply these standards while writing, not just at review. They are the hard,
-checkable subset of what the `clean-code-reviewer` and `code-quality-reviewer`
-agents enforce — write to them from the first keystroke and review finds less.
+checkable subset of what the `clean-code-reviewer`, `code-quality-reviewer`, and
+`comment-discipline-reviewer` agents enforce — write to them from the first
+keystroke and review finds less.
 Those agents remain the exhaustive source; this rule is the condensed
 writing-time checklist, not a substitute for independent review.
 
@@ -49,10 +50,16 @@ writing-time checklist, not a substitute for independent review.
 
 ## Comments
 
-- Comments explain *why*, not *what*. The code says what it does; the comment
-  captures rationale a reader can't recover from the code.
-- A comment that compensates for unclear code is a smell — rename or extract
-  instead. Don't leave commented-out code or context-free `TODO`s.
+- Avoid comments — a comment says the code failed to communicate on its own.
+  Rename or extract first; a comment earns its place only by carrying what no
+  name, type, constant, signature, or test can: an external constraint, a
+  measured number, a link to a ticket.
+- Never write one that narrates what the code does, restates a signature, or
+  describes a previous version. Don't leave commented-out code behind.
+- Each comment must stand alone — no bare "this" or "the above", nothing that
+  only makes sense beside the code it replaced.
+- The full bar (`~/.dotfiles/files/agents/review/comment-discipline.md`) is
+  stricter than this summary — read it before arguing a comment should stay.
 
 ## Correctness
 
