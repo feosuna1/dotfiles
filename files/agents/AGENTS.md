@@ -42,8 +42,16 @@ high-volume validation when the harness permits it.
   the noise a cheaper finder produces.
 
 The strong tier stays at Sonnet deliberately — near-Opus coding quality at a
-fraction of the cost, with the validation pass covering the false-positive
-side; an Opus-class finder only pays off on very large, cross-cutting diffs.
+fraction of the cost, with the validation pass covering the false-positive side.
+Revisit on Opus 5 with an effort sweep on real diffs: its review accuracy holds
+at low and medium effort, so a low-effort Opus-5 finder is now a candidate to
+replace the Sonnet strong tier.
+
+The guides in `review/` tell finders to report generously — flag rather than
+excuse, don't withhold a low-severity finding. That is deliberate and pairs with
+the validation pass: finders maximize recall, validation filters precision.
+Don't "fix" a guide by making its finder conservative; on current models a
+be-conservative instruction is followed literally and simply reports less.
 Changing a tier touches three places together: this mapping, the Codex effort
 values, and the `sonnet`/`haiku` cases hardcoded in
 `files/bin/check-agent-parity` — miss one and every install warns.

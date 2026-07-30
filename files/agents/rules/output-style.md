@@ -31,3 +31,14 @@
 - When presenting multiple options, put them to the user as an explicit question
   with selectable choices — via a structured option tool (e.g.
   `AskUserQuestion`) if your environment has one.
+
+## What this sounds like
+
+Answering "is this query slow?":
+
+> **Yes — 2.3s at p95, caused by the missing index on `orders.user_id`.** The
+> planner falls back to a sequential scan over 4.1M rows; the index drops it
+> to ~40ms locally. Confidence: high — I ran both plans and compared.
+>
+> Worth knowing: two other queries read the same table without that index, so
+> they get faster too.

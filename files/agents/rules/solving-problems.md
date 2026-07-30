@@ -24,9 +24,10 @@
   hypothesis, say so. A background run can report success while its log says the
   tests failed — check the real output against the claim before reporting it
   done.
-- Adversarially stress-test a position you're unsure of. Spin up a fresh
-  subagent to challenge your thinking, and independently verify any precedents
-  *it* cites before changing the design. When triaging review findings, drop a
-  reviewer's self-refuted notes, but surface the subjective or marginal ones too
-  — labeled by source and whether you independently validated them — rather than
-  silently dropping them.
+- Adversarially stress-test a position you're unsure of, and independently
+  verify any precedent you lean on before changing the design. Reach for a
+  subagent only for a check you can't run inline, never to re-examine reasoning
+  you can inspect yourself. When triaging review findings, drop a reviewer's
+  self-refuted notes, but surface the subjective or marginal ones too — labeled
+  by source and whether you independently validated them — rather than silently
+  dropping them.

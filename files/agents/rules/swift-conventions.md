@@ -183,10 +183,3 @@ branches.** If a view is genuinely hard to unit-test (most SwiftUI rendering
 is), don't extract logic solely to make it testable — that trades a real design
 for test convenience. And don't write subprocess exit-tests to "cover" a
 `fatalError` guard; verifying that a fatal path is fatal is low-value coverage.
-
-## Build & Test Tooling
-
-**Prefer Xcode MCP tools over the `xcodebuild` CLI** for building and running
-tests (`BuildProject`, `RunAllTests`, `RunSomeTests`, etc.). They integrate with
-the user's workflow better. Fall back to `xcodebuild` only when the Xcode MCP
-server is unavailable.

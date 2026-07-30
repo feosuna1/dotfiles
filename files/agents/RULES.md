@@ -37,9 +37,9 @@ don't need to load every rule up front.
   checkable subset of clean-code standards — names, function size, structure,
   comments, correctness.
 - [State modeling & architecture](rules/state-modeling.md) — *(path-scoped to
-  `**/*.swift`)* read when shaping state, models, or module boundaries: make
-  impossible states unrepresentable, keep the model free of framework/navigation
-  concerns, drive abstractions to the honest minimum.
+  Swift, Kotlin, and TypeScript sources)* read when shaping state, models, or
+  module boundaries: make impossible states unrepresentable, keep the model free
+  of framework/navigation concerns, drive abstractions to the honest minimum.
 - [Swift conventions](rules/swift-conventions.md) — *(path-scoped to
   `**/*.swift`)* read when writing or reviewing Swift, SwiftUI, or UIKit:
   idiomatic preferences corrected before, plus Swift-specific testing
@@ -49,6 +49,9 @@ don't need to load every rule up front.
 
 - [Version control](rules/version-control.md) — read before any VCS operation:
   detect Git vs Jujutsu (jj) first, then follow the matching workflow.
+- [Xcode build & test tooling](rules/xcode-build-tools.md) — *(path-scoped to
+  Swift sources and Xcode project/config files)* read before building or running
+  tests in an Apple project: prefer the Xcode MCP tools over `xcodebuild`.
 
 ## Time
 
