@@ -11,9 +11,16 @@ source of truth; Claude-only config lives in `files/claude/` (see its `AGENTS.md
 - `rules/` — the rule bodies, one self-contained file per rule. Agents that
   eager-load this directory (Claude Code) pay for every word in every session,
   so a long rule that fires rarely keeps only a short trigger stub here.
+  `output-style.md` is the one rule that is always in effect rather than read on
+  demand, so each agent also loads it through its own always-on channel: Claude
+  Code as an output style symlinked into `~/.claude/output-styles/`, Codex as a
+  line in its global instructions. It is symlinked rather than wrapped, and
+  Claude excludes the eager rule copy so it doesn't hold the text twice — see
+  `files/claude/AGENTS.md` for why both of those are necessary.
 - `guides/` — full bodies for the stubbed rules above, loaded on demand when
   the stub's trigger fires. `RULES.md` links straight to the guide.
-- `skills/` — agent-agnostic workflow skills (one `SKILL.md` directory each). A
+- `skills/` — agent-agnostic skills (one `SKILL.md` directory each), both
+  procedural workflows and references an agent loads before a kind of work. A
   skill that depends on a Claude feature lives in `files/claude/skills/` instead.
 - `review/` — shared code-review guides. A reviewer subagent under
   `files/claude/agents/` (and its Codex twin under `files/codex/agents/`) wraps
@@ -60,13 +67,20 @@ values, and the `sonnet`/`haiku` cases hardcoded in
 
 - **Claude Code** loads `rules/` eagerly via `~/.claude/rules/dotfiles` →
   `files/agents/rules`; picks up `skills/` through per-skill symlinks in
-  `~/.claude/skills/`; and pulls a `review/` guide into a subagent with `@import`.
+  `~/.claude/skills/`; pulls a `review/` guide into a subagent with `@import`;
+  and also loads `rules/output-style.md` into the system prompt via
+  `~/.claude/output-styles/plain-spoken.md`, pinned by the `outputStyle` key in
+  `files/claude/settings.json`.
 - **Codex and other agents** reference `RULES.md` by **absolute path** from the
   agent's global-instructions file. This repo deploys
   `files/codex/global-instructions.md` to `~/.codex/AGENTS.md`; it points at
-  this rule index and the Codex harness workflow. Use the absolute path; don't
-  symlink or copy `RULES.md`, since it links to `rules/` relative to its own
-  location and must be read in place. Skills are symlinked into
-  `~/.agents/skills/`; a `review/` guide is read by absolute path from the
-  Codex agent's
-  `developer_instructions`.
+  this rule index, `rules/output-style.md`, and the Codex harness workflow.
+  Codex has no output-style mechanism, so it gets the same words with weaker
+  placement: an output style is part of Claude Code's system prompt, while
+  instructions Codex reads from a file arrive as conversation content. Claude
+  Code documents style-adherence reminders during a conversation but not their
+  cadence, and they aren't visible in transcripts — don't build on them. Use the
+  absolute path; don't symlink or copy `RULES.md`, since it
+  links to `rules/` relative to its own location and must be read in place.
+  Skills are symlinked into `~/.agents/skills/`; a `review/` guide is read by
+  absolute path from the Codex agent's `developer_instructions`.

@@ -1,0 +1,4 @@
+# Merges with the repo-root config. Rule bodies use XML-ish tags (<tone>) that
+# agents parse as structure, so inline HTML is expected here and nowhere else.
+config:
+  no-inline-html: false

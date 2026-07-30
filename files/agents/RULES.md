@@ -23,13 +23,16 @@ don't need to load every rule up front.
 
 ## How you communicate
 
-- [Output style](rules/output-style.md) — how to talk to the user in-session:
-  lead with conclusions, no pleasantries, plain words, challenge reasoning as a
-  peer.
-- [Human voice](guides/human-voice.md) — read when writing prose *as the user*:
-  email, Slack, commit messages, feedback to others. Direct, humble, no filler.
-  (The body lives in `guides/` so eager-loading agents pick up only the stub at
-  `rules/human-voice.md`.)
+- [Output style](rules/output-style.md) — always in effect, not read on demand:
+  how to talk to the user in-session — plain language, brief and focused
+  responses, short caveats, high-level summaries unless depth is asked for.
+- [American English](rules/american-english.md) — always in effect, not read on
+  demand: American spellings on every surface, including identifiers and test
+  names, code comments, checked-in docs, and commit messages.
+- [Human voice](skills/my-human-voice/SKILL.md) — read when writing prose *as
+  the user*: email, Slack, commit messages, feedback to others. Direct, humble,
+  no filler. (The body lives in `skills/`, so agents with skill support invoke
+  `my-human-voice` rather than reading the file.)
 
 ## How you write code
 

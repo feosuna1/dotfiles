@@ -6,6 +6,9 @@
     "pr": ""
   },
   "awaySummaryEnabled": false,
+  "claudeMdExcludes": [
+    "**/files/agents/rules/output-style.md"
+  ],
   "effortLevel": "medium",
   "enabledPlugins": {},
   "env": {
@@ -48,6 +51,7 @@
     ]
   },
   "model": "sonnet",
+  "outputStyle": "plain-spoken",
   "permissions": {
     "allow": [
       "Bash(* --help *)",

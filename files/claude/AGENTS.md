@@ -24,6 +24,28 @@ agent-agnostic belongs in `files/agents/` instead.
 - `skills/` — Claude-specific skills only (currently none — every skill is
   agent-agnostic under `files/agents/skills/`). A skill belongs here only if it
   depends on a Claude-only feature that can't be generalized.
+- No `output-styles/` here. The one output style is agent-agnostic prose, so its
+  body stays at `files/agents/rules/output-style.md` and
+  `~/.claude/output-styles/plain-spoken.md` symlinks straight to it; the
+  `outputStyle` key in `settings.json` pins it. The Claude-only part is the front
+  matter (`name`, `description`), which other agents ignore. Unlike the reviewer
+  agents below, this can't be a thin wrapper that `@import`s the shared body —
+  output styles don't expand `@path` imports (checked against v2.1.220).
+
+  Because that file also sits in `files/agents/rules/`, Claude Code would load it
+  twice — once eagerly as a rule, once as the pinned style — so the
+  `claudeMdExcludes` entry in `settings.json` suppresses the rule copy and leaves
+  the style as the only copy. Two things about that pattern:
+
+  - **It must match the resolved real path, not the deployed symlink path.**
+    `**/.claude/rules/dotfiles/output-style.md` matches nothing, because rules
+    reach Claude through `~/.claude/rules/dotfiles` → `files/agents/rules` and
+    are reported by their real path. `**/files/agents/rules/output-style.md` is
+    what works.
+  - **A pattern that matches nothing fails silently**, so a broken glob and a
+    working one look identical. Verify with the `InstructionsLoaded` hook, which
+    logs every instruction file that loaded: check that the excluded file is
+    absent *and* that other rules still are.
 - `rules/` — Claude-specific rules, symlinked to `~/.claude/rules/claude` next
   to the agent-agnostic set (`~/.claude/rules/dotfiles` →
   `files/agents/rules/`). A rule belongs here only when its content is tied to
