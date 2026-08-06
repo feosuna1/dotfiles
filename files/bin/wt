@@ -89,7 +89,7 @@ die() {
 # - Returns: 0, setting `OPT_PROJECT_DIR`, `OPT_WORKTREES_BASE_DIR` and the `POSITIONAL` array.
 #   Prints usage and exits 0 on `-h`; dies 2 on an unknown option.
 parse_options() {
-    local accepted=" $1 " opt_name
+    local accepted=" $1 " opt_name opt_value
     shift
 
     OPT_PROJECT_DIR="$PWD"
@@ -97,6 +97,15 @@ parse_options() {
 
     while [ "$#" -gt 0 ]; do
         case "$1" in
+            # Only a long option splits on `=`, so a positional path that contains `=` stays whole.
+            # `#*=` keeps everything after the first `=`, so a value may contain `=` too.
+            --*=*)
+                opt_name="${1%%=*}"
+                opt_value="${1#*=}"
+                shift
+                set -- "$opt_name" "$opt_value" "$@"
+                continue
+                ;;
             -p | --project) opt_name=project ;;
             -w | --worktrees-base-dir) opt_name=worktrees-base-dir ;;
             -h | --help) print_usage; exit 0 ;;
