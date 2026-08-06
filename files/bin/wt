@@ -168,33 +168,18 @@ try_detect_vcs_and_main_worktree_dir() {
 }
 
 jj_main_worktree_dir() (
-    local project_dir="$1" workspace_dir enclosing_workspace_dir linked_repo_dir
+    local project_dir="$1" git_dir
 
     # jj calls a worktree a workspace, so its vocabulary shows up in the commands below.
     #
     # `jj -R "$project_dir"` expects the directory that contains `.jj`, so it fails from a deeper
-    # path. From inside the directory, `jj workspace root` walks up and finds the root reliably.
+    # path. From inside the directory, jj walks up and finds the workspace reliably.
     cd -- "$project_dir" 2>/dev/null || return 1
 
-    # jj names the main workspace "default". Try that name first, before the more fragile ways to
-    # find the main workspace.
-    if workspace_dir="$(jj workspace root --name default 2>/dev/null)"; then
-        printf '%s\n' "$workspace_dir"
-        return 0
-    fi
-
-    # A `.jj/repo` directory identifies the main workspace.
-    enclosing_workspace_dir="$(jj workspace root 2>/dev/null)" || return 1
-    if [ -d "$enclosing_workspace_dir/.jj/repo" ]; then
-        printf '%s\n' "$enclosing_workspace_dir"
-        return 0
-    fi
-
-    # A `.jj/repo` file contains a link to the main workspace's `.jj/repo`. From that directory,
-    # `jj workspace root` walks up and names that workspace.
-    linked_repo_dir="$(cat "$enclosing_workspace_dir/.jj/repo" 2>/dev/null)" || return 1
-    cd -- "$enclosing_workspace_dir/.jj/$linked_repo_dir" 2>/dev/null || return 1
-    jj workspace root 2>/dev/null
+    # `jj git root` names the main workspace's git dir from any workspace and any depth.
+    git_dir="$(jj git root 2>/dev/null)" || return 1
+    cd -- "$git_dir" 2>/dev/null || return 1
+    jj workspace root 2>/dev/null || return 1
 )
 
 git_main_worktree_dir() {
