@@ -17,6 +17,7 @@
 # Claude Memory (https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview#determine-memory-type)
 CLAUDE.local.md
 **/.claude/settings.local.json
+**/.claude/memory/*
 .worktreeinclude
 
 #==============================================================================#
