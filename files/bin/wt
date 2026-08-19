@@ -44,12 +44,13 @@ wt keeps a project's worktrees together in one directory outside the project, in
 jj repos and git repos alike.
 
 usage:
-  wt new [-p DIR] [-w DIR] <name> [ref]    create a worktree, print its path
-  wt rm  [-p DIR] <name>                   remove a worktree by name
-  wt rm  <dir>                             remove the worktree at that path
-  wt ls  [-p DIR]                          list every worktree of the repo
-  wt cd  [-p DIR] <name>                   print a worktree's path
-  wt vs  [-p DIR] <name>                   open a worktree in VS Code
+  wt new  [-p DIR] [-w DIR] <name> [ref]    create a worktree, print its path
+  wt rm   [-p DIR] <name>                   remove a worktree by name
+  wt rm   <dir>                             remove the worktree at that path
+  wt ls   [-p DIR]                          list every worktree of the repo
+  wt cd   [-p DIR] <name>                   print a worktree's path
+  wt vs   [-p DIR] <name>                   open a worktree in VS Code
+  wt sync [-p DIR] [<name>]                 re-link .worktreeinclude into worktrees
 
   -p, --project DIR             project to act on (default: cwd)
   -w, --worktrees-base-dir DIR  where new puts worktrees (default: ~/.worktrees)
@@ -411,7 +412,7 @@ add_worktree() {
 remove_worktree() {
     local worktree_dir="$1"
     if [ "$VCS" = jj ]; then
-        jj -R "$worktree_dir" workspace forget >&2
+        jj -R "$worktree_dir" --ignore-working-copy workspace forget >&2
         rm -rf "$worktree_dir"
     else
         git -C "$MAIN_WORKTREE_DIR" worktree remove --force "$worktree_dir" >&2
@@ -596,6 +597,27 @@ cmd_vs() {
     code "$worktree_dir"
 }
 
+# - Parameters: the `sync` command line ([-p PROJECT] [<name>]).
+# - Returns: 0. Re-runs `link_includes` against every worktree, or just the named one, so an entry
+#   added to `.worktreeinclude` after a worktree already exists still gets linked into it. Already-
+#   linked entries warn on stderr (see `link_include_match`) and are otherwise a no-op.
+cmd_sync() {
+    parse_options 'project' "$@"
+    local name="${POSITIONAL[0]:-}"
+
+    detect_vcs_and_main_worktree_dir "$OPT_PROJECT_DIR"
+
+    local target_name target_dir rows
+    rows="$(available_worktree_dirs)" || exit 1
+
+    while IFS=$'\t' read -r target_name target_dir; do
+        [ "$target_name" = default ] && continue
+        [ -z "$name" ] || [ "$target_name" = "$name" ] || continue
+        [ -n "$target_dir" ] && [ -d "$target_dir" ] || continue
+        link_includes "$target_dir"
+    done <<< "$rows"
+}
+
 # --- main dispatch
 
 case "${1:-}" in
@@ -604,6 +626,7 @@ case "${1:-}" in
     ls | list) shift; cmd_ls "$@" ;;
     cd) shift; cmd_cd "$@" ;;
     vs | code) shift; cmd_vs "$@" ;;
+    sync) shift; cmd_sync "$@" ;;
     -h | --help | "") print_usage ;;
-    *) die "unknown command: $1 (expected 'new', 'rm', 'ls', 'cd' or 'vs')" 2 ;;
+    *) die "unknown command: $1 (expected 'new', 'rm', 'ls', 'cd', 'vs' or 'sync')" 2 ;;
 esac
