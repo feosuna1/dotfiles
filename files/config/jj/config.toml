@@ -3,7 +3,7 @@
 [aliases]
 stack = ["log", "-r", "stack"]
 forked_stack = ["log", "-r", "descendants(stack)"]
-show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=never", "-r", "roots(closest_not_empty(@):: & bookmarks())", "--template", 'bookmarks.join(", ") ++ "\n"']
+show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=never", "-r", "roots(closest_not_empty(@):: & bookmarks())", "--template", 'bookmarks.map(|b| b.name()).join(", ") ++ "\n"']
 
 # Lifted from https://github.com/jj-vcs/jj/discussions/4974
 #
