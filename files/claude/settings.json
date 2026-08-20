@@ -136,6 +136,13 @@
       "Read(~/Documents/**)"
     ]
   },
+  "pluginConfigs": {
+    "agents-md@builtin": {
+      "options": {
+        "instructionFiles": "claude-md-and-agents-md"
+      }
+    }
+  },
   "skipAutoPermissionPrompt": true,
   "statusLine": {
     "command": "fish ~/.dotfiles/files/claude/statusline-command.fish",
