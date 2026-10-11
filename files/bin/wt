@@ -560,6 +560,7 @@ cmd_rm() {
         die "refusing to remove the main worktree: $worktree_dir" 2
     fi
 
+    xc-derived-data rm "$worktree_dir" || true
     remove_worktree "$worktree_dir"
     remove_empty_project_dir "$worktree_dir"
 }

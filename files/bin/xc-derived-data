@@ -1,0 +1,604 @@
+#!/bin/bash
+#
+# xc-derived-data - list and delete Xcode DerivedData folders.
+#
+# Xcode creates one DerivedData folder per workspace path, so every new worktree gets its own
+# folder. Deleting the worktree leaves that folder behind. Each folder's `info.plist` records the
+# workspace it belongs to (`WorkspacePath`) and when Xcode last opened it (`LastAccessedDate`). This
+# script reads those two keys to find folders whose workspace no longer exists.
+#
+# A folder is in one of three states:
+#
+#   active   its workspace still exists
+#   missing  its workspace was deleted, usually along with a worktree, or every file opened in a
+#            files workspace was deleted
+#   orphan   it doesn't have an `info.plist`, so nothing records which workspace it belongs to
+
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+# --- configuration
+
+DEFAULT_DERIVED_DATA_DIR="${HOME}/Library/Developer/Xcode/DerivedData"
+# Xcode names each workspace's folder `<name>-<28 lowercase letters>`. Shared caches such as
+# `ModuleCache.noindex` sit next to those folders, and this script must never list or delete the
+# caches.
+WORKSPACE_FOLDER_PATTERN='-[a-z]{28}$'
+# Xcode opens files that aren't part of a project in a temporary workspace with this name, which
+# this script calls a files workspace. Xcode records the opened files only as bookmarks in the
+# workspace's `RestorableState.plist`.
+FILES_WORKSPACE_NAME='Files.xcfilescontainer'
+SECONDS_PER_DAY=86400
+BYTES_PER_KILOBYTE=1024
+TAB=$'\t'
+FOLDER_SIZES=""
+
+main() {
+    local command=ls
+    if [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then
+        command="$1"
+        shift
+    fi
+
+    case "$command" in
+        ls) cmd_ls "$@" ;;
+        rm) cmd_rm "$@" ;;
+        help) print_usage ;;
+        *) print_usage; die "unknown command: $command" 2 ;;
+    esac
+}
+
+cmd_ls() {
+    local size_unit=-h
+    parse_options "derived-data-dir json size" "$@"
+    [ "${#POSITIONAL[@]}" -eq 0 ] || die "ls takes no arguments" 2
+
+    read_folders < <(workspace_folders)
+    if "$OPT_JSON"; then
+        size_unit=-k
+    fi
+    if "$OPT_SIZE"; then
+        measure_sizes "$size_unit" ${FOLDERS[@]+"${FOLDERS[@]}"}
+    fi
+    if "$OPT_JSON"; then
+        print_json ${FOLDERS[@]+"${FOLDERS[@]}"}
+    else
+        print_table ${FOLDERS[@]+"${FOLDERS[@]}"}
+    fi
+}
+
+cmd_rm() {
+    parse_options "derived-data-dir dry-run yes unavailable older-than" "$@"
+    case "${#POSITIONAL[@]}" in
+        0)
+            has_filters || die "rm needs a path, --unavailable, or --older-than DAYS" 2
+            read_folders < <(select_folders matches_filters "$(age_cutoff_epoch)")
+            ;;
+        1)
+            if has_filters; then
+                die "rm takes a path or --unavailable/--older-than, not both" 2
+            fi
+            read_folders < <(select_folders has_workspace_under "$(absolute_path "${POSITIONAL[0]}")")
+            ;;
+        *) die "rm takes at most one path" 2 ;;
+    esac
+    delete_folders ${FOLDERS[@]+"${FOLDERS[@]}"}
+}
+
+print_usage() {
+    cat >&2 <<'EOF'
+xc-derived-data lists Xcode's per-workspace DerivedData folders and deletes the
+ones you no longer need.
+
+usage:
+  xc-derived-data [ls] [-d DIR] [-s] [-j]                  list folders, most recently used first
+  xc-derived-data rm   [-d DIR] [-n] [-y] <path>           delete folders for workspaces under path
+  xc-derived-data rm   [-d DIR] [-n] [-y] [-u] [-o DAYS]   delete folders that match -u or -o
+
+  -d, --derived-data-dir DIR  DerivedData folder to act on (default: Xcode's
+                              IDECustomDerivedDataLocation setting, else
+                              ~/Library/Developer/Xcode/DerivedData)
+  -s, --size                  ls also shows each folder's size (slow)
+  -j, --json                  ls prints a JSON array instead of a table
+  -u, --unavailable           rm deletes missing and orphan folders
+  -o, --older-than DAYS       rm deletes folders not used in DAYS days
+  -n, --dry-run               show what would be deleted, delete nothing
+  -y, --yes                   delete without asking
+
+rm needs a path, or -u, -o, or both. With both, it deletes folders that match
+either one.
+
+Status: active (workspace exists), missing (workspace deleted), orphan (no
+info.plist).
+EOF
+}
+
+# - Parameters:
+#   - $1 - message - printed to stderr
+#   - $2 - status - exit status (default 1)
+die() {
+    printf 'xc-derived-data: %s\n' "$1" >&2
+    exit "${2:-1}"
+}
+
+# - Parameters:
+#   - $1 - accepted - space-separated long option names the command allows
+#   - $2.. - the command's own arguments
+# - Returns: 0, setting `OPT_DERIVED_DATA_DIR`, `OPT_JSON`, `OPT_SIZE`, `OPT_DRY_RUN`, `OPT_YES`,
+#   `OPT_UNAVAILABLE`, `OPT_OLDER_THAN_DAYS` and the `POSITIONAL` array. Prints usage and exits 0 on
+#   `-h`; dies 2 on an unknown option or a bad value.
+parse_options() {
+    local accepted=" $1 " opt_name opt_value
+    shift
+
+    OPT_DERIVED_DATA_DIR=""
+    OPT_JSON=false
+    OPT_SIZE=false
+    OPT_DRY_RUN=false
+    OPT_YES=false
+    OPT_UNAVAILABLE=false
+    OPT_OLDER_THAN_DAYS=""
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            -*=*)
+                opt_name="${1%%=*}"
+                opt_value="${1#*=}"
+                shift
+                set -- "$opt_name" "$opt_value" "$@"
+                continue
+                ;;
+            -d | --derived-data-dir) opt_name=derived-data-dir ;;
+            -j | --json) opt_name=json ;;
+            -s | --size) opt_name=size ;;
+            -n | --dry-run) opt_name=dry-run ;;
+            -y | --yes) opt_name=yes ;;
+            -u | --unavailable) opt_name=unavailable ;;
+            -o | --older-than) opt_name=older-than ;;
+            -h | --help) print_usage; exit 0 ;;
+            --) shift; break ;;
+            -*) die "unknown option: $1" 2 ;;
+            *) break ;;
+        esac
+
+        case "$accepted" in
+            *" $opt_name "*) ;;
+            *) die "unknown option: $1" 2 ;;
+        esac
+
+        case "$opt_name" in
+            derived-data-dir)
+                [ "$#" -ge 2 ] || die "$1 requires a value" 2
+                [ -d "$2" ] || die "$1 is not a directory: $2" 2
+                OPT_DERIVED_DATA_DIR="$2"
+                shift 2
+                ;;
+            json) OPT_JSON=true; shift ;;
+            size) OPT_SIZE=true; shift ;;
+            dry-run) OPT_DRY_RUN=true; shift ;;
+            yes) OPT_YES=true; shift ;;
+            unavailable) OPT_UNAVAILABLE=true; shift ;;
+            older-than)
+                [ "$#" -ge 2 ] || die "$1 requires a value" 2
+                [[ "$2" =~ ^[0-9]+$ ]] || die "$1 takes a whole number of days, got: $2" 2
+                OPT_OLDER_THAN_DAYS="$2"
+                shift 2
+                ;;
+        esac
+    done
+
+    POSITIONAL=("$@")
+}
+
+# - Returns: 0, setting the `FOLDERS` array from stdin, one folder per line.
+read_folders() {
+    local folder
+    FOLDERS=()
+    while IFS= read -r folder; do
+        FOLDERS+=("$folder")
+    done
+}
+
+# - Returns: 0, printing one workspace folder path per line.
+workspace_folders() {
+    local folder
+    for folder in "$(derived_data_dir)"/*; do
+        if [ -d "$folder" ] && [[ "${folder##*/}" =~ $WORKSPACE_FOLDER_PATTERN ]]; then
+            printf '%s\n' "$folder"
+        fi
+    done
+}
+
+derived_data_dir() {
+    local custom_dir
+    if [ -n "$OPT_DERIVED_DATA_DIR" ]; then
+        printf '%s\n' "$OPT_DERIVED_DATA_DIR"
+    elif custom_dir="$(defaults read com.apple.dt.Xcode IDECustomDerivedDataLocation 2>/dev/null)"; then
+        printf '%s\n' "$custom_dir"
+    else
+        printf '%s\n' "$DEFAULT_DERIVED_DATA_DIR"
+    fi
+}
+
+# - Parameters:
+#   - $1.. - folders - DerivedData folders
+# - Returns: 0, printing a JSON array with one object per folder, most recently used first.
+print_json() {
+    local folder
+    for folder in "$@"; do
+        print_folder_json "$folder"
+    done | jq -s 'sort_by(.lastUsed) | reverse'
+}
+
+# Measures every folder in one `du` pass, so a total costs nothing extra.
+#
+# - Parameters:
+#   - $1 - unit_flag - `-h` for human-readable sizes, `-k` for kilobytes
+#   - $2.. - folders - DerivedData folders
+# - Returns: 0, setting `FOLDER_SIZES` to one `<size>\t<folder>` line per folder and a final
+#   `<size>\ttotal` line. The table and JSON show sizes once this has run.
+measure_sizes() {
+    local unit_flag="$1"
+    shift
+    if [ "$#" -gt 0 ]; then
+        FOLDER_SIZES="$(du -sc "$unit_flag" "$@")"
+    fi
+}
+
+has_measured_sizes() {
+    [ -n "$FOLDER_SIZES" ]
+}
+
+# - Returns: 0, printing one JSON object. `workspace` is null for an orphan, `files` is null unless
+#   the workspace is a files workspace, and `size` (in bytes) appears only after `measure_sizes -k`
+#   has run.
+print_folder_json() {
+    local folder="$1" lists_files=false size=null
+    load_folder "$folder"
+    if is_files_workspace "$FOLDER_WORKSPACE"; then
+        lists_files=true
+    fi
+    if has_measured_sizes; then
+        size="$(( $(measured_size "$folder") * BYTES_PER_KILOBYTE ))"
+    fi
+    jq -n \
+        --arg folder "$folder" \
+        --arg status "$FOLDER_STATUS" \
+        --arg lastUsed "$(date -u -r "$FOLDER_LAST_USED_EPOCH" +%Y-%m-%dT%H:%M:%SZ)" \
+        --arg workspace "$FOLDER_WORKSPACE" \
+        --argjson listsFiles "$lists_files" \
+        --arg files "$FOLDER_FILES" \
+        --argjson size "$size" \
+        '{
+            folder: $folder,
+            status: $status,
+            lastUsed: $lastUsed,
+            workspace: (if $workspace != "" then $workspace end),
+            files: (if $listsFiles then $files | split("\n") - [""] end)
+        } + (if $size != null then {size: $size} end)'
+}
+
+# - Parameters:
+#   - $1 - name - a folder passed to `measure_sizes`, or `total`
+# - Returns: 0, printing the size that `measure_sizes` recorded for it.
+measured_size() {
+    awk -F "$TAB" -v name="$1" '$2 == name { print $1 }' <<< "$FOLDER_SIZES"
+}
+
+# Reads everything the folder records in one place. The status, label and JSON all share this
+# reading, so they always agree. Sharing it also keeps `plutil` and `osascript` from running more
+# than once per folder.
+#
+# - Returns: 0, setting `FOLDER_LAST_USED_EPOCH` (see `last_used_epoch`), `FOLDER_WORKSPACE` (empty
+#   for an orphan), `FOLDER_FILES` (the files that a files workspace lists, one per line; empty for
+#   any other workspace or when it lists none), and `FOLDER_STATUS` (see `folder_status`).
+load_folder() {
+    local folder="$1"
+    FOLDER_LAST_USED_EPOCH="$(last_used_epoch "$folder")"
+    FOLDER_FILES=""
+    FOLDER_WORKSPACE="$(workspace_path "$folder")" || FOLDER_WORKSPACE=""
+    if is_files_workspace "$FOLDER_WORKSPACE"; then
+        FOLDER_FILES="$(files_workspace_paths "$folder" "$FOLDER_WORKSPACE")" || FOLDER_FILES=""
+    fi
+    FOLDER_STATUS="$(folder_status "$FOLDER_WORKSPACE" "$FOLDER_FILES")"
+}
+
+# - Parameters:
+#   - $1.. - folders - DerivedData folders
+# - Returns: 0, printing the header and one row per folder, most recently used first, with the
+#   columns aligned.
+print_table() {
+    local folder
+    {
+        print_header
+        for folder in "$@"; do
+            print_folder_row "$folder"
+        done | sort -rn | cut -f2-
+    } | column -t -s "$TAB"
+}
+
+print_header() {
+    if has_measured_sizes; then
+        printf '%6s\t' SIZE
+    fi
+    printf 'STATUS\tLAST USED ↓\tFOLDER\tWORKSPACE\n'
+}
+
+# - Returns: 0, printing `<epoch>\t<row>` so callers can sort rows by last use.
+print_folder_row() {
+    local folder="$1" label
+    load_folder "$folder"
+    label="$(folder_label "$FOLDER_WORKSPACE" "$FOLDER_FILES")"
+    printf '%s\t' "$FOLDER_LAST_USED_EPOCH"
+    if has_measured_sizes; then
+        printf '%6s\t' "$(measured_size "$folder")"
+    fi
+    printf '%s\t%s\t%s\t%s\n' \
+        "$FOLDER_STATUS" "$(date -r "$FOLDER_LAST_USED_EPOCH" +%F)" "${folder##*/}" "$label"
+}
+
+# Falls back to the folder's modification time when `info.plist` doesn't record an access date.
+#
+# - Returns: 0, printing seconds since the epoch.
+last_used_epoch() {
+    local folder="$1" accessed
+    if accessed="$(plutil -extract LastAccessedDate raw "$folder/info.plist" 2>/dev/null)"; then
+        date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$accessed" +%s
+    else
+        stat -f %m "$folder"
+    fi
+}
+
+# - Parameters:
+#   - $1 - workspace - the folder's workspace path; empty for an orphan
+#   - $2 - files - the files that a files workspace lists, one per line
+# - Returns: 0, printing `active`, `missing`, or `orphan`.
+folder_status() {
+    if [ -z "$1" ]; then
+        printf 'orphan\n'
+    elif does_workspace_exist "$1" "$2"; then
+        printf 'active\n'
+    else
+        printf 'missing\n'
+    fi
+}
+
+# A files workspace outlives the files opened in it. When it lists files, it counts as existing only
+# while at least one of those files still exists.
+#
+# - Parameters:
+#   - $1 - workspace - a workspace path
+#   - $2 - files - the files that a files workspace lists, one per line
+# - Returns: 0 when the workspace exists; 1 otherwise.
+does_workspace_exist() {
+    local workspace="$1" files="$2" path
+    [ -e "$workspace" ] || return 1
+    [ -n "$files" ] || return 0
+    while IFS= read -r path; do
+        if [ -e "$path" ]; then
+            return 0
+        fi
+    done <<< "$files"
+    return 1
+}
+
+# - Returns: 0, printing the workspace path; 1 when the folder doesn't record one.
+workspace_path() {
+    plutil -extract WorkspacePath raw "$1/info.plist" 2>/dev/null
+}
+
+is_files_workspace() {
+    [ "${1##*/}" = "$FILES_WORKSPACE_NAME" ]
+}
+
+# - Parameters:
+#   - $1 - folder - a DerivedData folder that belongs to a files workspace
+#   - $2 - workspace - the folder's `Files.xcfilescontainer` path
+# - Returns: 0, printing the files opened or indexed in the workspace, one per line; 1 when neither
+#   source lists any.
+files_workspace_paths() {
+    opened_paths "$2" || indexed_paths "$1"
+}
+
+# Reads the path stored in each bookmark without resolving it, so the list still includes files
+# deleted after Xcode opened them.
+#
+# - Parameters:
+#   - $1 - workspace - a `Files.xcfilescontainer` path
+# - Returns: 0, printing each opened path, one per line; 1 when the workspace is gone or doesn't
+#   record any bookmarks.
+opened_paths() {
+    [ -f "$1/RestorableState.plist" ] || return 1
+
+    # Each bookmark stores its path as binary data, and only Foundation's `NSURL` can decode it.
+    # `plutil` can extract the bytes, but can't decode them. The fastest way to reach `NSURL` is
+    # from `osascript` running JavaScript for Automation, which starts in about 30 ms.
+    #
+    # The alternatives:
+    #
+    # - Parse the bytes by hand: the format is undocumented, so the parser would break whenever
+    #   Apple changes it.
+    # - `swift -e`: takes about a second to start.
+    # - Python: needs PyObjC, which macOS doesn't ship.
+    osascript -l JavaScript - "$1/RestorableState.plist" 2>/dev/null <<'EOF'
+ObjC.import('Foundation');
+function run(argv) {
+    const bookmarks = $.NSDictionary.dictionaryWithContentsOfFile(argv[0]).objectForKey('FileBookmarks');
+    const paths = bookmarks.js.map(bookmark =>
+        $.NSURL.resourceValuesForKeysFromBookmarkData($([$.NSURLPathKey]), bookmark)
+            .objectForKey($.NSURLPathKey).js);
+    if (paths.length === 0) {
+        throw new Error('no bookmarks');
+    }
+    return paths.join('\n');
+}
+EOF
+}
+
+# Xcode deletes a files workspace's temporary container along with its bookmarks, but the folder's
+# symbol cache can still list the files Xcode indexed. The cache format isn't documented, so when
+# reading it fails, this function lists nothing.
+#
+# - Parameters:
+#   - $1 - folder - a DerivedData folder that belongs to a files workspace
+# - Returns: 0, printing each indexed path, one per line; 1 when the cache lists none.
+indexed_paths() {
+    plutil -convert json -o - "$1/SymbolCache/project.plist" 2>/dev/null |
+        jq -r --arg container "$FILES_WORKSPACE_NAME" \
+            '.fileTables.filePathToDomainID | keys[] | select(endswith($container) | not)' \
+            2>/dev/null |
+        grep .
+}
+
+# - Parameters:
+#   - $1 - workspace - the folder's workspace path; empty for an orphan
+#   - $2 - files - the files that a files workspace lists, one per line
+# - Returns: 0, printing the files that a files workspace lists, else the workspace path, else
+#   `(none)` for an orphan.
+folder_label() {
+    local workspace="$1" files="$2"
+    if [ -z "$workspace" ]; then
+        printf '(none)\n'
+    elif [ -n "$files" ]; then
+        paths_label "$files"
+    elif is_files_workspace "$workspace"; then
+        printf '(unknown files)\n'
+    else
+        abbreviate_home "$workspace"
+    fi
+}
+
+# - Parameters:
+#   - $1 - paths - one path per line
+# - Returns: 0, printing the paths joined by ", ", with the home directory shown as `~`.
+paths_label() {
+    local path label=""
+    while IFS= read -r path; do
+        label="${label:+$label, }$(abbreviate_home "$path")"
+    done <<< "$1"
+    printf '%s\n' "$label"
+}
+
+abbreviate_home() {
+    local tilde='~'
+    printf '%s\n' "${1/#"$HOME"/$tilde}"
+}
+
+has_filters() {
+    "$OPT_UNAVAILABLE" || [ -n "$OPT_OLDER_THAN_DAYS" ]
+}
+
+# - Returns: 0, printing the epoch before which a folder counts as unused, or 0 when
+#   `--older-than` was not given.
+age_cutoff_epoch() {
+    if [ -z "$OPT_OLDER_THAN_DAYS" ]; then
+        printf '0\n'
+        return 0
+    fi
+    printf '%s\n' "$(( $(date +%s) - OPT_OLDER_THAN_DAYS * SECONDS_PER_DAY ))"
+}
+
+# - Parameters:
+#   - $1 - predicate - a function that takes a folder, then the remaining arguments, and returns 0
+#     to select the folder
+#   - $2.. - arguments - passed to the predicate after the folder
+# - Returns: 0, printing each folder the predicate selects, one per line.
+select_folders() {
+    local predicate="$1" folder
+    shift
+    workspace_folders | while IFS= read -r folder; do
+        if "$predicate" "$folder" "$@"; then
+            printf '%s\n' "$folder"
+        fi
+    done
+}
+
+# - Parameters:
+#   - $1 - folder - a DerivedData folder
+#   - $2 - cutoff - seconds since the epoch; 0 disables the age check
+# - Returns: 0 when `--unavailable` was given and the folder is missing or orphaned, or when the
+#   folder was last used before the cutoff; 1 otherwise.
+matches_filters() {
+    local folder="$1" cutoff="$2"
+    load_folder "$folder"
+    if "$OPT_UNAVAILABLE" && [ "$FOLDER_STATUS" != active ]; then
+        return 0
+    fi
+    [ "$cutoff" -gt 0 ] && [ "$FOLDER_LAST_USED_EPOCH" -lt "$cutoff" ]
+}
+
+# Honors `OPT_DRY_RUN` and `OPT_YES`.
+#
+# - Parameters:
+#   - $1.. - folders - DerivedData folders to delete
+delete_folders() {
+    local summary
+
+    if [ "$#" -eq 0 ]; then
+        printf 'Nothing to delete.\n'
+        return 0
+    fi
+
+    measure_sizes -h "$@"
+    print_table "$@"
+    summary="$# folder(s), $(measured_size total)"
+
+    if "$OPT_DRY_RUN"; then
+        printf 'Would delete %s.\n' "$summary"
+        return 0
+    fi
+
+    if ! confirm "Delete ${summary}?"; then
+        printf 'Canceled.\n'
+        return 0
+    fi
+
+    rm -rf -- "$@"
+    printf 'Deleted %s.\n' "$summary"
+}
+
+confirm() {
+    local answer
+    if "$OPT_YES"; then
+        return 0
+    fi
+    [ -t 0 ] || die "no terminal to confirm with; pass --yes to delete anyway" 2
+    read -r -p "$1 [y/N] " answer
+    case "$answer" in
+        [yY] | [yY][eE][sS]) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# The path need not exist, so this also cleans up after a worktree that is already deleted.
+#
+# - Returns: 0, printing the path made absolute, without a trailing slash.
+absolute_path() {
+    local path="$1"
+    if [ -d "$path" ]; then
+        (cd "$path" && pwd)
+        return 0
+    fi
+    case "$path" in
+        /*) ;;
+        *) path="$PWD/$path" ;;
+    esac
+    printf '%s\n' "${path%/}"
+}
+
+# - Parameters:
+#   - $1 - folder - a DerivedData folder
+#   - $2 - target - an absolute path
+# - Returns: 0 when the folder's workspace is the target or lies under it; 1 otherwise.
+has_workspace_under() {
+    local workspace
+    workspace="$(workspace_path "$1")" || return 1
+    [[ "$workspace" == "$2" || "$workspace" == "$2"/* ]]
+}
+
+main "$@"
