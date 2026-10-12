@@ -33,13 +33,23 @@ diff-args = ["--partial-changeset", "$left", "$right"]
 merge-args = ["--merge", "--output", "$output", "--base", "$base", "$left", "$right"]
 
 [templates]
-draft_commit_description = '''
-concat(
-  builtin_draft_commit_description,
-  "\nJJ: ignore-rest\n",
+draft_commit_description = """
+join(
+  "\n",
+  coalesce(description.trim_end(), default_commit_description.trim_end()),
+  "",
+  "JJ: ---------------",
+  "JJ: ignore-rest",
+  "JJ: ---------------",
+  "",
+  concat("Change ID: ", format_short_change_id(change_id)),
+  "",
+  "This commit contains the following changes:",
+  "",
+  indent("     ", diff.summary()),
   diff.git(),
 )
-'''
+"""
 
 [ui]
 # Uses Git's "diff3" conflict markers to support tools that depend on it
