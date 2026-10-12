@@ -1,8 +1,6 @@
 #:schema https://docs.jj-vcs.dev/latest/config-schema.json
 
 [aliases]
-stack = ["log", "-r", "stack"]
-forked_stack = ["log", "-r", "descendants(stack)"]
 show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=never", "-r", "roots(closest_not_empty(@):: & bookmarks())", "--template", 'bookmarks.map(|b| b.name()).join(", ") ++ "\n"']
 
 # Lifted from https://github.com/jj-vcs/jj/discussions/4974
@@ -46,7 +44,7 @@ join(
 conflict-marker-style = "git"
 
 # The default command to run when `jj` is invoked without arguments.
-default-command = ["log", "-r", "coalesce(stack, present(@) | ancestors(immutable_heads().., 2) | trunk())"]
+default-command = ["log", "-r", "coalesce(tree(), present(@) | ancestors(immutable_heads().., 2) | trunk())"]
 
 # Render diffs the same as git does.
 diff-formatter = ":git"
@@ -61,10 +59,6 @@ bookmark-advance-to = 'closest_pushable(@)'
 
 [revset-aliases]
 
-# Returns the stack of commits, from the fork point of trunk() to the descendants of the closest non-empty commit
-# reachable from the current commit.
-stack = "trunk()..descendants(closest_not_empty(@))"
-
 # The closest revision, that is not empty, that can be pushed to the remote.
 'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
 
@@ -73,8 +67,7 @@ stack = "trunk()..descendants(closest_not_empty(@))"
 "immutable_heads()" = "builtin_immutable_heads() | (trunk().. & ~mine())"
 
 # Finds the closest non-empty commit reachable from `to`.
-'closest_not_empty(to)' = "heads(::to ~ empty() & mine() & mutable())"
-
+"closest_not_empty(to)" = "heads(::to & mutable() ~ (empty() ~ merges()))"
 
 # The last commit with un-described changes. Commits with descriptions are considered to be ready to be pushed.
 # While commits without descriptions are considered to be in progress.
