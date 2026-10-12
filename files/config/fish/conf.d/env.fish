@@ -28,16 +28,16 @@ for path in $HOME/.config/fish/conf.local.d/*
     end
 end
 
+# Make sure homebrew environment shell variables are configured correctly.
+if test -f "/opt/homebrew/bin/brew"
+    eval "$(/opt/homebrew/bin/brew shellenv fish)"
+end
+
 # ASDF configuration code
 if test -z $ASDF_DATA_DIR
     __prepend_path "$HOME/.asdf/shims"
 else
     __prepend_path "$ASDF_DATA_DIR/shims"
-end
-
-# Make sure homebrew environment shell variables are configured correctly.
-if test -f "/opt/homebrew/bin/brew"
-    eval "$(/opt/homebrew/bin/brew shellenv fish)"
 end
 
 # Setup our custom bin paths, only if they exist
