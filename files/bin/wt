@@ -19,10 +19,11 @@
 # For example, `/Users/feo/.dotfiles` becomes `-Users-feo--dotfiles`. This matches Claude Code's
 # `~/.claude/projects/` naming.
 #
-# `wt new` also symlinks the paths that `<main-worktree>/.worktreeinclude` lists from the main
-# worktree into the new one. Each non-comment line is a project-relative path or a shell glob. Use
-# it for local, untracked files that each worktree needs, such as `.env`, editor settings, or
-# `node_modules`.
+# `wt new` also symlinks the paths that `<main-worktree>/.wt/include` lists from the main worktree
+# into the new one. Each non-comment line is a project-relative path or a shell glob. Use it for
+# local, untracked files that each worktree needs, such as `.env`, editor settings, or
+# `node_modules`. The file lives under `.wt/` rather than at `.worktreeinclude` because repos now
+# check in their own `.worktreeinclude`, which would replace a local one.
 
 set -o errexit # Exit if any individual command fails and isn't handled
 set -o nounset # Exit if unset variables are used
@@ -50,7 +51,7 @@ usage:
   wt ls   [-p DIR]                          list every worktree of the repo
   wt cd   [-p DIR] <name>                   print a worktree's path
   wt vs   [-p DIR] <name>                   open a worktree in VS Code
-  wt sync [-p DIR] [<name>]                 re-link .worktreeinclude into worktrees
+  wt sync [-p DIR] [<name>]                 re-link .wt/include into worktrees
 
   -p, --project DIR             project to act on (default: cwd)
   -w, --worktrees-base-dir DIR  where new puts worktrees (default: ~/.worktrees)
@@ -438,7 +439,7 @@ remove_empty_project_dir() {
 
 # --- include linking
 
-# Expands one `.worktreeinclude` pattern against the main worktree.
+# Expands one `.wt/include` pattern against the main worktree.
 #
 # A subshell keeps the `cd` and the shell options away from the caller. `IFS=` disables word
 # splitting, so a path with spaces survives. Pathname expansion still gives one field per match.
@@ -483,7 +484,7 @@ link_include_match() {
     ln -s "$include_target" "$include_link" || warn "failed to link $match"
 }
 
-# Symlinks the paths that `<main-worktree>/.worktreeinclude` lists into the worktree. Each
+# Symlinks the paths that `<main-worktree>/.wt/include` lists into the worktree. Each
 # symlink points back at the main worktree. The header comment gives the file format. The function
 # works on a best-effort basis, so that one bad entry cannot fail worktree creation.
 #
@@ -492,7 +493,7 @@ link_include_match() {
 # - Returns: 0 even when an entry fails, warning on stderr instead.
 link_includes() {
     local worktree_dir="$1"
-    local include_file="${MAIN_WORKTREE_DIR}/.worktreeinclude"
+    local include_file="${MAIN_WORKTREE_DIR}/.wt/include"
     local pattern match
 
     [ -f "$include_file" ] || return 0
@@ -599,7 +600,7 @@ cmd_vs() {
 
 # - Parameters: the `sync` command line ([-p PROJECT] [<name>]).
 # - Returns: 0. Re-runs `link_includes` against every worktree, or just the named one, so an entry
-#   added to `.worktreeinclude` after a worktree already exists still gets linked into it. Already-
+#   added to `.wt/include` after a worktree already exists still gets linked into it. Already-
 #   linked entries warn on stderr (see `link_include_match`) and are otherwise a no-op.
 cmd_sync() {
     parse_options 'project' "$@"

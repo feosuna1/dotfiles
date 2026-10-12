@@ -18,11 +18,13 @@
 CLAUDE.local.md
 **/.claude/settings.local.json
 **/.claude/memory
-.worktreeinclude
 
 #==============================================================================#
 # Directories to ignore (do not add trailing '/'s, they skip symlinks).
 #==============================================================================#
+
+# Per project wt config (see files/bin/wt)
+.wt
 
 # Per user Xcode data
 *.xcodeproj/xcuserdata

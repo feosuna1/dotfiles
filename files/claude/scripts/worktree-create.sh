@@ -6,7 +6,7 @@ set -o nounset # Exit if unset variables are used
 #
 # Thin adapter over the `wt` command: reads the hook payload on stdin, then hands
 # the worktree name and project directory to `wt new`, which creates the worktree
-# (jj or git), links any .worktreeinclude entries, and prints the path. Claude
+# (jj or git), links any .wt/include entries, and prints the path. Claude
 # Code reads that path on stdout. Worktrees are placed under ~/.claude/worktrees
 # rather than wt's default base dir. See files/bin/wt for the real logic.
 

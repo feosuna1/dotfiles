@@ -18,7 +18,7 @@ complete -c wt -n "$wt_no_subcommand" -a rm -d 'remove a worktree'
 complete -c wt -n "$wt_no_subcommand" -a ls -d 'list every worktree of the repo'
 complete -c wt -n "$wt_no_subcommand" -a cd -d "print a worktree's path"
 complete -c wt -n "$wt_no_subcommand" -a vs -d 'open a worktree in VS Code'
-complete -c wt -n "$wt_no_subcommand" -a sync -d 're-link .worktreeinclude'
+complete -c wt -n "$wt_no_subcommand" -a sync -d 're-link .wt/include'
 
 complete -c wt -s h -l help -d 'show usage'
 complete -c wt -n "__fish_seen_subcommand_from $wt_commands" -s p -l project -r -F \
