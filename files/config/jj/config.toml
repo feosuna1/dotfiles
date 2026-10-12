@@ -1,7 +1,7 @@
 #:schema https://docs.jj-vcs.dev/latest/config-schema.json
 
 [aliases]
-show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=never", "-r", "roots(closest_not_empty(@):: & bookmarks())", "--template", 'bookmarks.map(|b| b.name()).join(", ") ++ "\n"']
+show_current_branch = ["log", "--no-graph", "--ignore-working-copy", "--color=never", "-r", "latest(roots(closest_not_empty(@):: & bookmarks()))", "-T", 'bookmarks.map(|b| b.name()).join(", ") ++ "\n"']
 
 # Lifted from https://github.com/jj-vcs/jj/discussions/4974
 #
