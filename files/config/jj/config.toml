@@ -55,12 +55,12 @@ email = "12620+feosuna1@users.noreply.github.com"
 
 [revsets]
 # When advancing a bookmark, jump to the closest pushable commit.
-bookmark-advance-to = 'closest_pushable(@)'
+bookmark-advance-to = "closest_pushable(@)"
 
 [revset-aliases]
 
 # The closest revision, that is not empty, that can be pushed to the remote.
-'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
+"closest_pushable(to)" = "heads(::to & mutable() & ~description(exact:'') & (~empty() | merges()))"
 
 # The `trunk().. &` bit is an optimization to scan for non-`mine()` commits only among commits that are not
 # in `trunk()`.
@@ -71,7 +71,7 @@ bookmark-advance-to = 'closest_pushable(@)'
 
 # The last commit with un-described changes. Commits with descriptions are considered to be ready to be pushed.
 # While commits without descriptions are considered to be in progress.
-staged = 'heads(::@ & mutable() & (description(exact:"") & ~empty()))'
+staged = "heads(::@ & mutable() & (description(exact:'') & ~empty()))"
 
 my_work = "trunk().. & mine() & mutable()"
 broken = "my_work & conflicts()"
