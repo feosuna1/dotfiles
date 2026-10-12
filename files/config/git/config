@@ -145,3 +145,7 @@
 
 [url "git@github.com:"]
 	pushInsteadOf = "https://github.com/"
+
+[includeIf "gitdir:~/Projects/Work/"]
+	# Work repos commit as a work GitHub account.
+	path = conf.d/work

@@ -1,0 +1,39 @@
+#!/bin/bash
+set -o errexit # Exit if any individual command fails and isn't handled
+set -o nounset # Exit if unset variables are used
+
+if [ -n "${BASH_VERSION:-}" ]; then
+    # shellcheck disable=SC3040
+    set -o pipefail # Exit if any command in a pipeline fails and isn't handled
+fi
+
+# Succeed when the commit email for the current directory matches an extended
+# regex. Meant for ~/.ssh/config, so ssh can choose an identity per repository:
+#
+#   Match host github.com exec "~/.dotfiles/files/bin/vcs-email-matches '@example\.com$|-example@'"
+#     IdentityFile ~/.ssh/id_ed25519_work
+#     IdentitiesOnly yes
+
+main() {
+    [[ "$#" -eq 1 ]] || exit_usage
+    local pattern="$1"
+
+    local email
+    email="$(committer_email)"
+    exec grep --quiet --extended-regexp -- "$pattern" <<< "$email"
+}
+
+exit_usage() {
+    echo "usage: $(basename "$0") <email-regex>" >&2
+    exit 2
+}
+
+committer_email() {
+    if jj root --ignore-working-copy > /dev/null 2>&1; then
+        jj config get --ignore-working-copy user.email
+    else
+        git config user.email
+    fi
+}
+
+main "$@"
