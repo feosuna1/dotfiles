@@ -22,10 +22,6 @@ register-snapshot-trigger = true
 [colors]
 "diff token" = { underline = false }
 
-[user]
-name = "Enrique Osuna"
-email = "12620+feosuna1@users.noreply.github.com"
-
 # Configure Kaleidoscope diff and merge tools
 [merge-tools.ksdiff]
 diff-invocation-mode = "file-by-file"
@@ -61,6 +57,10 @@ default-command = ["log", "-r", "coalesce(stack, present(@) | ancestors(immutabl
 # Render diffs the same as git does.
 diff-formatter = ":git"
 
+[user]
+name = "Enrique Osuna"
+email = "12620+feosuna1@users.noreply.github.com"
+
 [revsets]
 # When advancing a bookmark, jump to the closest pushable commit.
 bookmark-advance-to = 'closest_pushable(@)'
@@ -91,6 +91,6 @@ broken = "my_work & conflicts()"
 
 [visualjj]
 auto-describe = false
-snapshot-enabled = false
 auto-init = false
 show-immutable = false
+snapshot-enabled = false
