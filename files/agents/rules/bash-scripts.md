@@ -84,9 +84,3 @@ continues with an empty value. The same applies to `local` and `declare`.
 **How to apply.** Assign on one line, mark on the next. The combined form is
 fine only when the value is a literal or composes variables already set, since
 there is no command status to lose.
-
-## Sources
-
-The first two rules are review feedback from Itai Ferber, 2026-08-06, on a
-script the user wrote:
-https://ynab.slack.com/archives/D047KRY2VRN/p1786025023804199
