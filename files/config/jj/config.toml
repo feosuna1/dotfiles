@@ -22,12 +22,6 @@ register-snapshot-trigger = true
 [colors]
 "diff token" = { underline = false }
 
-# Configure Kaleidoscope diff and merge tools
-[merge-tools.ksdiff]
-diff-invocation-mode = "file-by-file"
-diff-args = ["--partial-changeset", "$left", "$right"]
-merge-args = ["--merge", "--output", "$output", "--base", "$base", "$left", "$right"]
-
 [templates]
 draft_commit_description = """
 join(
